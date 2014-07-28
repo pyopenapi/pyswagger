@@ -1,0 +1,113 @@
+{
+    "apiVersion": "1.0.0",
+    "swaggerVersion": "1.2",
+    "basePath": "r",
+    "resourcePath": "/users",
+    "produces": [
+        "application/json"
+    ],
+    "authorizations": {},
+    "apis": [
+        {
+            "path": "/users",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Get a specific User",
+                    "notes": "",
+                    "type": "User",
+                    "nickname": "getUser",
+                    "authorizations": {},
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "path",
+                            "description": "id of the user to be queried",
+                            "required": true,
+                            "allowMultiple": false
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 401,
+                            "message": "Unauthorized"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "path": "/users",
+            "operations": [
+                {
+                    "method": "POST",
+                    "summary": "Create a new user",
+                    "notes": "",
+                    "type": "User",
+                    "nickname": "sign_up",
+                    "authorizations": {},
+                    "parameters": [
+                        {
+                            "name": "body",
+                            "description": "email belongs to the user",
+                            "required": true,
+                            "type": "UserCred",
+                            "paramType": "body"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 409,
+                            "message": "User already exists"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "models": {
+        "User": {
+            "id": "User",
+            "name": "User",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "UUID of this user"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "nation": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "b_day": {
+                    "type": "string",
+                    "format": "date"
+                }
+            },
+            "required": [
+                "email", "gender", "nation", "b_day"
+            ]
+        },
+        "UserCred": {
+            "id": "UserCred",
+            "name": "UserCred",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "email", "password"
+            ]
+        }
+    }
+}

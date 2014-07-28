@@ -1,0 +1,100 @@
+{
+    "apiVersion": "1.0.0",
+    "swaggerVersion": "1.2",
+    "basePath": "r",
+    "resourcePath": "/sessions",
+    "produces": [
+        "application/json"
+    ],
+    "authorizations": {},
+    "apis": [
+        {
+            "path": "/sessions",
+            "operations": [
+                {
+                    "method": "GET",
+                    "summary": "Update User object in cookie",
+                    "notes": "",
+                    "type": "User",
+                    "nickname": "refresh",
+                    "authorizations": {
+                        "session": {
+                            "type": "cookie",
+                            "cookie": "user"
+                        }
+                    },
+                    "parameters": [
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 401,
+                            "message": "Unauthorized"
+                        }
+                    ]
+                },
+                {
+                    "method": "POST",
+                    "summary": "An login attemp via email, password combination.",
+                    "notes": "",
+                    "type": "void",
+                    "nickname": "login",
+                    "authorizations": {},
+                    "parameters": [
+                        {
+                            "name": "body",
+                            "description": "user's credential",
+                            "required": true,
+                            "type": "Cred",
+                            "paramType": "body"
+                        }
+                    ],
+                    "responseMessages": [
+                        {
+                            "code": 401,
+                            "message": "Invalid Password Or Email"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "models": {
+        "User": {
+            "id": "User",
+            "name": "User",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "UUID of this user"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "nation": {
+                    "type": "integer",
+                    "format": "int32"
+                },
+                "b_day": {
+                    "type": "string",
+                    "format": "date"
+                }
+            }
+        },
+        "Cred": {
+            "id": "Cred",
+            "name": "Cred",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
