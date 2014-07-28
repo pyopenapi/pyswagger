@@ -1,0 +1,6 @@
+-r requirement.txt
+
+pudb==2014.1
+pytest>=2.6.0
+pytest-cov>=1.6
+
