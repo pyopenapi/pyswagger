@@ -92,7 +92,8 @@ class BaseObj(object):
             setattr(f, property(lambda self: getattr(self, new_name)))
 
         # handle required fields
-        for field in set(ctx.__swagger_required__):
+        required = set(ctx.__swagger_required__) & set(self.__swagger_fields__)
+        for field in required:
             add_field(field, required=True)
 
         # handle not-required fields
