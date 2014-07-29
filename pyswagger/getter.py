@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from pyswagger import const
 import json
+import six
 
 class Getter(object):
     """
@@ -8,7 +9,9 @@ class Getter(object):
 
     def __init__(self, path):
         self.__base_path = path
-        self.__urls = [].append(path)
+        if self.__base_path.endswith('/'):
+            self.__base_path = self.__base_path[:-1]
+        self.__urls = [].append((path, ''))
 
     def __iter__(self):
         return self
@@ -17,12 +20,17 @@ class Getter(object):
         if len(self.__urls) == 0:
             raise StopIteration
 
-        obj = json.loads(self.load(self.__urls.pop(0)))
+        obj = self.load(self.__urls.pop(0))
+        if isinstance(obj, six.string_types):
+            obj = json.loads(obj)
 
         # find urls to retrieve
         if len(self.__urls) == 0:
             urls = self.__find_urls(obj)
-            self.__urls.extend(map(lambda u: self.__base_path + '/' + u, urls))
+            self.__urls.extend(zip(
+                map(lambda u: self.__base_path + u, urls),
+                map(lambda u: u[1:], urls)
+            ))
 
         return obj
 
@@ -48,4 +56,47 @@ class Getter(object):
         return urls
 
 
+class FileGetter(Getter):
+    """
+    default getter implmenetation for local resource file
+    """
+    def load(self, path):
+        ret = None
+        with open(path, 'r') as f:
+            ret = f.read()
+
+        return ret
+
+
+class HttpGetter(Getter):
+    """
+    default getter implementation for remote resource file
+    """
+    def load(self, path):
+        ret = None
+        try:
+            f = six.moves.urllib.urlopen(path)
+            ret = f.read()
+
+        finally:
+            f.close()
+
+        return ret
+
+
+class DictGetter(Getter):
+    """
+    getter for resource in memory, need special initialization.
+    """
+    def __init__(self, path=None):
+        super(DictGetter, self).__init__(path)
+
+    def load(self, path):
+        """
+        """
+
+    def upload(self, name, obj):
+        """
+        upload json object, could be either string or object.
+        """
 
