@@ -155,6 +155,7 @@ class InfoContext(Context):
     """ Context of Info Object
     """
     __swagger_ref_object__ = Info
+    __swagger_required__ = ['title', 'description']
 
 
 class ResourceListContext(Context):
