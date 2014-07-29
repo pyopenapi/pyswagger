@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from six.moves import urllib
 from .getter import HttpGetter, FileGetter
-from .parse import ResourceListContext
+from .parser import ResourceListContext
 from .base import BaseObj
 import inspect
 
@@ -32,8 +32,8 @@ class SwaggerApp(BaseObj):
             # initialized getter object.
             local_getter = getter(url)
 
-        ctx = ResourceListContext(getter)
-        ctx.process()
+        ctx = ResourceListContext(None, local_getter)
+        ctx.parse()
         return kls(ctx)
 
 
@@ -42,7 +42,7 @@ class SwaggerClient(object):
     Base Client Implementation
     """
     def __init__(self, *args, **kwargs):
-        super(SwaggerClient, self).__init__(*args, **kwargs)
+        super(SwaggerClient, self).__init__()
 
     def __call__(self, ctx):
         raise NotImplementedError()

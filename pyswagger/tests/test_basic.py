@@ -1,12 +1,14 @@
-from pyswagger import App
+from pyswagger import SwaggerApp
 from .utils import get_test_data_folder
 import unittest
 
-class BasicTestCase(unittest.TestCase):
+
+class PropertyTestCase(unittest.TestCase):
     """ basic usage, used during development """
     def setUp(self):
-        self.app = App(get_test_data_folder('basic'))
+        self.app = SwaggerApp._create_(get_test_data_folder('wordnik'))
 
-    def test_load_local(self):
-        """ load local resource """
-        self.assertEqual(1, 1)
+    def test_info(self):
+        """ Info Object """
+        self.assertTrue(hasattr(self.app, 'info'))
+

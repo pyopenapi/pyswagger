@@ -45,8 +45,8 @@ class DictDB(dict):
 
 def create_pet_db():
     pet = DictDB()
-    pet.create_(dict(id=1, category=dict(id=1, name='dog'), name='Tom',  tags=[dict(id=2, name='yellow'), dict(id=3, name='big')], status='sold'))
-    pet.create_(dict(id=2, category=dict(id=2, name='cat'), name='Mary', tags=[dict(id=1, name='white'), dict(id=4, name='small')], status='pending'))
-    pet.create_(dict(id=3, category=dict(id=2, name='cat'), name='John', tags=[dict(id=2, name='yellow'), dict(id=4, name='small')], status='available'))
-    pet.create_(dict(id=4, category=dict(id=3, name='fish'), name='Sue', tags=[dict(id=5, name='gold'), dict(id=4, name='small')], status='available'))
+    pet.create_(**dict(id=1, category=dict(id=1, name='dog'), name='Tom',  tags=[dict(id=2, name='yellow'), dict(id=3, name='big')], status='sold'))
+    pet.create_(**dict(id=2, category=dict(id=2, name='cat'), name='Mary', tags=[dict(id=1, name='white'), dict(id=4, name='small')], status='pending'))
+    pet.create_(**dict(id=3, category=dict(id=2, name='cat'), name='John', tags=[dict(id=2, name='yellow'), dict(id=4, name='small')], status='available'))
+    pet.create_(**dict(id=4, category=dict(id=3, name='fish'), name='Sue', tags=[dict(id=5, name='gold'), dict(id=4, name='small')], status='available'))
 

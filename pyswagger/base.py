@@ -73,10 +73,10 @@ class BaseObj(object):
     __swagger_data_type_fields__ = False
 
     def __init__(self, ctx):
-        super(BaseObj, self).__init__(ctx)
+        super(BaseObj, self).__init__()
 
-        if not issubclass(ctx, Context):
-            raise TypeError('should provide args[0] as Context, not: ' + type(ctx))
+        if not issubclass(type(ctx), Context):
+            raise TypeError('should provide args[0] as Context, not: ' + ctx.__class__.__name__)
 
         def add_field(f, required=False):
             if f in self:
