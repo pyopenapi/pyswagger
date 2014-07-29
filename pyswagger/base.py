@@ -14,12 +14,15 @@ class Context(list):
         self._obj = {}
 
     def __enter__(self):
-        pass
+        return self
             
     def __exit__(self, exc_type, exc_value, traceback):
         """ update what we get as a reference object,
         and put it back to parent context.
         """
+        if not self.__backref:
+            return
+
         tmp = self.__backref[0][self.__backref[1]]
         obj = self.__class__.__swagger_ref_object__(self)
         if isinstance(tmp, list):
@@ -31,7 +34,7 @@ class Context(list):
             self.__backref[0][self.__backref[1]] = obj
 
     def parse(self, obj=None):
-        """
+        """ go deeper into objects
         """
         if not (obj and isinstance(obj, dict)):
             return
@@ -49,16 +52,16 @@ class Context(list):
                 if isinstance(items, list):
                     # for objects grouped in list
                     for item in items:
-                        with ctx_kls(self._objs, key, ) as ctx:
-                            ctx.process(item)
+                        with ctx_kls((self._obj, key,)) as ctx:
+                            ctx.parse(item)
                 if isinstance(items, dict):
                     # for objects grouped in dict
-                    for k, v in items:
-                        with ctx_kls(self._objs, key, k, ) as ctx:
-                            ctx.process(v)
+                    for k, v in items.iteritems():
+                        with ctx_kls((self._obj, key, k,)) as ctx:
+                            ctx.parse(v)
                 else:
                     with ctx_kls(self) as ctx:
-                        ctx.process(obj.get(key, None))
+                        ctx.parse(obj.get(key, None))
 
 
 class BaseObj(object):

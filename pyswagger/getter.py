@@ -2,37 +2,36 @@ from __future__ import absolute_import
 from pyswagger import const
 import json
 import six
+import os
 
-class Getter(object):
+class Getter(six.Iterator):
     """
     """
-
     def __init__(self, path):
-        self.__base_path = path
-        if self.__base_path.endswith('/'):
-            self.__base_path = self.__base_path[:-1]
-        self.__urls = [].append((path, ''))
+        self.base_path = path
 
     def __iter__(self):
         return self
 
     def __next__(self):
-        if len(self.__urls) == 0:
+        if len(self.urls) == 0:
             raise StopIteration
 
-        obj = self.load(self.__urls.pop(0))
+        path, name = self.urls.pop(0)
+        obj = self.load(path)
         if isinstance(obj, six.string_types):
             obj = json.loads(obj)
 
         # find urls to retrieve
-        if len(self.__urls) == 0:
+        if len(self.urls) == 0:
             urls = self.__find_urls(obj)
-            self.__urls.extend(zip(
-                map(lambda u: self.__base_path + u, urls),
+            # TODO: not worked in FileGetter & DictGetter
+            self.urls.extend(zip(
+                map(lambda u: self.base_path + u, urls),
                 map(lambda u: u[1:], urls)
             ))
 
-        return obj
+        return obj, name
 
     def load(self, path):
         """
@@ -60,6 +59,14 @@ class FileGetter(Getter):
     """
     default getter implmenetation for local resource file
     """
+    def __init__(self, path):
+        super(FileGetter, self).__init__(path)
+        if self.base_path.endswith(const.RESOURCE_LISTING_NAME):
+            self.base_path = os.path.dirname(self.base_path)
+            self.urls = [(path, '')]
+        else:
+            self.urls = [(os.path.join(path, const.RESOURCE_LISTING_NAME), '')]
+
     def load(self, path):
         ret = None
         with open(path, 'r') as f:
@@ -72,6 +79,13 @@ class HttpGetter(Getter):
     """
     default getter implementation for remote resource file
     """
+    def __init__(self, path):
+        super(HttpGetter, self).__init__(self)
+        self.base_path = path
+        if self.base_path.endswith('/'):
+            self.base_path = self.base_path[:-1]
+        self.urls = [(path, '')]
+
     def load(self, path):
         ret = None
         try:

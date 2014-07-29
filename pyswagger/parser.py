@@ -17,6 +17,7 @@ from .obj import (
     Model,
     Resource,
     Info)
+import six
 
 
 class ScopeContext(Context):
@@ -165,15 +166,15 @@ class ResourceListContext(Context):
     __swagger_required__ = ['swaggerVersion', 'apis']
 
     def __init__(self, parent, getter):
-        super(ResourceListContext, self).__init__(parent)
+        super(ResourceListContext, self).__init__(None)
         self.__getter = getter
 
     def parse(self, obj=None):
-        obj, _ = self.__getter.next()
-        super(ResourceListContext, self).process(obj)
+        obj, _ = six.advance_iterator(self.__getter)
+        super(ResourceListContext, self).parse(obj)
 
         # get into resource object
         for obj, name in self.__getter:
             with ResourceContext(self, name) as ctx:
-                ctx.process(obj=obj)
+                ctx.parse(obj=obj)
 

@@ -30,7 +30,7 @@ class SwaggerApp(BaseObj):
             # default initialization is passing the url
             # you can override this behavior by passing an
             # initialized getter object.
-            local_getter = getter(url)
+            local_getter = local_getter(url)
 
         ctx = ResourceListContext(None, local_getter)
         ctx.parse()
