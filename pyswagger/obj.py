@@ -2,12 +2,16 @@ from __future__ import absolute_import
 
 
 class Base(object):
+    """ Base implementation of all referencial objects
     """
-    """
+    def __init__(self, *args, **kwargs):
+        super(Base, self).__init__(*args, **kwargs)
+
 
 class Scope(Base):
+    """ Scope Object
     """
-    """
+    def __init
 
 class LoginEndpoint(Base):
     """
@@ -50,6 +54,10 @@ class Operation(Base):
     """
 
 class Api(Base):
+    """
+    """
+
+class Property(Base):
     """
     """
 

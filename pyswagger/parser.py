@@ -12,6 +12,7 @@ from .obj import (
     Parameter,
     Operation,
     Api,
+    Property,
     Model,
     Resource,
     Info)
@@ -22,6 +23,8 @@ class Context(list):
 
     __swagger_required__: required fields
     __swagger_expect__: list of tuples about nested context
+    __swagger_ref_obj__: class of reference object, would be used when
+    performing request.
     """
     def __init__(self, backref):
         self.__backref = backref
@@ -35,16 +38,18 @@ class Context(list):
         and put it back to parent context.
         """
         tmp = self.__backref[0][self.__backref[1]]
+        obj = self.__class__.__swagger_ref_object__(self._objs)
         if isinstance(tmp, list):
-            tmp.append(self.__class__.__swagger_ref_object__(self._objs))
+            tmp.append(obj)
             # TODO: check for uniqueness
         elif isinstance(tmp, dict):
-            # TODO: key name
-            tmp.update(self.__class__.__swagger_ref_object__(self._objs))
+            tmp[self.__backref[2]] = obj
         else:
-            self.__backref[0][self.__backref[1]] = self.__class__.__swagger_ref_object__(self._objs)
+            self.__backref[0][self.__backref[1]] = obj
 
-    def process(self, obj=None):
+    def parse(self, obj=None):
+        """
+        """
         if not (obj and isinstance(obj, dict)):
             return
 
@@ -59,10 +64,15 @@ class Context(list):
             for key, ctx_kls in self.__swagger_expect__:
                 items = obj.get(key, None)
                 if isinstance(items, list):
-                    # for objects that grouped in list
+                    # for objects grouped in list
                     for item in items:
-                        with ctx_kls(self._objs, key,) as ctx:
+                        with ctx_kls(self._objs, key, ) as ctx:
                             ctx.process(item)
+                if isinstance(items, dict):
+                    # for objects grouped in dict
+                    for k, v in items:
+                        with ctx_kls(self._objs, key, k, ) as ctx:
+                            ctx.process(v)
                 else:
                     with ctx_kls(self) as ctx:
                         ctx.process(obj.get(key, None))
@@ -72,12 +82,14 @@ class ScopeContext(Context):
     """ Context of Scope Object
     """
     __swagger_ref_object__ = Scope
+    __swagger_required__ = ['scope']
 
 
 class LoginEndpointContext(Context):
     """ Context of LoginEndpoint Object
     """
     __swagger_ref_object__ = LoginEndpoint
+    __swagger_required__ = ['url']
 
 
 class ImplicitContext(Context):
@@ -85,18 +97,21 @@ class ImplicitContext(Context):
     """
     __swagger_ref_object__ = Implicit
     __swagger_expect__ = [('loginEndpoint', LoginEndpointContext)]
+    __swagger_required__ = ['loginEndpoint']
 
 
 class TokenRequestEndpointContext(Context):
     """ Context of TokenRequestEndpoint Object
     """
     __swagger_ref_object__ = TokenRequestEndpoint
+    __swagger_required__ = ['url']
 
 
-class TokenEndpoint(Context):
+class TokenEndpointContext(Context):
     """ Context of Token Object
     """
     __swagger_ref_object__ = Token
+    __swagger_required__ = ['url']
 
 
 class AuthorizationCodeContext(Context):
@@ -105,8 +120,9 @@ class AuthorizationCodeContext(Context):
     __swagger_ref_object__ = AuthorizationCode
     __swagger_expect__ = [
         ('tokenRequestEndpoint', TokenRequestEndpointContext),
-        ('tokenEndpoint', TokenEndpoint)
+        ('tokenEndpoint', TokenEndpointContext)
     ]
+    __swagger_required__ = ['tokenRequestEndpoint', 'tokenEndpoint']
 
 
 class GrantTypeContext(Context):
@@ -127,18 +143,21 @@ class AuthorizationContext(Context):
         ('scopes', ScopeContext),
         ('grantTypes', GrantTypeContext)
     ]
+    __swagger_required__ = ['type']
 
 
 class ResponseMessageContext(Context):
     """ Context of ResponseMessage Object
     """
     __swagger_ref_object__ = ResponseMessage
+    __swagger_required__ = ['code', 'message']
 
  
 class ParameterContext(Context):
     """ Context of Parameter Object
     """
     __swagger_ref_object__ = Parameter 
+    __swagger_required__ = ['paramType', 'name']
 
 
 class OperationContext(Context):
@@ -150,6 +169,7 @@ class OperationContext(Context):
         ('parameters', ParameterContext),
         ('responseMessages', ResponseMessageContext)
     ]
+    __swagger_required__ = ['method', 'nickname', 'parameters']
 
 
 class ApiContext(Context):
@@ -157,12 +177,21 @@ class ApiContext(Context):
     """
     __swagger_ref_object__ = Api
     __swagger_expect__ = [('operations', OperationContext)]
+    __swagger_required__ = ['path', 'operations']
+
+
+class PropertyContext(Context):
+    """ Context of Property Object
+    """
+    __swagger_ref_object__ = Property
 
 
 class ModelContext(Context):
     """ Context of Model Object
     """
     __swagger_ref_object__ = Model
+    __swagger_expect__ = [('properties', PropertyContext)]
+    __swagger_required__ = ['id', 'properties']
 
 
 class ResourceContext(Context):
@@ -197,7 +226,7 @@ class ResourceListContext(Context):
         super(ResourceListContext, self).__init__(parent)
         self.__getter = getter
 
-    def process(self, obj=None):
+    def parse(self, obj=None):
         obj, _ = self.__getter.next()
         super(ResourceListContext, self).process(obj)
 
