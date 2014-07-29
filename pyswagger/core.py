@@ -1,51 +1,23 @@
 from __future__ import absolute_import
 from six.moves import urllib
-from .getter import Getter
-from .ctx import Context
+from .getter import HttpGetter, FileGetter
+from .parse import ResourceListContext
 import inspect
 
 
-class File_Getter(Getter):
-    """
-    default getter implmenetation for local resource file
-    """
-    def load(self, path):
-        ret = None
-        with open(path, 'r') as f:
-            ret = f.read()
-
-        return ret
-
-
-class HTTP_Getter(Getter):
-    """
-    default getter implementation for remote resource file
-    """
-    def load(self, path):
-        ret = None
-        try:
-            f = urllib.urlopen(path)
-            ret = f.read()
-
-        finally:
-            f.close()
-
-        return ret
-
-
-class App(object):
+class SwaggerApp(object):
     """
     """
     def __init__(self, url, getter=None):
         """
         """
 
-        local_getter = getter or HTTP_Getter
+        local_getter = getter or HttpGetter
         p = urllib.parse.urlparse(url)
         if p.scheme == "":
             if p.netloc == "" and p.path != "":
-                # it's a file path
-                local_getter = File_Getter(p.path)
+                # it should be a file path
+                local_getter = FileGetter(p.path)
             else:
                 raise ValueError('url should be a http-url or file path -- ' + url)
 
@@ -55,12 +27,24 @@ class App(object):
             # initialized getter object.
             local_getter = getter(url)
 
-        # scan through resource list & resources
-        with Context() as ctx:
-            for obj in local_getter:
-                self.__process(obj, ctx)
+        ctx = ResourceListContext(getter)
+        ctx.process()
+        self.__set(ctx) 
 
-    def __process(self, obj, ctx):
+    def __set(self, ctx):
         """
         """
+
+    def __getattr__(self, name):
+        
+
+class SwaggerClient(object):
+    """
+    Base Client Implementation
+    """
+    def __init__(self, *args, **kwargs):
+        super(SwaggerClient, self).__init__(*args, **kwargs)
+
+    def __call__(self, ctx):
+        raise NotImplementedError()
 
