@@ -1,14 +1,14 @@
 from __future__ import absolute_import
 import os
 
-def get_test_data_folder(which=""):
+def get_test_data_folder(version='1.2', which=''):
     """
     """
     import pyswagger.tests.data
 
+    version = 'v' + version.replace('.', '_')
     folder = os.path.dirname(os.path.abspath(pyswagger.tests.data.__file__))
-    if which != None:
-        folder = os.path.join(folder, which)
+    folder = os.path.join(os.path.join(folder, version), which)
     return folder
 
 
