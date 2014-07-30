@@ -9,6 +9,7 @@ from .obj import (
     AuthorizationCode,
     GrantType,
     Authorization,
+    Authorizations,
     ResponseMessage,
     Parameter,
     Operation,
@@ -27,6 +28,20 @@ class ScopeContext(Context):
     __swagger_required__ = ['scope']
 
 
+class AuthorizationsContext(Context):
+    """ Context of Authorization's' Object
+    
+    Do not get confused with Authorization Object,
+    this one is used in API Declaration
+    """
+    __swagger_ref_object__ = Authorizations
+    __swagger_required__ = ['scope']
+    __swagger_named__ = True
+
+    def parse(self, obj=None):
+        return super(AuthorizationsContext, self).parse(obj)
+
+
 class LoginEndpointContext(Context):
     """ Context of LoginEndpoint Object
     """
@@ -38,8 +53,11 @@ class ImplicitContext(Context):
     """ Context of Implicit Object
     """
     __swagger_ref_object__ = Implicit
-    __swagger_expect__ = [('loginEndpoint', LoginEndpointContext)]
+    __swagger_child__ = [('loginEndpoint', LoginEndpointContext)]
     __swagger_required__ = ['loginEndpoint']
+
+    def parse(self, obj=None):
+        return super(ImplicitContext, self).parse(obj)
 
 
 class TokenRequestEndpointContext(Context):
@@ -60,7 +78,7 @@ class AuthorizationCodeContext(Context):
     """ Context of AuthorizationCode Object
     """
     __swagger_ref_object__ = AuthorizationCode
-    __swagger_expect__ = [
+    __swagger_child__ = [
         ('tokenRequestEndpoint', TokenRequestEndpointContext),
         ('tokenEndpoint', TokenEndpointContext)
     ]
@@ -71,21 +89,28 @@ class GrantTypeContext(Context):
     """ Context of GrantType Object
     """
     __swagger_ref_object__ = GrantType
-    __swagger_expect__ = [
+    __swagger_child__ = [
         ('implicit', ImplicitContext),
         ('authorization_code', AuthorizationCodeContext)
     ]
+
+    def parse(self, obj=None):
+        return super(GrantTypeContext, self).parse(obj)
 
 
 class AuthorizationContext(Context):
     """ Context of Authorization Object
     """
     __swagger_ref_object__ = Authorization
-    __swagger_expect__ = [
+    __swagger_child__ = [
         ('scopes', ScopeContext),
         ('grantTypes', GrantTypeContext)
     ]
     __swagger_required__ = ['type']
+    __swagger_named__ = True
+
+    def parse(self, obj=None):
+        return super(AuthorizationContext, self).parse(obj)
 
 
 class ResponseMessageContext(Context):
@@ -106,8 +131,8 @@ class OperationContext(Context):
     """ Context of Operation Object
     """
     __swagger_ref_object__ = Operation
-    __swagger_expect__ = [
-        ('authorizations', AuthorizationContext),
+    __swagger_child__ = [
+        ('authorizations', AuthorizationsContext),
         ('parameters', ParameterContext),
         ('responseMessages', ResponseMessageContext)
     ]
@@ -118,7 +143,7 @@ class ApiContext(Context):
     """ Context of Api Object
     """
     __swagger_ref_object__ = Api
-    __swagger_expect__ = [('operations', OperationContext)]
+    __swagger_child__ = [('operations', OperationContext)]
     __swagger_required__ = ['path', 'operations']
 
 
@@ -132,7 +157,7 @@ class ModelContext(Context):
     """ Context of Model Object
     """
     __swagger_ref_object__ = Model
-    __swagger_expect__ = [('properties', PropertyContext)]
+    __swagger_child__ = [('properties', PropertyContext)]
     __swagger_required__ = ['id', 'properties']
 
 
@@ -140,16 +165,18 @@ class ResourceContext(Context):
     """ Context of Resource Object
     """
     __swagger_ref_object__ = Resource
-    __swagger_expect__ = [
+    __swagger_child__ = [
         ('apis', ApiContext),
-        ('models', ModelContext),
-        ('authorizations', AuthorizationContext)
+        ('models', ModelContext)
     ]
     __swagger_required__ = ['swaggerVersion', 'basePath', 'apis']
 
     def __init__(self, parent, name):
         super(ResourceContext, self).__init__(parent)
         self.__name = name
+
+    def parse(self, obj=None):
+        return super(ResourceContext, self).parse(obj)
 
 
 class InfoContext(Context):
@@ -162,7 +189,7 @@ class InfoContext(Context):
 class ResourceListContext(Context):
     """ Context of Resource List Object
     """
-    __swagger_expect__ = [('authorizations', AuthorizationContext)]
+    __swagger_child__ = [('authorizations', AuthorizationContext)]
     __swagger_required__ = ['swaggerVersion', 'apis']
 
     def __init__(self, parent, getter):
@@ -171,10 +198,11 @@ class ResourceListContext(Context):
 
     def parse(self, obj=None):
         obj, _ = six.advance_iterator(self.__getter)
-        super(ResourceListContext, self).parse(obj)
+        super(ResourceListContext, self).parse(obj=obj)
 
         # get into resource object
         for obj, name in self.__getter:
-            with ResourceContext(self, name) as ctx:
+            self._obj[name] = None
+            with ResourceContext((self._obj, name,), obj) as ctx:
                 ctx.parse(obj=obj)
 

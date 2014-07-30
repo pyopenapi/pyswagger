@@ -51,6 +51,13 @@ class GrantType(BaseObj):
     __swagger_fields__ = ['implicit', 'authorization_code']
 
 
+class Authorizations(BaseObj):
+    """ Authorizations Object
+    """
+
+    __swagger_fields__ = ['scope']
+
+
 class Authorization(BaseObj):
     """ Authorization Object
     """

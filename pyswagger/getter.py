@@ -61,14 +61,18 @@ class FileGetter(Getter):
     """
     def __init__(self, path):
         super(FileGetter, self).__init__(path)
-        if self.base_path.endswith(const.RESOURCE_LISTING_NAME):
+        if self.base_path.endswith(const.RESOURCE_LISTING_FILE_NAME):
             self.base_path = os.path.dirname(self.base_path)
             self.urls = [(path, '')]
         else:
-            self.urls = [(os.path.join(path, const.RESOURCE_LISTING_NAME), '')]
+            self.urls = [(os.path.join(path, const.RESOURCE_LISTING_FILE_NAME), '')]
 
     def load(self, path):
         ret = None
+        # make sure we get .json files
+        if not path.endswith(const.RESOURCE_FILE_EXT):
+            path = path + '.' + const.RESOURCE_FILE_EXT
+
         with open(path, 'r') as f:
             ret = f.read()
 
@@ -81,7 +85,6 @@ class HttpGetter(Getter):
     """
     def __init__(self, path):
         super(HttpGetter, self).__init__(self)
-        self.base_path = path
         if self.base_path.endswith('/'):
             self.base_path = self.base_path[:-1]
         self.urls = [(path, '')]
