@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .base import Context
+from .base import Context, NamedContext
 from .obj import (
     Scope,
     LoginEndpoint,
@@ -28,7 +28,7 @@ class ScopeContext(Context):
     __swagger_required__ = ['scope']
 
 
-class AuthorizationsContext(Context):
+class AuthorizationsContext(NamedContext):
     """ Context of Authorization's' Object
     
     Do not get confused with Authorization Object,
@@ -37,9 +37,6 @@ class AuthorizationsContext(Context):
     __swagger_ref_object__ = Authorizations
     __swagger_required__ = ['scope']
     __swagger_named__ = True
-
-    def parse(self, obj=None):
-        return super(AuthorizationsContext, self).parse(obj)
 
 
 class LoginEndpointContext(Context):
@@ -55,9 +52,6 @@ class ImplicitContext(Context):
     __swagger_ref_object__ = Implicit
     __swagger_child__ = [('loginEndpoint', LoginEndpointContext)]
     __swagger_required__ = ['loginEndpoint']
-
-    def parse(self, obj=None):
-        return super(ImplicitContext, self).parse(obj)
 
 
 class TokenRequestEndpointContext(Context):
@@ -94,11 +88,8 @@ class GrantTypeContext(Context):
         ('authorization_code', AuthorizationCodeContext)
     ]
 
-    def parse(self, obj=None):
-        return super(GrantTypeContext, self).parse(obj)
 
-
-class AuthorizationContext(Context):
+class AuthorizationContext(NamedContext):
     """ Context of Authorization Object
     """
     __swagger_ref_object__ = Authorization
@@ -108,9 +99,6 @@ class AuthorizationContext(Context):
     ]
     __swagger_required__ = ['type']
     __swagger_named__ = True
-
-    def parse(self, obj=None):
-        return super(AuthorizationContext, self).parse(obj)
 
 
 class ResponseMessageContext(Context):
@@ -147,13 +135,13 @@ class ApiContext(Context):
     __swagger_required__ = ['path', 'operations']
 
 
-class PropertyContext(Context):
+class PropertyContext(NamedContext):
     """ Context of Property Object
     """
     __swagger_ref_object__ = Property
 
 
-class ModelContext(Context):
+class ModelContext(NamedContext):
     """ Context of Model Object
     """
     __swagger_ref_object__ = Model
@@ -171,13 +159,6 @@ class ResourceContext(Context):
     ]
     __swagger_required__ = ['swaggerVersion', 'basePath', 'apis']
 
-    def __init__(self, parent, name):
-        super(ResourceContext, self).__init__(parent)
-        self.__name = name
-
-    def parse(self, obj=None):
-        return super(ResourceContext, self).parse(obj)
-
 
 class InfoContext(Context):
     """ Context of Info Object
@@ -193,7 +174,7 @@ class ResourceListContext(Context):
     __swagger_required__ = ['swaggerVersion', 'apis']
 
     def __init__(self, parent, getter):
-        super(ResourceListContext, self).__init__(None)
+        super(ResourceListContext, self).__init__(None, None)
         self.__getter = getter
 
     def parse(self, obj=None):
@@ -202,7 +183,8 @@ class ResourceListContext(Context):
 
         # get into resource object
         for obj, name in self.__getter:
-            self._obj[name] = None
-            with ResourceContext((self._obj, name,), obj) as ctx:
+            # here we assume Resource is always a dict
+            self._obj[name] = {}
+            with ResourceContext(self._obj, name) as ctx:
                 ctx.parse(obj=obj)
 

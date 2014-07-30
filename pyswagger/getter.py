@@ -22,8 +22,8 @@ class Getter(six.Iterator):
         if isinstance(obj, six.string_types):
             obj = json.loads(obj)
 
-        # find urls to retrieve
-        if len(self.urls) == 0:
+        # find urls to retrieve from resource listing file
+        if name == '':
             urls = self.__find_urls(obj)
             # TODO: not worked in FileGetter & DictGetter
             self.urls.extend(zip(
@@ -45,7 +45,7 @@ class Getter(six.Iterator):
         knowledge of swagger schema.
         """
         urls = []
-        if  const.SCHEMA_APIS in obj:
+        if const.SCHEMA_APIS in obj:
             if isinstance(obj[const.SCHEMA_APIS], list):
                 for api in obj[const.SCHEMA_APIS]:
                     urls.append(api[const.SCHEMA_PATH])

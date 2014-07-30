@@ -96,18 +96,12 @@ class Operation(BaseObj):
     ]
     __swagger_data_type_fields__ = True
 
-    def __init__(self, ctx):
-        super(Operation, self).__init__(ctx)
-
 
 class Api(BaseObj):
     """ Api Object
     """
 
     __swagger_fields__ = ['path', 'operations']
-
-    def __init__(self, ctx):
-        super(Api, self).__init__(ctx)
 
 
 class Property(BaseObj):
@@ -116,18 +110,12 @@ class Property(BaseObj):
 
     __swagger_data_type_fields__ = True
 
-    def __init__(self, ctx):
-        super(Property, self).__init__(ctx)
-
 
 class Model(BaseObj):
     """ Model Object
     """
 
     __swagger_fields__ = ['id', 'required', 'properties', 'subTypes', 'discriminator']
-
-    def __init__(self, ctx):
-        super(Model, self).__init__(ctx)
 
 
 class Resource(BaseObj):
@@ -144,9 +132,6 @@ class Resource(BaseObj):
         'produces',
         'consumes',
         'authorizations']
-
-    def __init__(self, ctx):
-        super(Resource, self).__init__(ctx)
 
 
 class Info(BaseObj):

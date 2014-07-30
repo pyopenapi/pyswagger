@@ -17,54 +17,45 @@ class Context(list):
     __swagger_named__ = False
 
     def __init__(self, parent_obj, backref):
-        self.__parent_obj = parent_obj
-        self.__backref = backref
-        self._obj_decl = None
+        self._parent_obj = parent_obj
+        self._backref = backref
         self._obj = {}
 
     def __enter__(self):
         return self
-            
-    def __exit__(self, exc_type, exc_value, traceback):
+
+    def back2parent(self, parent_obj, backref):
         """ update what we get as a reference object,
         and put it back to parent context.
         """
-        if not self.__backref:
+        if not self._obj:
+            # TODO: a warning for empty object?
             return
 
-        tmp = self.__parent_obj
-        for back in self.__backref:
-            tmp = tmp[back]
-
-        if not isinstance(tmp, dict):
-            raise TypeError('too many backref to unpack')
-
         obj = self.__class__.__swagger_ref_object__(self)
-        if isinstance(tmp, list):
-            tmp.append(obj)
+        if isinstance(parent_obj[backref], list):
+            parent_obj[backref].append(obj)
             # TODO: check for uniqueness
-        elif isinstance(tmp, dict):
-            tmp = obj
         else:
-            tmp = obj
+            parent_obj[backref] = obj
 
+    def __exit__(self, exc_type, exc_value, traceback):
+        return self.back2parent(self._parent_obj, self._backref)
 
     def parse(self, obj=None):
         """ go deeper into objects
         """
+        if not obj:
+            return
+
         if not isinstance(obj, dict):
             raise ValueError('invalid obj passed: ' + str(type(obj)))
-
-        self._obj_decl = obj
 
         if hasattr(self, '__swagger_required__'):
             # check required field
             missing = set(self.__class__.__swagger_required__) - set(obj.keys())
             if len(missing):
                 raise ValueError('Required: ' + str(missing))
-
-        def handle_list(kls, ):
-            pass            
 
         if hasattr(self, '__swagger_child__'):
             # to nested objects
@@ -74,29 +65,17 @@ class Context(list):
                     # for objects grouped in list
                     self._obj[key] = []
                     for item in items:
-                        with ctx_kls(self._obj, (key,)) as ctx:
+                        with ctx_kls(self._obj, key) as ctx:
                             ctx.parse(obj=item)
-                elif ctx_kls.__swagger_named__:
-                    # for objects grouped in dict
-                    self._obj[key] = {}
-                    for k, v in items.iteritems():
-                        if isinstance(v, list):
-                            self._obj[key][k] = []
-                            for item in v:
-                                with ctx_kls(self._obj, (key, k,)) as ctx:
-                                    ctx.parse(obj=item)
-                        else:
-                            with ctx_kls(self._obj, (key, k,)) as ctx:
-                                ctx.parse(obj=v)
                 else:
-                    self._obj[key] = None
+                    self._obj[key] = {}
                     nested_obj = obj.get(key, None)
-                    with ctx_kls((self._obj, key,)) as ctx:
+                    with ctx_kls(self._obj, key) as ctx:
                         ctx.parse(obj=nested_obj)
 
-        # update _obj with _obj_decl
-        for key in set(self._obj_decl.keys()) - set(self._obj.keys()):
-            self._obj[key] = self._obj_decl[key]
+        # update _obj with obj
+        for key in (set(obj.keys()) - set(self._obj.keys())):
+            self._obj[key] = obj[key]
 
 
 class BaseObj(object):
@@ -108,6 +87,7 @@ class BaseObj(object):
     __swagger_data_type_fields__: indicate this object contains data type fields
     """
 
+    __swagger_fields__ = []
     __swagger_data_type_fields__ = False
 
     def __init__(self, ctx):
@@ -139,4 +119,25 @@ class BaseObj(object):
         not_required = set(self.__swagger_fields__) - set(ctx.__swagger_required__)
         for field in not_required:
             add_field(field)
+
+
+class NamedContext(Context):
+    """ for named object
+    """
+    def parse(self, obj=None):
+        if not isinstance(obj, dict):
+            raise ValueError('invalid obj passed: ' + str(type(obj)))
+
+        for k, v in obj.iteritems():
+            if isinstance(v, list):
+                self._parent_obj[self._backref][k] = []
+                for item in v:
+                    super(NamedContext, self).parse(item)
+                    self.back2parent(self._parent_obj[self._backref], k)
+            elif isinstance(v, dict):
+                super(NamedContext, self).parse(v)
+                self._parent_obj[self._backref][k] = None
+                self.back2parent(self._parent_obj[self._backref], k)
+            else:
+                raise ValueError('Unknown item type: ' + str(type(v)))
 
