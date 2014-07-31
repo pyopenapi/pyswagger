@@ -158,3 +158,9 @@ class PropertyTestCase(unittest.TestCase):
         self.assertIsInstance(auth, Authorizations)
         self.assertEqual(auth.scope, 'write:pets')
 
+    def test_shortcut(self):
+        """ a short cut to Resource from SwaggerApp """
+        self.assertIsInstance(app.pet, Resource)
+        self.assertIsInstance(app.user, Resource)
+        self.assertIsInstance(app.store, Resource)
+

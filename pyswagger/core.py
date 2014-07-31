@@ -32,8 +32,15 @@ class SwaggerApp(object):
         with ResourceListContext(tmp, '_tmp_', local_getter) as ctx:
             ctx.parse()
 
+        # schema
         app = kls()
         setattr(app, '_schema_', tmp['_tmp_'])
+
+        # resources
+        for name, res in app._schema_.apis.iteritems():
+            setattr(app, name, res)
+
+        # TODO: model
 
         return app
 
