@@ -5,9 +5,9 @@ A python REST client for swagger enabled rest API, which integrated with differe
 ex. AsyncHTTPClient in tornado. For me, the use case is to unittest a torando REST server.
 
 Here are **TODO**s:
-- [Data Type Fields](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#433-data-type-fields)
 - resolve [$ref](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#dataTypeRef)
 - support model inheritance. (refer to [subType](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#modelSubTypes) and [discriminator](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#modelDiscriminator))
+- limitation checking
 - API-key and basic-auth
 - OAuth 2.0 support with oauthlib
 - Python 3 support
@@ -24,6 +24,12 @@ Here are **TODO**s:
 - support swagger **1.2**(not yet)
 - idenpendent of http client, and provide a set of wrappers for common http clients.
 - every property is wrapped in @property, make it readonly
+- those limitation defined in spec are checked during loading json.
+  - the model of '$ref' really exist.
+  - either '$ref' or 'type' exist for [Data Type Fields](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#433-data-type-fields)
+  - items only exist when type is 'array'.
+  - convert [Data Type Fields](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#433-data-type-fields) from string to right type.
+  - those urls are syntax-checking before usage.
 - tested, and welcome for pushing new suite of testing json files.
 
 ###Development

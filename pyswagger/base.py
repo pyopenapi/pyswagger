@@ -8,13 +8,10 @@ class Context(list):
     __swagger_child__: list of tuples about nested context
     __swagger_ref_obj__: class of reference object, would be used when
     performing request.
-    __swagger_named__: this context is identified by a name and grouped
-    in a dict.
     """
 
     __swagger_required__ = []
     __swagger_child__ = []
-    __swagger_named__ = False
 
     def __init__(self, parent_obj, backref):
         self._parent_obj = parent_obj
@@ -115,11 +112,7 @@ class BaseObj(object):
 
     __swagger_fields__: list of names of fields, we will skip fields not
     in this list.
-    __swagger_data_type_fields__: indicate this object contains data type fields
     """
-
-    __swagger_fields__ = []
-    __swagger_data_type_fields__ = False
 
     def __init__(self, ctx):
         super(BaseObj, self).__init__()
@@ -147,4 +140,66 @@ class BaseObj(object):
 
         setattr(self, new_name, obj)
         setattr(self.__class__, f, property(lambda self: getattr(self, new_name)))
+
+
+class Items(BaseObj):
+    """ Items Object
+    """
+    __swagger_fields__ = ['type']
+
+    def __init__(self, ctx):
+        super(Items, self).__init__(ctx)
+
+        if hasattr(self, 'ref'):
+            raise ValueError('Data Type Field duplicated: ref')
+
+        # almost every data field is not required, we just
+        # need to make sure either 'type' or '$ref' is shown.
+        local_obj = ctx._obj.get('$ref', None)
+        self.add_field('ref', local_obj)
+
+
+class ItemsContext(Context):
+    """ Context of Items Object
+    """
+    __swagger_ref_object__ = Items
+    __swagger_required__ = []
+
+
+class DataTypeObj(BaseObj):
+    """ Data Type Fields
+    """
+    __swagger_fields__ = [
+        'type',
+        '$ref',
+        'format',
+        'defaultValue',
+        'enum',
+        'items',
+        'minimum',
+        'maximum',
+        'uniqueItems'
+    ]
+
+    def __init__(self, ctx):
+        super(DataTypeObj, self).__init__(ctx)
+
+        # Items Object, too lazy to create a Context for DataTypeObj
+        # to wrap this child.
+        with ItemsContext(ctx._obj, 'items') as items_ctx:
+            items_ctx.parse(ctx._obj.get('items', None))
+
+        type_fields = set(DataTypeObj.__swagger_fields__) - set(ctx.__swagger_required__)
+        for field in type_fields:
+            if hasattr(self, field):
+                raise ValueError('Data Type Field duplicated: ' + field)
+
+            # almost every data field is not required, we just
+            # need to make sure either 'type' or '$ref' is shown.
+            local_obj = ctx._obj.get(field, None)
+
+            # '$ref' is an invalid name of python attribute.
+            field = 'ref' if field == '$ref' else field
+
+            self.add_field(field, local_obj)
 

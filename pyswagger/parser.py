@@ -36,7 +36,6 @@ class AuthorizationsContext(NamedContext):
     """
     __swagger_ref_object__ = Authorizations
     __swagger_required__ = ['scope']
-    __swagger_named__ = True
 
 
 class LoginEndpointContext(Context):
@@ -98,7 +97,6 @@ class AuthorizationContext(NamedContext):
         ('grantTypes', GrantTypeContext)
     ]
     __swagger_required__ = ['type']
-    __swagger_named__ = True
 
 
 class ResponseMessageContext(Context):

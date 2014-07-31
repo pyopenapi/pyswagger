@@ -1,5 +1,6 @@
 from __future__ import absolute_import
-from .base import BaseObj
+from .base import BaseObj, DataTypeObj
+from .base import Items # make caller import from here
 
 
 class Scope(BaseObj):
@@ -72,15 +73,14 @@ class ResponseMessage(BaseObj):
     __swagger_fields__ = ['code', 'message', 'responseModel']
 
 
-class Parameter(BaseObj):
+class Parameter(DataTypeObj):
     """ Parameter Object
     """
 
     __swagger_fields__ = ['paramType', 'name', 'required', 'allowMultiple']
-    __swagger_data_type_fields__ = True
 
 
-class Operation(BaseObj):
+class Operation(DataTypeObj):
     """ Operation Object
     """
 
@@ -94,7 +94,6 @@ class Operation(BaseObj):
         'consumes',
         'deprecated'
     ]
-    __swagger_data_type_fields__ = True
 
 
 class Api(BaseObj):
@@ -104,11 +103,11 @@ class Api(BaseObj):
     __swagger_fields__ = ['path', 'operations']
 
 
-class Property(BaseObj):
+class Property(DataTypeObj):
     """ Property Object
     """
 
-    __swagger_data_type_fields__ = True
+    __swagger_fields__ = []
 
 
 class Model(BaseObj):
