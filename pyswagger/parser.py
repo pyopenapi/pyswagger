@@ -170,7 +170,9 @@ class InfoContext(Context):
 class ResourceListContext(Context):
     """ Context of Resource List Object
     """
-    __swagger_child__ = [('authorizations', AuthorizationContext)]
+    __swagger_child__ = [
+        ('info', InfoContext),
+        ('authorizations', AuthorizationContext)]
     __swagger_required__ = ['swaggerVersion', 'apis']
 
     def __init__(self, parent, getter):

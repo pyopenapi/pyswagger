@@ -19,10 +19,15 @@ class Context(list):
     def __init__(self, parent_obj, backref):
         self._parent_obj = parent_obj
         self._backref = backref
-        self._obj = {}
+        self.__reset_obj()
 
     def __enter__(self):
         return self
+
+    def __reset_obj(self):
+        """
+        """
+        self._obj = {}
 
     def back2parent(self, parent_obj, backref):
         """ update what we get as a reference object,
@@ -38,6 +43,8 @@ class Context(list):
             # TODO: check for uniqueness
         else:
             parent_obj[backref] = obj
+
+        self.__reset_obj()
 
     def __exit__(self, exc_type, exc_value, traceback):
         return self.back2parent(self._parent_obj, self._backref)
@@ -74,8 +81,11 @@ class Context(list):
                         ctx.parse(obj=nested_obj)
 
         # update _obj with obj
-        for key in (set(obj.keys()) - set(self._obj.keys())):
-            self._obj[key] = obj[key]
+        if self._obj != None:
+            for key in (set(obj.keys()) - set(self._obj.keys())):
+                self._obj[key] = obj[key]
+        else:
+            self._obj = obj
 
 
 class BaseObj(object):
@@ -100,15 +110,14 @@ class BaseObj(object):
             if hasattr(self, f):
                 raise AttributeError('This attribute already exists:' + f)
 
-            new_name = '__' + f
+            new_name = '_' + self.__class__.__name__ + '__' + f
 
             if required:
                 setattr(self, new_name, ctx._obj[f])
             else:
                 setattr(self, new_name, ctx._obj.get(f, None))
 
-            setattr(self, f, property(lambda self: getattr(self, new_name)))
-
+            setattr(self.__class__, f, property(lambda self: getattr(self, new_name)))
 
         # handle required fields
         required = set(ctx.__swagger_required__) & set(self.__swagger_fields__)
