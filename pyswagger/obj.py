@@ -89,7 +89,7 @@ class Operation(BaseObj):
         'nickname',
         'authorizations',
         'parameters',
-        'ResponseMessages',
+        'responseMessages',
         'produces',
         'consumes',
         'deprecated'
@@ -127,11 +127,29 @@ class Resource(BaseObj):
         'apiVersion',
         'basePath',
         'resourcePath',
-        'apis',
         'models',
         'produces',
         'consumes',
         'authorizations']
+
+    def __init__(self, ctx):
+        """ The original structure of API object is very bad
+        for seeking nickname for operations. Since nickname is unique
+        in one Resource, we can just make it flat.
+        """
+        super(Resource, self).__init__(ctx)
+
+        new_api = {}
+        for api in ctx._obj['apis']:
+            for op in api.operations:
+                name = op.nickname
+                if name in new_api.keys():
+                    raise ValueError('duplication operation found: ' + name)
+
+                op.add_field('path', api.path)
+                new_api[name] = op
+
+        self.add_field('apis', new_api)
 
 
 class Info(BaseObj):

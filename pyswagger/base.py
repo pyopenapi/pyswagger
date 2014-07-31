@@ -127,28 +127,24 @@ class BaseObj(object):
         if not issubclass(type(ctx), Context):
             raise TypeError('should provide args[0] as Context, not: ' + ctx.__class__.__name__)
 
-        def add_field(f, required=False):
-            if hasattr(self, f):
-                raise AttributeError('This attribute already exists:' + f)
-
-            new_name = '_' + self.__class__.__name__ + '__' + f
-
-            if required:
-                setattr(self, new_name, ctx._obj[f])
-            else:
-                setattr(self, new_name, ctx._obj.get(f, None))
-
-            setattr(self.__class__, f, property(lambda self: getattr(self, new_name)))
-
         # handle required fields
         required = set(ctx.__swagger_required__) & set(self.__swagger_fields__)
         for field in required:
-            add_field(field, required=True)
+            self.add_field(field, ctx._obj[field])
 
         # handle not-required fields
         not_required = set(self.__swagger_fields__) - set(ctx.__swagger_required__)
         for field in not_required:
-            add_field(field)
+            self.add_field(field, ctx._obj.get(field, None))
 
+    def add_field(self, f, obj):
+        """ add a field
+        """
+        if hasattr(self, f):
+            raise AttributeError('This attribute already exists:' + f)
 
+        new_name = '_' + self.__class__.__name__ + '__' + f
+
+        setattr(self, new_name, obj)
+        setattr(self.__class__, f, property(lambda self: getattr(self, new_name)))
 
