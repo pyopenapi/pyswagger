@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from datetime import date, datetime
+import six
 
 
 class Context(list):
@@ -113,7 +113,11 @@ class BaseObj(object):
 
     __swagger_fields__: list of names of fields, we will skip fields not
     in this list.
+    __swagger_rename__: fields that need re-named.
     """
+
+    __swagger_rename__ = {}
+    __swagger_fields__ = []
 
     def __init__(self, ctx):
         super(BaseObj, self).__init__()
@@ -123,39 +127,55 @@ class BaseObj(object):
 
         # handle required fields
         for field in set(ctx.__swagger_required__) & set(self.__swagger_fields__):
-            self.add_field(field, ctx._obj[field])
+            self.update_field(field, ctx._obj[field])
 
         # handle not-required fields
         for field in set(self.__swagger_fields__) - set(ctx.__swagger_required__):
-            self.add_field(field, ctx._obj.get(field, None))
+            self.update_field(field, ctx._obj.get(field, None))
 
-    def add_field(self, f, obj):
-        """ add a field
+    def get_private_name(self, f):
+        f = self.__swagger_rename__[f] if f in self.__swagger_rename__.keys() else f
+        return '_' + self.__class__.__name__ + '__' + f
+ 
+    def update_field(self, f, obj):
+        """ update a field
         """
-        if hasattr(self, f):
-            raise AttributeError('This attribute already exists:' + f)
-
-        new_name = '_' + self.__class__.__name__ + '__' + f
-
-        setattr(self, new_name, obj)
-        setattr(self.__class__, f, property(lambda self: getattr(self, new_name)))
+        setattr(self, self.get_private_name(f), obj)
 
 
-class Items(BaseObj):
+def _method_(name):
+    """ getter factory """
+    def _getter_(self):
+        return getattr(self, self.get_private_name(name))
+    return _getter_
+
+
+class Field(type):
+    """ metaclass to init fields
+    """
+    def __new__(metacls, name, bases, spc):
+        def init_fields(fields, rename):
+            for f in fields:
+                f = rename[f] if f in rename.keys() else f
+                spc[f] = property(_method_(f))
+
+        rename = spc['__swagger_rename__'] if '__swagger_rename__' in spc.keys() else {}
+        if '__swagger_fields__' in spc.keys():
+            init_fields(spc['__swagger_fields__'], rename)
+
+        for b in bases:
+            fields = b.__swagger_fields__ if hasattr(b, '__swagger_fields__') else {}
+            rename = b.__swagger_rename__ if hasattr(b, '__swagger_rename__') else {}
+            init_fields(fields, rename)
+
+        return type.__new__(metacls, name, bases, spc)
+
+
+class Items(six.with_metaclass(Field, BaseObj)):
     """ Items Object
     """
-    __swagger_fields__ = ['type']
-
-    def __init__(self, ctx):
-        super(Items, self).__init__(ctx)
-
-        if hasattr(self, 'ref'):
-            raise ValueError('Data Type Field duplicated: ref')
-
-        # almost every data field is not required, we just
-        # need to make sure either 'type' or '$ref' is shown.
-        local_obj = ctx._obj.get('$ref', None)
-        self.add_field('ref', local_obj)
+    __swagger_fields__ = ['type', '$ref']
+    __swagger_rename__ = {'$ref': 'ref'}
 
 
 class ItemsContext(Context):
@@ -179,6 +199,7 @@ class DataTypeObj(BaseObj):
         'maximum',
         'uniqueItems'
     ]
+    __swagger_rename__ = {'$ref': 'ref'}
 
     def __init__(self, ctx):
         super(DataTypeObj, self).__init__(ctx)
@@ -190,15 +211,8 @@ class DataTypeObj(BaseObj):
 
         type_fields = set(DataTypeObj.__swagger_fields__) - set(ctx.__swagger_required__)
         for field in type_fields:
-            if hasattr(self, field):
-                raise ValueError('Data Type Field duplicated: ' + field)
-
-            # almost every data field is not required, we just
-            # need to make sure either 'type' or '$ref' is shown.
+            # almost every data field is not required.
+            # TODO: need to make sure either 'type' or '$ref' is shown.
             local_obj = ctx._obj.get(field, None)
-
-            # '$ref' is an invalid name of python attribute.
-            field = 'ref' if field == '$ref' else field
-
-            self.add_field(field, local_obj)
+            self.update_field(field, local_obj)
 

@@ -1,86 +1,96 @@
 from __future__ import absolute_import
-from .base import BaseObj, DataTypeObj
+from .base import BaseObj, DataTypeObj, Field
 from .base import Items # make caller import from here
+import six
 
 
-class Scope(BaseObj):
+class Scope(six.with_metaclass(Field, BaseObj)):
     """ Scope Object
     """
 
     __swagger_fields__ = ['scope']
 
 
-class LoginEndpoint(BaseObj):
+class LoginEndpoint(six.with_metaclass(Field, BaseObj)):
+
     """ LoginEndpoint Object
     """
 
     __swagger_fields__ = ['url']
 
 
-class Implicit(BaseObj):
+class Implicit(six.with_metaclass(Field, BaseObj)):
+
     """ Implicit Object
     """
 
     __swagger_fields__ = ['loginEndpoint', 'tokenName']
 
 
-class TokenRequestEndpoint(BaseObj):
+class TokenRequestEndpoint(six.with_metaclass(Field, BaseObj)):
+
     """ TokenRequestEndpoint Object
     """
 
     __swagger_fields__ = ['url', 'clientIdName', 'clientSecretName']
 
 
-class TokenEndpoint(BaseObj):
+class TokenEndpoint(six.with_metaclass(Field, BaseObj)):
+
     """ TokenEndpoint Object
     """
 
     __swagger_fields__ = ['url', 'tokenName']
 
 
-class AuthorizationCode(BaseObj):
+class AuthorizationCode(six.with_metaclass(Field, BaseObj)):
+
     """ AuthorizationCode Object
     """
 
     __swagger_fields__ = ['tokenRequestEndpoint', 'tokenEndpoint']
 
 
-class GrantType(BaseObj):
+class GrantType(six.with_metaclass(Field, BaseObj)):
+
     """ GrantType Object
     """
 
     __swagger_fields__ = ['implicit', 'authorization_code']
 
 
-class Authorizations(BaseObj):
+class Authorizations(six.with_metaclass(Field, BaseObj)):
+
     """ Authorizations Object
     """
 
     __swagger_fields__ = ['scope']
 
 
-class Authorization(BaseObj):
+class Authorization(six.with_metaclass(Field, BaseObj)):
+
     """ Authorization Object
     """
 
     __swagger_fields__ = ['type', 'passAs', 'keyname', 'scopes', 'grantTypes']
 
 
-class ResponseMessage(BaseObj):
+class ResponseMessage(six.with_metaclass(Field, BaseObj)):
+
     """ ResponseMessage Object
     """
 
     __swagger_fields__ = ['code', 'message', 'responseModel']
 
 
-class Parameter(DataTypeObj):
+class Parameter(six.with_metaclass(Field, DataTypeObj)):
     """ Parameter Object
     """
 
     __swagger_fields__ = ['paramType', 'name', 'required', 'allowMultiple']
 
 
-class Operation(DataTypeObj):
+class Operation(six.with_metaclass(Field, DataTypeObj)):
     """ Operation Object
     """
 
@@ -92,38 +102,45 @@ class Operation(DataTypeObj):
         'responseMessages',
         'produces',
         'consumes',
-        'deprecated'
+        'deprecated',
+
+        # path from Api object
+        'path'
     ]
 
 
-class Api(BaseObj):
+class Api(six.with_metaclass(Field, BaseObj)):
+
     """ Api Object
     """
 
     __swagger_fields__ = ['path', 'operations']
 
 
-class Property(DataTypeObj):
+class Property(six.with_metaclass(Field,DataTypeObj)):
     """ Property Object
     """
 
     __swagger_fields__ = []
 
 
-class Model(BaseObj):
+class Model(six.with_metaclass(Field, BaseObj)):
+
     """ Model Object
     """
 
     __swagger_fields__ = ['id', 'required', 'properties', 'subTypes', 'discriminator']
 
 
-class Resource(BaseObj):
+class Resource(six.with_metaclass(Field, BaseObj)):
+
     """ Resource Object
     """
 
     __swagger_fields__ = [
         'swaggerVersion',
         'apiVersion',
+        'apis',
         'basePath',
         'resourcePath',
         'models',
@@ -145,20 +162,21 @@ class Resource(BaseObj):
                 if name in new_api.keys():
                     raise ValueError('duplication operation found: ' + name)
 
-                op.add_field('path', api.path)
+                op.update_field('path', api.path)
                 new_api[name] = op
 
-        self.add_field('apis', new_api)
+        self.update_field('apis', new_api)
 
 
-class Info(BaseObj):
+class Info(six.with_metaclass(Field, BaseObj)):
+
     """ Info Object
     """
 
     __swagger_fields__ = ['title', 'termsOfServiceUrl', 'contact', 'license', 'licenseUrl']
 
 
-class  ResourceList(BaseObj):
+class ResourceList(six.with_metaclass(Field, BaseObj)):
     """ Resource List Object
     """
     __swagger_fields__ = ['swaggerVersion', 'apis', 'apiVersion', 'info', 'authorizations']
