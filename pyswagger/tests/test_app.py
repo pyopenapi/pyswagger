@@ -10,7 +10,12 @@ from pyswagger.obj import (
     LoginEndpoint,
     TokenRequestEndpoint,
     TokenEndpoint,
-    Resource
+    Resource,
+    Operation,
+    Parameter,
+    ResponseMessage,
+    Authorizations,
+    Model
 )
 import unittest
 
@@ -102,5 +107,55 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_operation(self):
         """ operation """
-        pass
+        pet = app.apis['pet']
+        self.assertItemsEqual(pet.apis.keys(), (
+            'updatePet',
+            'addPet',
+            'findPetsByStatus',
+            'findPetsByTags',
+            'partialUpdate',
+            'updatePetWithForm',
+            'deletePet',
+            'getPetById',
+            'uploadFile'
+        ))
+
+        updatePet = pet.apis['updatePet']
+        self.assertEqual(updatePet.path, '/pet')
+        self.assertEqual(updatePet.method, 'PUT')
+        with self.assertRaises(AttributeError):
+            updatePet.summary
+        with self.assertRaises(AttributeError):
+            updatePet.note
+
+    def test_parameter(self):
+        """ parameter """
+        p = app.apis['pet'].apis['updatePet'].parameters[0]
+        self.assertIsInstance(p, Parameter)
+        self.assertEqual(p.paramType, 'body')
+        self.assertEqual(p.name, 'body')
+        self.assertEqual(p.required, True)
+        self.assertEqual(p.allowMultiple, False)
+        with self.assertRaises(AttributeError):
+            p.description
+
+    def test_response_message(self):
+        """ response message """
+        msg = app.apis['pet'].apis['updatePet'].responseMessages[0]
+        self.assertIsInstance(msg, ResponseMessage)
+        self.assertEqual(msg.code, 400)
+        self.assertEqual(msg.message, 'Invalid ID supplied')
+
+    def test_model(self):
+        """ model """
+        m = app.apis['pet'].models['Pet']
+        self.assertIsInstance(m, Model)
+        self.assertEqual(m.id, 'Pet');
+        self.assertItemsEqual(m.required, ['id', 'name'])
+
+    def test_authorization(self):
+        """ authorization """
+        auth = app.apis['pet'].apis['partialUpdate'].authorizations['oauth2'][0]
+        self.assertIsInstance(auth, Authorizations)
+        self.assertEqual(auth.scope, 'write:pets')
 
