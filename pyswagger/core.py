@@ -2,16 +2,12 @@ from __future__ import absolute_import
 from six.moves import urllib
 from .getter import HttpGetter, FileGetter
 from .parser import ResourceListContext
-from .base import BaseObj
 import inspect
 
 
-class SwaggerApp(BaseObj):
+class SwaggerApp(object):
     """ Resource Listing
     """
-
-    __swagger_fields__ = ['swaggerVersion', 'apis', 'apiVersion', 'info', 'authorizations']
-
     @classmethod
     def _create_(kls, url, getter=None):
         """
@@ -32,9 +28,14 @@ class SwaggerApp(BaseObj):
             # initialized getter object.
             local_getter = local_getter(url)
 
-        ctx = ResourceListContext(None, local_getter)
-        ctx.parse()
-        return kls(ctx)
+        tmp = {'_tmp_': {}}
+        with ResourceListContext(tmp, '_tmp_', local_getter) as ctx:
+            ctx.parse()
+
+        app = kls()
+        setattr(app, '_schema_', tmp['_tmp_'])
+
+        return app
 
 
 class SwaggerClient(object):

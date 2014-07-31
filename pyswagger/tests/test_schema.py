@@ -26,22 +26,22 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_resource_list(self):
         """ resource list """
-        self.assertIsInstance(app.info, Info)
-        self.assertEqual(app.info.title, 'Swagger Sample App')
-        self.assertEqual(app.swaggerVersion, '1.2')
+        self.assertIsInstance(app._schema_.info, Info)
+        self.assertEqual(app._schema_.info.title, 'Swagger Sample App')
+        self.assertEqual(app._schema_.swaggerVersion, '1.2')
         # description is ignored 
         with self.assertRaises(AttributeError):
-            app.info.description
+            app._schema_.info.description
 
     def test_authorizations(self):
         """ authorizations """
-        self.assertIn('oauth2', app.authorizations)
-        self.assertIsInstance(app.authorizations['oauth2'], Authorization)
-        self.assertEqual(app.authorizations['oauth2'].type, 'oauth2')
+        self.assertIn('oauth2', app._schema_.authorizations)
+        self.assertIsInstance(app._schema_.authorizations['oauth2'], Authorization)
+        self.assertEqual(app._schema_.authorizations['oauth2'].type, 'oauth2')
 
     def test_scope(self):
         """ scope """
-        auth = app.authorizations['oauth2']
+        auth = app._schema_.authorizations['oauth2']
         self.assertEqual(len(auth.scopes), 2)
         self.assertIsInstance(auth.scopes[0], Scope)
         self.assertIsInstance(auth.scopes[0], Scope)
@@ -52,30 +52,30 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_grant_type(self):
         """ grant type """
-        auth = app.authorizations['oauth2']
+        auth = app._schema_.authorizations['oauth2']
         self.assertIsInstance(auth.grantTypes, GrantType)
 
     def test_implicit(self):
         """ implicit """
-        grant = app.authorizations['oauth2'].grantTypes
+        grant = app._schema_.authorizations['oauth2'].grantTypes
         self.assertIsInstance(grant.implicit, Implicit)
         self.assertEqual(grant.implicit.tokenName, 'access_token')
 
     def test_login_endpoint(self):
         """ login endpoint """
-        implicit = app.authorizations['oauth2'].grantTypes.implicit
+        implicit = app._schema_.authorizations['oauth2'].grantTypes.implicit
         self.assertIsInstance(implicit.loginEndpoint, LoginEndpoint)
         self.assertEqual(implicit.loginEndpoint.url,
             'http://petstore.swagger.wordnik.com/oauth/dialog')
 
     def test_authorization_code(self):
         """ authorization code """
-        grant = app.authorizations['oauth2'].grantTypes
+        grant = app._schema_.authorizations['oauth2'].grantTypes
         self.assertIsInstance(grant.authorization_code, AuthorizationCode)
 
     def test_token_request_endpoint(self):
         """ token request endpoint """
-        auth = app.authorizations['oauth2'].grantTypes.authorization_code
+        auth = app._schema_.authorizations['oauth2'].grantTypes.authorization_code
         self.assertIsInstance(auth.tokenRequestEndpoint,TokenRequestEndpoint)
         self.assertEqual(auth.tokenRequestEndpoint.url,
             'http://petstore.swagger.wordnik.com/oauth/requestToken')
@@ -84,7 +84,7 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_token_endpoint(self):
         """ token endpoint """
-        auth = app.authorizations['oauth2'].grantTypes.authorization_code
+        auth = app._schema_.authorizations['oauth2'].grantTypes.authorization_code
         self.assertIsInstance(auth.tokenEndpoint, TokenEndpoint)
         self.assertEqual(auth.tokenEndpoint.url,
             'http://petstore.swagger.wordnik.com/oauth/token')
@@ -92,7 +92,7 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_resource_pet(self):
         """ resource """
-        pet = app.apis['pet']
+        pet = app._schema_.apis['pet']
         self.assertIsInstance(pet, Resource)
         self.assertEqual(pet.swaggerVersion, '1.2')
         self.assertEqual(pet.apiVersion, '1.0.0')
@@ -105,7 +105,7 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_operation(self):
         """ operation """
-        pet = app.apis['pet']
+        pet = app._schema_.apis['pet']
         self.assertItemsEqual(pet.apis.keys(), (
             'updatePet',
             'addPet',
@@ -129,7 +129,7 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_parameter(self):
         """ parameter """
-        p = app.apis['pet'].apis['updatePet'].parameters[0]
+        p = app._schema_.apis['pet'].apis['updatePet'].parameters[0]
         self.assertIsInstance(p, Parameter)
         self.assertEqual(p.paramType, 'body')
         self.assertEqual(p.name, 'body')
@@ -140,21 +140,21 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_response_message(self):
         """ response message """
-        msg = app.apis['pet'].apis['updatePet'].responseMessages[0]
+        msg = app._schema_.apis['pet'].apis['updatePet'].responseMessages[0]
         self.assertIsInstance(msg, ResponseMessage)
         self.assertEqual(msg.code, 400)
         self.assertEqual(msg.message, 'Invalid ID supplied')
 
     def test_model(self):
         """ model """
-        m = app.apis['pet'].models['Pet']
+        m = app._schema_.apis['pet'].models['Pet']
         self.assertIsInstance(m, Model)
         self.assertEqual(m.id, 'Pet');
         self.assertItemsEqual(m.required, ['id', 'name'])
 
     def test_authorization(self):
         """ authorization """
-        auth = app.apis['pet'].apis['partialUpdate'].authorizations['oauth2'][0]
+        auth = app._schema_.apis['pet'].apis['partialUpdate'].authorizations['oauth2'][0]
         self.assertIsInstance(auth, Authorizations)
         self.assertEqual(auth.scope, 'write:pets')
 

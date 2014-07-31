@@ -17,7 +17,8 @@ from .obj import (
     Property,
     Model,
     Resource,
-    Info)
+    Info,
+    ResourceList)
 import six
 
 
@@ -168,13 +169,14 @@ class InfoContext(Context):
 class ResourceListContext(Context):
     """ Context of Resource List Object
     """
+    __swagger_ref_object__ = ResourceList
     __swagger_child__ = [
         ('info', InfoContext),
         ('authorizations', AuthorizationContext)]
     __swagger_required__ = ['swaggerVersion', 'apis']
 
-    def __init__(self, parent, getter):
-        super(ResourceListContext, self).__init__(None, None)
+    def __init__(self, parent, backref, getter):
+        super(ResourceListContext, self).__init__(parent, backref)
         self.__getter = getter
 
     def parse(self, obj=None):

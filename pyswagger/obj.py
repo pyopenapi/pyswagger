@@ -152,7 +152,14 @@ class Resource(BaseObj):
 
 
 class Info(BaseObj):
-    """
+    """ Info Object
     """
 
     __swagger_fields__ = ['title', 'termsOfServiceUrl', 'contact', 'license', 'licenseUrl']
+
+
+class  ResourceList(BaseObj):
+    """ Resource List Object
+    """
+    __swagger_fields__ = ['swaggerVersion', 'apis', 'apiVersion', 'info', 'authorizations']
+
