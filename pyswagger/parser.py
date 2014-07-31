@@ -183,10 +183,12 @@ class ResourceListContext(Context):
         obj, _ = six.advance_iterator(self.__getter)
         super(ResourceListContext, self).parse(obj=obj)
 
+        # replace each element in 'apis' with Resource
+        self._obj['apis'] = {}
         # get into resource object
         for obj, name in self.__getter:
             # here we assume Resource is always a dict
-            self._obj[name] = {}
-            with ResourceContext(self._obj, name) as ctx:
+            self._obj['apis'][name] = {}
+            with ResourceContext(self._obj['apis'], name) as ctx:
                 ctx.parse(obj=obj)
 
