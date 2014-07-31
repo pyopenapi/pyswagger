@@ -88,6 +88,27 @@ class Context(list):
             self._obj = obj
 
 
+class NamedContext(Context):
+    """ for named object
+    """
+    def parse(self, obj=None):
+        if not isinstance(obj, dict):
+            raise ValueError('invalid obj passed: ' + str(type(obj)))
+
+        for k, v in obj.iteritems():
+            if isinstance(v, list):
+                self._parent_obj[self._backref][k] = []
+                for item in v:
+                    super(NamedContext, self).parse(item)
+                    self.back2parent(self._parent_obj[self._backref], k)
+            elif isinstance(v, dict):
+                super(NamedContext, self).parse(v)
+                self._parent_obj[self._backref][k] = None
+                self.back2parent(self._parent_obj[self._backref], k)
+            else:
+                raise ValueError('Unknown item type: ' + str(type(v)))
+
+
 class BaseObj(object):
     """ Base implementation of all referencial objects,
     make all properties readonly.
@@ -130,23 +151,4 @@ class BaseObj(object):
             add_field(field)
 
 
-class NamedContext(Context):
-    """ for named object
-    """
-    def parse(self, obj=None):
-        if not isinstance(obj, dict):
-            raise ValueError('invalid obj passed: ' + str(type(obj)))
-
-        for k, v in obj.iteritems():
-            if isinstance(v, list):
-                self._parent_obj[self._backref][k] = []
-                for item in v:
-                    super(NamedContext, self).parse(item)
-                    self.back2parent(self._parent_obj[self._backref], k)
-            elif isinstance(v, dict):
-                super(NamedContext, self).parse(v)
-                self._parent_obj[self._backref][k] = None
-                self.back2parent(self._parent_obj[self._backref], k)
-            else:
-                raise ValueError('Unknown item type: ' + str(type(v)))
 
