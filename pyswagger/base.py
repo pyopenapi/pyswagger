@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from datetime import date, datetime
 
 
 class Context(list):
@@ -121,13 +122,11 @@ class BaseObj(object):
             raise TypeError('should provide args[0] as Context, not: ' + ctx.__class__.__name__)
 
         # handle required fields
-        required = set(ctx.__swagger_required__) & set(self.__swagger_fields__)
-        for field in required:
+        for field in set(ctx.__swagger_required__) & set(self.__swagger_fields__):
             self.add_field(field, ctx._obj[field])
 
         # handle not-required fields
-        not_required = set(self.__swagger_fields__) - set(ctx.__swagger_required__)
-        for field in not_required:
+        for field in set(self.__swagger_fields__) - set(ctx.__swagger_required__):
             self.add_field(field, ctx._obj.get(field, None))
 
     def add_field(self, f, obj):
