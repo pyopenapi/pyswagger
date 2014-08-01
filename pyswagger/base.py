@@ -174,7 +174,7 @@ def _method_(name):
     return _getter_
 
 
-class Field(type):
+class FieldMeta(type):
     """ metaclass to init fields
     """
     def __new__(metacls, name, bases, spc):
@@ -195,7 +195,7 @@ class Field(type):
         return type.__new__(metacls, name, bases, spc)
 
 
-class Items(six.with_metaclass(Field, BaseObj)):
+class Items(six.with_metaclass(FieldMeta, BaseObj)):
     """ Items Object
     """
     __swagger_fields__ = ['type', '$ref']
