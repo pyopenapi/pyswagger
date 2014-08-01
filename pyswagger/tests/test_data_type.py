@@ -21,11 +21,11 @@ class DataTypeTestCase(unittest.TestCase):
     def test_parameter(self):
         """ parameter """ 
         p = app._schema_.apis['pet'].apis['findPetsByStatus'].parameters[0]
-        self.assertIsInstance(p, Parameter)
+        self.assertTrue(isinstance(p, Parameter))
         self.assertEqual(p.required, True)
         self.assertEqual(p.defaultValue, 'available')
         self.assertEqual(p.type, 'string')
-        self.assertIsInstance(p.enum, list)
+        self.assertTrue(isinstance(p.enum, list))
         self.assertEqual(p.enum, ['available', 'pending', 'sold'])
 
     def test_property(self):
@@ -42,11 +42,11 @@ class DataTypeTestCase(unittest.TestCase):
         self.assertEqual(p['name'].type, 'string')
         # photoUrls
         self.assertEqual(p['photoUrls'].type, 'array')
-        self.assertIsInstance(p['photoUrls'].items, Items)
+        self.assertTrue(isinstance(p['photoUrls'].items, Items))
         self.assertEqual(p['photoUrls'].items.type, 'string')
         # tag
         self.assertEqual(p['tags'].type, 'array')
-        self.assertIsInstance(p['tags'].items, Items)
+        self.assertTrue(isinstance(p['tags'].items, Items))
         self.assertEqual(p['tags'].items.ref, 'Tag')
         # status
         self.assertEqual(p['status'].type, 'string')
