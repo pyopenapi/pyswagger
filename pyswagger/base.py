@@ -122,6 +122,9 @@ class BaseObj(object):
     def __init__(self, ctx):
         super(BaseObj, self).__init__()
 
+        # init parent reference
+        self._parent_ = None
+
         if not issubclass(type(ctx), Context):
             raise TypeError('should provide args[0] as Context, not: ' + ctx.__class__.__name__)
 
@@ -132,6 +135,27 @@ class BaseObj(object):
         # handle not-required fields
         for field in set(self.__swagger_fields__) - set(ctx.__swagger_required__):
             self.update_field(field, ctx._obj.get(field, None))
+
+        # set self as childrent's parent
+        for name, cls in ctx.__swagger_child__:
+            obj = getattr(self, name)
+
+            def assign_parent(obj, cls, parent):
+                if isinstance(obj, list):
+                    for v in obj:
+                        assign_parent(v, cls, parent)
+                else:
+                    if not isinstance(obj, cls.__swagger_ref_object__):
+                        raise ValueError('Unknown child found: ' + name + ', with class:' + obj.__class__.__name__)
+                    obj._parent_ = parent
+
+            if isinstance(obj, dict):
+                # Objects from NamedContext
+                for v in obj.values():
+                    assign_parent(v, cls, self)
+            else:
+                assign_parent(obj, cls, self)
+
 
     def get_private_name(self, f):
         f = self.__swagger_rename__[f] if f in self.__swagger_rename__.keys() else f

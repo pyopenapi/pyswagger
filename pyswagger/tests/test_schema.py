@@ -159,3 +159,9 @@ class PropertyTestCase(unittest.TestCase):
         self.assertTrue(isinstance(app.user, Resource))
         self.assertTrue(isinstance(app.store, Resource))
 
+    def test_parent(self):
+        """ make sure parent is assigned """
+        self.assertTrue(app.pet.models['Pet']._parent_ is app.pet)
+        self.assertTrue(app._schema_.info._parent_ is app._schema_)
+
+
