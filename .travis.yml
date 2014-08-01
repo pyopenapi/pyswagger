@@ -6,4 +6,7 @@ install:
     - pip install -r requirements-dev.txt
     - pip install coveralls
 script:
-    py.test --cov=pyswagger pyswagger/tests
+    - py.test --cov=pyswagger pyswagger/tests
+after_success:
+    - coveralls
+
