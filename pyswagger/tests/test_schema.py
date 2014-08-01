@@ -30,8 +30,7 @@ class PropertyTestCase(unittest.TestCase):
         self.assertEqual(app._schema_.info.title, 'Swagger Sample App')
         self.assertEqual(app._schema_.swaggerVersion, '1.2')
         # description is ignored 
-        with self.assertRaises(AttributeError):
-            app._schema_.info.description
+        self.assertRaises(AttributeError, getattr, app._schema_.info, 'description')
 
     def test_authorizations(self):
         """ authorizations """
@@ -47,8 +46,7 @@ class PropertyTestCase(unittest.TestCase):
         self.assertTrue(isinstance(auth.scopes[0], Scope))
         self.assertEqual(auth.scopes[0].scope, 'write:pets')
         self.assertEqual(auth.scopes[1].scope, 'read:pets')
-        with self.assertRaises(AttributeError):
-            auth.scopes[1].description
+        self.assertRaises(AttributeError, getattr, auth.scopes[1], 'description')
 
     def test_grant_type(self):
         """ grant type """
@@ -122,10 +120,8 @@ class PropertyTestCase(unittest.TestCase):
         self.assertTrue(isinstance(updatePet, Operation))
         self.assertEqual(updatePet.path, '/pet')
         self.assertEqual(updatePet.method, 'PUT')
-        with self.assertRaises(AttributeError):
-            updatePet.summary
-        with self.assertRaises(AttributeError):
-            updatePet.note
+        self.assertRaises(AttributeError, getattr, updatePet, 'summary')
+        self.assertRaises(AttributeError, getattr, updatePet, 'note')
 
     def test_parameter(self):
         """ parameter """
@@ -135,8 +131,7 @@ class PropertyTestCase(unittest.TestCase):
         self.assertEqual(p.name, 'body')
         self.assertEqual(p.required, True)
         self.assertEqual(p.allowMultiple, False)
-        with self.assertRaises(AttributeError):
-            p.description
+        self.assertRaises(AttributeError, getattr, p, 'description')
 
     def test_response_message(self):
         """ response message """
