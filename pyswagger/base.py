@@ -166,6 +166,39 @@ class BaseObj(object):
         """
         setattr(self, self.get_private_name(f), obj)
 
+    @property
+    def _field_names_(self):
+        """ get list of field names
+        """
+        ret = set()
+        for b in self.__class__.__mro__:
+            if hasattr(b, '__swagger_fields__'):
+                ret = ret | set(b.__swagger_fields__)
+
+        return ret
+
+    @property
+    def _children_(self):
+        """ get list of children
+        """
+        ret = []
+        names = self._field_names_
+
+        def down(name, obj):
+            if isinstance(obj, BaseObj):
+                ret.append((name, obj))
+            elif isinstance(obj, list):
+                for v in obj:
+                    down(name, v)
+            elif isinstance(obj, dict):
+                for k, v in obj.iteritems():
+                    down(k, v)
+
+        for n in names:
+            down(None, getattr(self, n))
+
+        return ret
+
 
 def _method_(name):
     """ getter factory """
