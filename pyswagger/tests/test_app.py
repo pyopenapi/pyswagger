@@ -14,7 +14,31 @@ class SwaggerAppTestCase(unittest.TestCase):
 
     def test_field_name(self):
         """ field_name """
-        self.assertEqual(app._schema_._field_names_, set(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
+        self.assertEqual(sorted(app._schema_._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
+
+    def test_field_rename(self):
+        """ renamed field name """
+        op = app._schema_.apis['pet'].apis['updatePet']
+        self.assertEqual(sorted(op._field_names_), sorted([
+            'authorizations',
+            'consumes',
+            'defaultValue',
+            'deprecated',
+            'enum',
+            'format',
+            'items',
+            'maximum',
+            'method',
+            'minimum',
+            'nickname',
+            'parameters',
+            'path',
+            'produces',
+            'ref',
+            'responseMessages',
+            'type',
+            'uniqueItems'
+        ]))
 
     def test_children(self):
         """ children """

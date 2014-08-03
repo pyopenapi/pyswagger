@@ -117,7 +117,7 @@ class Api(six.with_metaclass(FieldMeta, BaseObj)):
     __swagger_fields__ = ['path', 'operations']
 
 
-class Property(six.with_metaclass(FieldMeta,DataTypeObj)):
+class Property(six.with_metaclass(FieldMeta, DataTypeObj)):
     """ Property Object
     """
 

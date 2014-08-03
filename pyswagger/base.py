@@ -170,10 +170,24 @@ class BaseObj(object):
     def _field_names_(self):
         """ get list of field names
         """
-        ret = set()
+        ret = []
+
+        def _merge(f, rename):
+            if not f:
+                return
+
+            if not rename:
+                ret.extend(f)
+            else:
+                for n in f:
+                    new_n = rename.get(n, None)
+                    ret.append(new_n) if new_n else ret.append(n)
+
         for b in self.__class__.__mro__:
-            if hasattr(b, '__swagger_fields__'):
-                ret = ret | set(b.__swagger_fields__)
+            _merge(
+                getattr(b, '__swagger_fields__', None),
+                getattr(b, '__swagger_rename__', None)
+            )
 
         return ret
 
