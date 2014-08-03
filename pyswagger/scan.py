@@ -1,0 +1,100 @@
+from __future__ import absolute_import
+from .base import BaseObj, FieldMeta
+
+
+def default_tree_traversal(app):
+    """ default tree traversal """
+    objs = [(None, app._schema_)]
+    while len(objs) > 0:
+        name, obj = objs.pop()
+
+        # get children
+        objs.extend(obj._children_)
+
+        yield name, obj
+
+tmp = None
+
+class Dispatcher(object):
+    """ Dispatcher
+    """
+    obj_route = {}
+    result_fn = [None]
+
+    @classmethod
+    def __add_route(cls, t, f):
+        """
+        """
+        if not type(t) is FieldMeta:
+            raise ValueError('target_cls should be derived from FieldMeta, but got:' + str(type(t)))
+
+        if not issubclass(t, BaseObj):
+            raise ValueError('target_cls should be a subclass of BaseObj, but got:' + str(t))
+
+        # allow register multiple handler function
+        # against one object
+        if t in cls.obj_route.keys():
+            cls.obj_route[t].append(f)
+        else:
+            cls.obj_route[t] = [f]
+
+    @classmethod
+    def register(cls, target):
+        """
+        """
+        def outer_fn(f):
+            # what we did is simple,
+            # register target_cls as key, and f as callback
+            # then keep this record in cls.
+            for t in target:
+                cls.__add_route(t, f)
+
+            # nothing is decorated. Just return original one.
+            return f
+
+        return outer_fn
+
+    @classmethod
+    def result(cls, f):
+        """
+        """
+
+        # avoid bound error
+        cls.result_fn = [f]
+        return f
+
+
+class Scanner(object):
+    """ Scanner
+    """
+    def __init__(self, app):
+        super(Scanner, self).__init__()
+        self.__app = app
+
+    @property
+    def app(self):
+        return self.__app
+
+    def __build_route(self, route):
+        """
+        """
+        ret = []
+        for r in route:
+            for attr in r.__class__.__dict__:
+                o = getattr(r, attr)
+                if type(o) == type and issubclass(o, Dispatcher):
+                    ret.append((r, o.obj_route, o.result_fn[0]))
+
+        return ret
+
+    def scan(self, route, nexter=default_tree_traversal):
+        """
+        """
+        merged_r = self.__build_route(route)
+        for name, obj in nexter(self.app):
+            for the_self, r, res in merged_r:
+                f = r.get(obj.__class__, None)
+                if f:
+                    for ff in f:
+                        res(the_self, ff(the_self, name, obj)) if res else ff(the_self, name, obj)
+
