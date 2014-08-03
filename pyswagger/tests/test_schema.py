@@ -34,7 +34,7 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_authorizations(self):
         """ authorizations """
-        self.assertIn('oauth2', app._schema_.authorizations)
+        self.assertTrue('oauth2' in app._schema_.authorizations)
         self.assertTrue(isinstance(app._schema_.authorizations['oauth2'], Authorization))
         self.assertEqual(app._schema_.authorizations['oauth2'].type, 'oauth2')
 
@@ -96,15 +96,15 @@ class PropertyTestCase(unittest.TestCase):
         self.assertEqual(pet.apiVersion, '1.0.0')
         self.assertEqual(pet.basePath, 'http://petstore.swagger.wordnik.com/api')
         self.assertEqual(pet.resourcePath, '/pet')
-        self.assertIn('application/json', pet.produces)
-        self.assertIn('application/xml', pet.produces)
-        self.assertIn('text/plain', pet.produces)
-        self.assertIn('text/html', pet.produces)
+        self.assertTrue('application/json' in pet.produces)
+        self.assertTrue('application/xml' in pet.produces)
+        self.assertTrue('text/plain' in pet.produces)
+        self.assertTrue('text/html' in pet.produces)
 
     def test_operation(self):
         """ operation """
         pet = app._schema_.apis['pet']
-        self.assertItemsEqual(pet.apis.keys(), (
+        self.assertEqual(sorted(pet.apis.keys()), sorted([
             'updatePet',
             'addPet',
             'findPetsByStatus',
@@ -113,7 +113,7 @@ class PropertyTestCase(unittest.TestCase):
             'updatePetWithForm',
             'deletePet',
             'getPetById',
-            'uploadFile'
+            'uploadFile']
         ))
 
         updatePet = pet.apis['updatePet']
@@ -145,7 +145,7 @@ class PropertyTestCase(unittest.TestCase):
         m = app._schema_.apis['pet'].models['Pet']
         self.assertTrue(isinstance(m, Model))
         self.assertEqual(m.id, 'Pet');
-        self.assertItemsEqual(m.required, ['id', 'name'])
+        self.assertItemsEqual(sorted(m.required), sorted(['id', 'name']))
 
     def test_authorization(self):
         """ authorization """
@@ -155,13 +155,10 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_shortcut(self):
         """ a short cut to Resource from SwaggerApp """
-        self.assertTrue(isinstance(app.pet, Resource))
-        self.assertTrue(isinstance(app.user, Resource))
-        self.assertTrue(isinstance(app.store, Resource))
 
     def test_parent(self):
         """ make sure parent is assigned """
-        self.assertTrue(app.pet.models['Pet']._parent_ is app.pet)
+        self.assertTrue(app._schema_.apis['pet'].models['Pet']._parent_ is app._schema_.apis['pet'])
         self.assertTrue(app._schema_.info._parent_ is app._schema_)
 
 
