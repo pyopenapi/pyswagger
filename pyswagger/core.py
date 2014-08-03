@@ -2,6 +2,8 @@ from __future__ import absolute_import
 from six.moves import urllib
 from .getter import HttpGetter, FileGetter
 from .parser import ResourceListContext
+from .scan import Scanner
+from .scanner import ConvertString
 import inspect
 
 
@@ -39,6 +41,10 @@ class SwaggerApp(object):
         # resources
         for name, res in app._schema_.apis.iteritems():
             setattr(app, name, res)
+
+        # convert types
+        s = Scanner(app)
+        s.scan(route=[ConvertString()])
 
         # TODO: model
 

@@ -103,8 +103,15 @@ class Scanner(object):
         merged_r = self.__build_route(route)
         for name, obj in nexter(self.app):
             for the_self, r, res in merged_r:
-                f = r.get(obj.__class__, None)
-                if f:
-                    for ff in f:
-                        res(the_self, ff(the_self, name, obj)) if res else ff(the_self, name, obj)
+
+                def handle_cls(cls):
+                    f = r.get(cls, None)
+                    if f:
+                        for ff in f:
+                            res(the_self, ff(the_self, name, obj)) if res else ff(the_self, name, obj)
+
+                for cls in obj.__class__.__mro__[:-1]:
+                    if cls is BaseObj:
+                        break
+                    handle_cls(cls)
 
