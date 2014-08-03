@@ -2,7 +2,7 @@ pyswagger
 =========
 
 [![Build Status](https://travis-ci.org/AntXlab/pyswagger.svg?branch=master)](https://travis-ci.org/AntXlab/pyswagger)
-[![Coverage](https://coveralls.io/repos/AntXlab/pyswagger/badge.png)](https://coveralls.io/r/AntXlab/pyswagger)
+[![Coverage Status](https://coveralls.io/repos/AntXlab/pyswagger/badge.png?branch=master)](https://coveralls.io/r/AntXlab/pyswagger?branch=master)
 
 A python REST client for swagger enabled rest API, which integrated with different kinds of http clients,
 ex. AsyncHTTPClient in tornado. For me, the use case is to unittest a torando REST server.
