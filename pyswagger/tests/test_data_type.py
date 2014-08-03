@@ -26,7 +26,7 @@ class DataTypeTestCase(unittest.TestCase):
         self.assertEqual(p.defaultValue, 'available')
         self.assertEqual(p.type, 'string')
         self.assertTrue(isinstance(p.enum, list))
-        self.assertEqual(p.enum, ['available', 'pending', 'sold'])
+        self.assertEqual(sorted(p.enum), sorted(['available', 'pending', 'sold']))
 
     def test_property(self):
         """ property """ 
@@ -50,5 +50,5 @@ class DataTypeTestCase(unittest.TestCase):
         self.assertEqual(p['tags'].items.ref, 'Tag')
         # status
         self.assertEqual(p['status'].type, 'string')
-        self.assertItemsEqual(p['status'].enum, ['available', 'pending', 'sold'])
+        self.assertEqual(sorted(p['status'].enum), sorted(['available', 'pending', 'sold']))
 
