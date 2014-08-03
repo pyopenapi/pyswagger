@@ -1,5 +1,6 @@
 from __future__ import absolute_import
-from .base import BaseObj, FieldMeta
+from .base import BaseObj
+import six
 
 
 def default_tree_traversal(app):
@@ -13,9 +14,21 @@ def default_tree_traversal(app):
 
         yield name, obj
 
-tmp = None
 
-class Dispatcher(object):
+class DispatcherMeta(type):
+    """ metaclass for Dispatcher
+    """
+    def __new__(metacls, name, bases, spc):
+        if 'obj_route' not in spc.keys():
+            # forcely create a new obj_route
+            # but not share the same one with parents.
+            spc['obj_route'] = {}
+            spc['result_fn'] = [None]
+
+        return type.__new__(metacls, name, bases, spc)
+
+
+class Dispatcher(six.with_metaclass(DispatcherMeta, object)):
     """ Dispatcher
     """
     obj_route = {}
@@ -25,9 +38,6 @@ class Dispatcher(object):
     def __add_route(cls, t, f):
         """
         """
-        if not type(t) is FieldMeta:
-            raise ValueError('target_cls should be derived from FieldMeta, but got:' + str(type(t)))
-
         if not issubclass(t, BaseObj):
             raise ValueError('target_cls should be a subclass of BaseObj, but got:' + str(t))
 
@@ -82,7 +92,7 @@ class Scanner(object):
         for r in route:
             for attr in r.__class__.__dict__:
                 o = getattr(r, attr)
-                if type(o) == type and issubclass(o, Dispatcher):
+                if type(o) == DispatcherMeta:
                     ret.append((r, o.obj_route, o.result_fn[0]))
 
         return ret
