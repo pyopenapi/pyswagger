@@ -145,7 +145,7 @@ class PropertyTestCase(unittest.TestCase):
         m = app._schema_.apis['pet'].models['Pet']
         self.assertTrue(isinstance(m, Model))
         self.assertEqual(m.id, 'Pet');
-        self.assertItemsEqual(sorted(m.required), sorted(['id', 'name']))
+        self.assertEqual(sorted(m.required), sorted(['id', 'name']))
 
     def test_authorization(self):
         """ authorization """
