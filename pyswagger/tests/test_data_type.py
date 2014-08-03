@@ -14,13 +14,13 @@ class DataTypeTestCase(unittest.TestCase):
 
     def test_operation(self):
         """ operation """ 
-        op = app._schema_.apis['pet'].apis['findPetsByStatus']
+        op = app.schema.apis['pet'].apis['findPetsByStatus']
         self.assertEqual(op.type, 'array')
         self.assertEqual(op.items.ref, 'Pet')
 
     def test_parameter(self):
         """ parameter """ 
-        p = app._schema_.apis['pet'].apis['findPetsByStatus'].parameters[0]
+        p = app.schema.apis['pet'].apis['findPetsByStatus'].parameters[0]
         self.assertTrue(isinstance(p, Parameter))
         self.assertEqual(p.required, True)
         self.assertEqual(p.defaultValue, 'available')
@@ -30,7 +30,7 @@ class DataTypeTestCase(unittest.TestCase):
 
     def test_property(self):
         """ property """ 
-        p = app._schema_.apis['pet'].models['Pet'].properties
+        p = app.schema.apis['pet'].models['Pet'].properties
         # id
         self.assertEqual(p['id'].type, 'integer')
         self.assertEqual(p['id'].format, 'int64')

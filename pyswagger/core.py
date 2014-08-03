@@ -34,19 +34,20 @@ class SwaggerApp(object):
         with ResourceListContext(tmp, '_tmp_', local_getter) as ctx:
             ctx.parse()
 
-        # schema
         app = kls()
-        setattr(app, '_schema_', tmp['_tmp_'])
-
-        # resources
-        for name, res in app._schema_.apis.iteritems():
-            setattr(app, name, res)
+        # __schema
+        setattr(app, '__schema', tmp['_tmp_'])
+        setattr(app.__class__, 'schema', property(lambda self: getattr(self, '__schema')))
+        # __resrc
+        setattr(app, '__resrc', app.schema.apis)
+        setattr(app.__class__, 'resrc', property(lambda self: getattr(self, '__resrc')))
 
         # convert types
         s = Scanner(app)
         s.scan(route=[ConvertString()])
 
         # TODO: model
+        # TODO: operation
 
         return app
 
