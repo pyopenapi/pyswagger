@@ -197,6 +197,20 @@ class PropertyTestCase(unittest.TestCase):
         ]))
         self.assertTrue(isinstance(app.m['pet!##!Category'], Model))
 
+    def test_scope_dict(self):
+        """ ScopeDict is a syntactic suger
+        to access scoped named object, ex. Operation, Model
+        """
+        # Operation
+        self.assertTrue(app.op['user', 'getUserByName'], Operation)
+        self.assertTrue(app.op['user', 'getUserByName'] is app.op['user!##!getUserByName'])
+        self.assertTrue(app.op['getUserByName'] is app.op['user!##!getUserByName'])
+
+        # Model
+        self.assertTrue(app.m['user', 'User'], Model)
+        self.assertTrue(app.m['user', 'User'] is app.m['user!##!User'])
+        self.assertTrue(app.m['User'] is app.m['user!##!User'])
+
     def test_parent(self):
         """ make sure parent is assigned """
         self.assertTrue(app.schema.apis['pet'].models['Pet']._parent_ is app.schema.apis['pet'])

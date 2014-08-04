@@ -4,6 +4,7 @@ from .getter import HttpGetter, FileGetter
 from .parser import ResourceListContext
 from .scan import Scanner
 from .scanner import ConvertString, TypeReduce
+from .utils import ScopeDict
 import inspect
 
 
@@ -64,9 +65,9 @@ class SwaggerApp(object):
         s.scan(route=[ConvertString(), tr])
 
         # TODO: model
-        setattr(app, '_' + kls.__name__ + '__m', tr.model)
+        setattr(app, '_' + kls.__name__ + '__m', ScopeDict(tr.model))
         # TODO: operation
-        setattr(app, '_' + kls.__name__ + '__op', tr.op)
+        setattr(app, '_' + kls.__name__ + '__op', ScopeDict(tr.op))
 
         return app
 
