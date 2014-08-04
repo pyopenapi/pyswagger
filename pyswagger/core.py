@@ -3,13 +3,29 @@ from six.moves import urllib
 from .getter import HttpGetter, FileGetter
 from .parser import ResourceListContext
 from .scan import Scanner
-from .scanner import ConvertString
+from .scanner import ConvertString, TypeReduce
 import inspect
 
 
 class SwaggerApp(object):
     """ Resource Listing
     """
+    @property
+    def schema(self):
+        return self.__schema
+
+    @property
+    def rs(self):
+        return self.__resrc
+
+    @property
+    def op(self):
+        return self.__op
+
+    @property
+    def m(self):
+        return self.__m
+
     @classmethod
     def _create_(kls, url, getter=None):
         """
@@ -36,18 +52,21 @@ class SwaggerApp(object):
 
         app = kls()
         # __schema
-        setattr(app, '__schema', tmp['_tmp_'])
-        setattr(app.__class__, 'schema', property(lambda self: getattr(self, '__schema')))
+        setattr(app, '_' + kls.__name__ + '__schema', tmp['_tmp_'])
         # __resrc
-        setattr(app, '__resrc', app.schema.apis)
-        setattr(app.__class__, 'resrc', property(lambda self: getattr(self, '__resrc')))
+        setattr(app, '_' + kls.__name__ + '__resrc', app.schema.apis)
+
+        # reducer for Operation & Model
+        tr = TypeReduce()
 
         # convert types
         s = Scanner(app)
-        s.scan(route=[ConvertString()])
+        s.scan(route=[ConvertString(), tr])
 
         # TODO: model
+        setattr(app, '_' + kls.__name__ + '__m', tr.model)
         # TODO: operation
+        setattr(app, '_' + kls.__name__ + '__op', tr.op)
 
         return app
 

@@ -154,10 +154,48 @@ class PropertyTestCase(unittest.TestCase):
         self.assertEqual(auth.scope, 'write:pets')
 
     def test_shortcut(self):
-        """ a short cut to Resource from SwaggerApp """
-        self.assertTrue(isinstance(app.resrc['pet'], Resource))
-        self.assertTrue(isinstance(app.resrc['user'], Resource))
-        self.assertTrue(isinstance(app.resrc['store'], Resource))
+        """ a short cut to Resource, Operation, Model from SwaggerApp """
+        # Resource
+        self.assertTrue(isinstance(app.rs['pet'], Resource))
+        self.assertTrue(isinstance(app.rs['user'], Resource))
+        self.assertTrue(isinstance(app.rs['store'], Resource))
+
+        # Operation
+        self.assertEqual(len(app.op.values()), 20)
+        self.assertEqual(sorted(app.op.keys()), sorted([
+            'pet!##!addPet',
+            'pet!##!deletePet',
+            'pet!##!findPetsByStatus',
+            'pet!##!findPetsByTags',
+            'pet!##!getPetById',
+            'pet!##!partialUpdate',
+            'pet!##!updatePet',
+            'pet!##!updatePetWithForm',
+            'pet!##!uploadFile',
+            'store!##!deleteOrder',
+            'store!##!getOrderById',
+            'store!##!placeOrder',
+            'user!##!createUser',
+            'user!##!createUsersWithArrayInput',
+            'user!##!createUsersWithListInput',
+            'user!##!deleteUser',
+            'user!##!getUserByName',
+            'user!##!loginUser',
+            'user!##!logoutUser',
+            'user!##!updateUser'
+        ]))
+        self.assertTrue(app.op['user!##!getUserByName'], Operation)
+
+        # Model
+        self.assertEqual(len(app.m.values()), 5)
+        self.assertEqual(sorted(app.m.keys()), sorted([
+            'pet!##!Category',
+            'pet!##!Pet',
+            'pet!##!Tag',
+            'store!##!Order',
+            'user!##!User'
+        ]))
+        self.assertTrue(isinstance(app.m['pet!##!Category'], Model))
 
     def test_parent(self):
         """ make sure parent is assigned """

@@ -1,18 +1,20 @@
 from __future__ import absolute_import
 from .base import BaseObj
+from .utils import compose_scope
 import six
 
 
 def default_tree_traversal(app):
     """ default tree traversal """
-    objs = [(None, app.schema)]
+    objs = [(None, None, app.schema)]
     while len(objs) > 0:
-        name, obj = objs.pop()
+        scope, name, obj = objs.pop()
 
         # get children
-        objs.extend(obj._children_)
+        new_scope = compose_scope(scope, name)
+        objs.extend(map(lambda c: (new_scope,) + c, obj._children_))
 
-        yield name, obj
+        yield scope, name, obj
 
 
 class DispatcherMeta(type):
@@ -101,14 +103,14 @@ class Scanner(object):
         """
         """
         merged_r = self.__build_route(route)
-        for name, obj in nexter(self.app):
+        for scope, name, obj in nexter(self.app):
             for the_self, r, res in merged_r:
 
                 def handle_cls(cls):
                     f = r.get(cls, None)
                     if f:
                         for ff in f:
-                            res(the_self, ff(the_self, name, obj)) if res else ff(the_self, name, obj)
+                            res(the_self, ff(the_self, scope, name, obj)) if res else ff(the_self, scope, name, obj)
 
                 for cls in obj.__class__.__mro__[:-1]:
                     if cls is BaseObj:
