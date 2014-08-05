@@ -163,8 +163,10 @@ class Resource(six.with_metaclass(FieldMeta, BaseObj)):
                     raise ValueError('duplication operation found: ' + name)
 
                 op.update_field('path', api.path)
+                op._parent__ = self
                 new_api[name] = op
 
+        # replace Api with Operations
         self.update_field('apis', new_api)
 
 

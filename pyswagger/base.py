@@ -123,7 +123,7 @@ class BaseObj(object):
         super(BaseObj, self).__init__()
 
         # init parent reference
-        self._parent_ = None
+        self._parent__ = None
 
         if not issubclass(type(ctx), Context):
             raise TypeError('should provide args[0] as Context, not: ' + ctx.__class__.__name__)
@@ -147,7 +147,7 @@ class BaseObj(object):
                 else:
                     if not isinstance(obj, cls.__swagger_ref_object__):
                         raise ValueError('Unknown child found: ' + name + ', with class:' + obj.__class__.__name__)
-                    obj._parent_ = parent
+                    obj._parent__ = parent
 
             if isinstance(obj, dict):
                 # Objects from NamedContext
@@ -165,6 +165,12 @@ class BaseObj(object):
         """ update a field
         """
         setattr(self, self.get_private_name(f), obj)
+
+    @property
+    def _parent_(self):
+        """ get parent object
+        """
+        return self._parent__
 
     @property
     def _field_names_(self):

@@ -214,6 +214,7 @@ class PropertyTestCase(unittest.TestCase):
     def test_parent(self):
         """ make sure parent is assigned """
         self.assertTrue(app.schema.apis['pet'].models['Pet']._parent_ is app.schema.apis['pet'])
+        self.assertTrue(app.schema.apis['user'].apis['getUserByName']._parent_ is app.schema.apis['user'])
         self.assertTrue(app.schema.info._parent_ is app.schema)
 
 
