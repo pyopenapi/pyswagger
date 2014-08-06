@@ -104,7 +104,7 @@ class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
         'consumes',
         'deprecated',
 
-        # path from Api object
+        # path from Api object, concated with Resource object
         'path'
     ]
 
@@ -157,12 +157,13 @@ class Resource(six.with_metaclass(FieldMeta, BaseObj)):
 
         new_api = {}
         for api in ctx._obj['apis']:
+            new_path = self.basePath + api.path
             for op in api.operations:
                 name = op.nickname
                 if name in new_api.keys():
                     raise ValueError('duplication operation found: ' + name)
 
-                op.update_field('path', api.path)
+                op.update_field('path', new_path)
                 op._parent__ = self
                 new_api[name] = op
 
