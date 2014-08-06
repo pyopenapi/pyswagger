@@ -3,7 +3,7 @@ from six.moves import urllib
 from .getter import HttpGetter, FileGetter
 from .parser import ResourceListContext
 from .scan import Scanner
-from .scanner import ConvertString, TypeReduce
+from .scanner import Validate, TypeReduce
 from .utils import ScopeDict
 import inspect
 
@@ -62,23 +62,23 @@ class SwaggerApp(object):
 
         # convert types
         s = Scanner(app)
-        s.scan(route=[ConvertString(), tr])
+        s.scan(route=[Validate(), tr])
 
-        # TODO: model
+        # 'm' for model
         setattr(app, '_' + kls.__name__ + '__m', ScopeDict(tr.model))
-        # TODO: operation
+        # 'op' for operation
         setattr(app, '_' + kls.__name__ + '__op', ScopeDict(tr.op))
 
         return app
 
 
-class SwaggerClient(object):
+class Client(object):
     """
     Base Client Implementation
     """
     def __init__(self, *args, **kwargs):
-        super(SwaggerClient, self).__init__()
+        super(Client, self).__init__()
 
-    def __call__(self, ctx):
+    def request(self, req, opt={}):
         raise NotImplementedError()
 

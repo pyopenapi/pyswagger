@@ -1,2 +1,2 @@
-from .data_type import ConvertString
+from .validate import Validate
 from .type_reducer import TypeReduce
