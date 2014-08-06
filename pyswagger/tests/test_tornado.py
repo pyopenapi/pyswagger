@@ -1,4 +1,3 @@
-from pyswagger.contrib.http.tornado import SwaggerClient
 from tornado import web, testing
 from .utils import create_pet_db, get_test_data_folder
 import json
@@ -58,8 +57,6 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
     """
     def setUp(self):
         super(TornadoTestCase, self).setUp()
-
-        self.client = SwaggerClient(get_test_data_folder('wordnik'))
 
     def get_app(self):
         global app

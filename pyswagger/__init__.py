@@ -1,3 +1,3 @@
 from .getter import Getter
-from .core import SwaggerApp, SwaggerClient
+from .core import SwaggerApp
 
