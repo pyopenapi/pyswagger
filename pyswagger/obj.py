@@ -1,7 +1,52 @@
 from __future__ import absolute_import
-from .base import BaseObj, DataTypeObj, FieldMeta
-from .base import Items # make caller import from here
+from .base import BaseObj, FieldMeta, Context
 import six
+
+
+class Items(six.with_metaclass(FieldMeta, BaseObj)):
+    """ Items Object
+    """
+    __swagger_fields__ = ['type', '$ref']
+    __swagger_rename__ = {'$ref': 'ref'}
+
+
+class ItemsContext(Context):
+    """ Context of Items Object
+    """
+    __swagger_ref_object__ = Items
+    __swagger_required__ = []
+
+
+class DataTypeObj(BaseObj):
+    """ Data Type Fields
+    """
+    __swagger_fields__ = [
+        'type',
+        '$ref',
+        'format',
+        'defaultValue',
+        'enum',
+        'items',
+        'minimum',
+        'maximum',
+        'uniqueItems'
+    ]
+    __swagger_rename__ = {'$ref': 'ref'}
+
+    def __init__(self, ctx):
+        super(DataTypeObj, self).__init__(ctx)
+
+        # Items Object, too lazy to create a Context for DataTypeObj
+        # to wrap this child.
+        with ItemsContext(ctx._obj, 'items') as items_ctx:
+            items_ctx.parse(ctx._obj.get('items', None))
+
+        type_fields = set(DataTypeObj.__swagger_fields__) - set(ctx.__swagger_required__)
+        for field in type_fields:
+            # almost every data field is not required.
+            # TODO: need to make sure either 'type' or '$ref' is shown.
+            local_obj = ctx._obj.get(field, None)
+            self.update_field(field, local_obj)
 
 
 class Scope(six.with_metaclass(FieldMeta, BaseObj)):

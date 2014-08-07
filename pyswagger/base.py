@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import six
 
 
 class Context(list):
@@ -36,13 +35,13 @@ class Context(list):
             return
 
         obj = self.__class__.__swagger_ref_object__(self)
+        self.__reset_obj()
+
         if isinstance(parent_obj[backref], list):
             parent_obj[backref].append(obj)
             # TODO: check for uniqueness
         else:
             parent_obj[backref] = obj
-
-        self.__reset_obj()
 
     def __exit__(self, exc_type, exc_value, traceback):
         return self.back2parent(self._parent_obj, self._backref)
@@ -248,48 +247,5 @@ class FieldMeta(type):
         return type.__new__(metacls, name, bases, spc)
 
 
-class Items(six.with_metaclass(FieldMeta, BaseObj)):
-    """ Items Object
-    """
-    __swagger_fields__ = ['type', '$ref']
-    __swagger_rename__ = {'$ref': 'ref'}
 
-
-class ItemsContext(Context):
-    """ Context of Items Object
-    """
-    __swagger_ref_object__ = Items
-    __swagger_required__ = []
-
-
-class DataTypeObj(BaseObj):
-    """ Data Type Fields
-    """
-    __swagger_fields__ = [
-        'type',
-        '$ref',
-        'format',
-        'defaultValue',
-        'enum',
-        'items',
-        'minimum',
-        'maximum',
-        'uniqueItems'
-    ]
-    __swagger_rename__ = {'$ref': 'ref'}
-
-    def __init__(self, ctx):
-        super(DataTypeObj, self).__init__(ctx)
-
-        # Items Object, too lazy to create a Context for DataTypeObj
-        # to wrap this child.
-        with ItemsContext(ctx._obj, 'items') as items_ctx:
-            items_ctx.parse(ctx._obj.get('items', None))
-
-        type_fields = set(DataTypeObj.__swagger_fields__) - set(ctx.__swagger_required__)
-        for field in type_fields:
-            # almost every data field is not required.
-            # TODO: need to make sure either 'type' or '$ref' is shown.
-            local_obj = ctx._obj.get(field, None)
-            self.update_field(field, local_obj)
 
