@@ -11,25 +11,28 @@
    ],
    "apis":[
       {
-         "path":"/pet",
+         "path":"/pet/{petId}",
          "operations":[
             {
-               "method":"PUT",
-               "summary":"Update an existing pet",
-               "notes":"",
-               "type":"void",
-               "nickname":"updatePet",
+               "method":"GET",
+               "summary":"Find pet by ID",
+               "notes":"Returns a pet based on ID",
+               "type":"Pet",
+               "nickname":"getPetById",
                "authorizations":{
 
                },
                "parameters":[
                   {
-                     "name":"body",
-                     "description":"Pet object that needs to be updated in the store",
+                     "name":"petId",
+                     "description":"ID of pet that needs to be fetched",
                      "required":true,
-                     "type":"Pet",
-                     "paramType":"body",
-                     "allowMultiple":false
+                     "type":"integer",
+                     "format":"int64",
+                     "paramType":"path",
+                     "allowMultiple":false,
+                     "minimum":"1.0",
+                     "maximum":"100000.0"
                   }
                ],
                "responseMessages":[
@@ -40,23 +43,15 @@
                   {
                      "code":404,
                      "message":"Pet not found"
-                  },
-                  {
-                     "code":405,
-                     "message":"Validation exception"
                   }
                ]
             },
             {
-               "method":"POST",
-               "summary":"Add a new pet to the store",
+               "method":"DELETE",
+               "summary":"Deletes a pet",
                "notes":"",
                "type":"void",
-               "nickname":"addPet",
-               "consumes":[
-                  "application/json",
-                  "application/xml"
-               ],
+               "nickname":"deletePet",
                "authorizations":{
                   "oauth2":[
                      {
@@ -67,101 +62,21 @@
                },
                "parameters":[
                   {
-                     "name":"body",
-                     "description":"Pet object that needs to be added to the store",
+                     "name":"petId",
+                     "description":"Pet id to delete",
                      "required":true,
-                     "type":"Pet",
-                     "paramType":"body",
+                     "type":"string",
+                     "paramType":"path",
                      "allowMultiple":false
                   }
                ],
                "responseMessages":[
                   {
-                     "code":405,
-                     "message":"Invalid input"
+                     "code":400,
+                     "message":"Invalid pet value"
                   }
                ]
-            }
-         ]
-      },
-      {
-         "path":"/pet/findByStatus",
-         "operations":[
-            {
-               "method":"GET",
-               "summary":"Finds Pets by status",
-               "notes":"Multiple status values can be provided with comma seperated strings",
-               "type":"array",
-               "items":{
-                  "$ref":"Pet"
-               },
-               "nickname":"findPetsByStatus",
-               "authorizations":{
-
-               },
-               "parameters":[
-                  {
-                     "name":"status",
-                     "description":"Status values that need to be considered for filter",
-                     "defaultValue":"available",
-                     "required":true,
-                     "type":"string",
-                     "paramType":"query",
-                     "allowMultiple":true,
-                     "enum":[
-                        "available",
-                        "pending",
-                        "sold"
-                     ]
-                  }
-               ],
-               "responseMessages":[
-                  {
-                     "code":400,
-                     "message":"Invalid status value"
-                  }
-               ]
-            }
-         ]
-      },
-      {
-         "path":"/pet/findByTags",
-         "operations":[
-            {
-               "method":"GET",
-               "summary":"Finds Pets by tags",
-               "notes":"Muliple tags can be provided with comma seperated strings. Use tag1, tag2, tag3 for testing.",
-               "type":"array",
-               "items":{
-                  "$ref":"Pet"
-               },
-               "nickname":"findPetsByTags",
-               "authorizations":{
-
-               },
-               "parameters":[
-                  {
-                     "name":"tags",
-                     "description":"Tags to filter by",
-                     "required":true,
-                     "type":"string",
-                     "paramType":"query",
-                     "allowMultiple":true
-                  }
-               ],
-               "responseMessages":[
-                  {
-                     "code":400,
-                     "message":"Invalid tag value"
-                  }
-               ],
-               "deprecated":"true"
-            }
-         ]
-      },
-      {
-         "path":"/pet/{petId}",
-         "operations":[
+            },
             {
                "method":"PATCH",
                "summary":"partial updates to a pet",
@@ -261,13 +176,22 @@
                      "message":"Invalid input"
                   }
                ]
-            },
+            }
+         ]
+      },
+      {
+         "path":"/pet",
+         "operations":[
             {
-               "method":"DELETE",
-               "summary":"Deletes a pet",
+               "method":"POST",
+               "summary":"Add a new pet to the store",
                "notes":"",
                "type":"void",
-               "nickname":"deletePet",
+               "nickname":"addPet",
+               "consumes":[
+                  "application/json",
+                  "application/xml"
+               ],
                "authorizations":{
                   "oauth2":[
                      {
@@ -278,41 +202,38 @@
                },
                "parameters":[
                   {
-                     "name":"petId",
-                     "description":"Pet id to delete",
+                     "name":"body",
+                     "description":"Pet object that needs to be added to the store",
                      "required":true,
-                     "type":"string",
-                     "paramType":"path",
+                     "type":"Pet",
+                     "paramType":"body",
                      "allowMultiple":false
                   }
                ],
                "responseMessages":[
                   {
-                     "code":400,
-                     "message":"Invalid pet value"
+                     "code":405,
+                     "message":"Invalid input"
                   }
                ]
             },
             {
-               "method":"GET",
-               "summary":"Find pet by ID",
-               "notes":"Returns a pet based on ID",
-               "type":"Pet",
-               "nickname":"getPetById",
+               "method":"PUT",
+               "summary":"Update an existing pet",
+               "notes":"",
+               "type":"void",
+               "nickname":"updatePet",
                "authorizations":{
 
                },
                "parameters":[
                   {
-                     "name":"petId",
-                     "description":"ID of pet that needs to be fetched",
+                     "name":"body",
+                     "description":"Pet object that needs to be updated in the store",
                      "required":true,
-                     "type":"integer",
-                     "format":"int64",
-                     "paramType":"path",
-                     "allowMultiple":false,
-                     "minimum":"1.0",
-                     "maximum":"100000.0"
+                     "type":"Pet",
+                     "paramType":"body",
+                     "allowMultiple":false
                   }
                ],
                "responseMessages":[
@@ -323,8 +244,87 @@
                   {
                      "code":404,
                      "message":"Pet not found"
+                  },
+                  {
+                     "code":405,
+                     "message":"Validation exception"
                   }
                ]
+            }
+         ]
+      },
+      {
+         "path":"/pet/findByStatus",
+         "operations":[
+            {
+               "method":"GET",
+               "summary":"Finds Pets by status",
+               "notes":"Multiple status values can be provided with comma seperated strings",
+               "type":"array",
+               "items":{
+                  "$ref":"Pet"
+               },
+               "nickname":"findPetsByStatus",
+               "authorizations":{
+
+               },
+               "parameters":[
+                  {
+                     "name":"status",
+                     "description":"Status values that need to be considered for filter",
+                     "defaultValue":"available",
+                     "required":true,
+                     "type":"string",
+                     "paramType":"query",
+                     "allowMultiple":true,
+                     "enum":[
+                        "available",
+                        "pending",
+                        "sold"
+                     ]
+                  }
+               ],
+               "responseMessages":[
+                  {
+                     "code":400,
+                     "message":"Invalid status value"
+                  }
+               ]
+            }
+         ]
+      },
+      {
+         "path":"/pet/findByTags",
+         "operations":[
+            {
+               "method":"GET",
+               "summary":"Finds Pets by tags",
+               "notes":"Muliple tags can be provided with comma seperated strings. Use tag1, tag2, tag3 for testing.",
+               "type":"array",
+               "items":{
+                  "$ref":"Pet"
+               },
+               "nickname":"findPetsByTags",
+               "authorizations":{
+
+               },
+               "parameters":[
+                  {
+                     "name":"tags",
+                     "description":"Tags to filter by",
+                     "required":true,
+                     "type":"string",
+                     "paramType":"query",
+                     "allowMultiple":true
+                  }
+               ],
+               "responseMessages":[
+                  {
+                     "code":400,
+                     "message":"Invalid tag value"
+                  }
+               ],
+               "deprecated":"true"
             }
          ]
       },
@@ -366,7 +366,7 @@
                      "description":"file to upload",
                      "required":false,
                      "type":"File",
-                     "paramType":"body",
+                     "paramType":"form",
                      "allowMultiple":false
                   }
                ]

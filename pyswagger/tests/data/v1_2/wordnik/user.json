@@ -8,6 +8,36 @@
    ],
    "apis":[
       {
+         "path":"/user",
+         "operations":[
+            {
+               "method":"POST",
+               "summary":"Create user",
+               "notes":"This can only be done by the logged in user.",
+               "type":"void",
+               "nickname":"createUser",
+               "authorizations":{
+                  "oauth2":[
+                     {
+                        "scope":"test:anything",
+                        "description":"anything"
+                     }
+                  ]
+               },
+               "parameters":[
+                  {
+                     "name":"body",
+                     "description":"Created user object",
+                     "required":true,
+                     "type":"User",
+                     "paramType":"body",
+                     "allowMultiple":false
+                  }
+               ]
+            }
+         ]
+      },
+      {
          "path":"/user/createWithArray",
          "operations":[
             {
@@ -239,36 +269,6 @@
                },
                "parameters":[
 
-               ]
-            }
-         ]
-      },
-      {
-         "path":"/user",
-         "operations":[
-            {
-               "method":"POST",
-               "summary":"Create user",
-               "notes":"This can only be done by the logged in user.",
-               "type":"void",
-               "nickname":"createUser",
-               "authorizations":{
-                  "oauth2":[
-                     {
-                        "scope":"test:anything",
-                        "description":"anything"
-                     }
-                  ]
-               },
-               "parameters":[
-                  {
-                     "name":"body",
-                     "description":"Created user object",
-                     "required":true,
-                     "type":"User",
-                     "paramType":"body",
-                     "allowMultiple":false
-                  }
                ]
             }
          ]

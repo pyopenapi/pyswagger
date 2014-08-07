@@ -19,8 +19,8 @@
                "authorizations":{
                   "oauth2":[
                      {
-                        "scope":"test:anything",
-                        "description":"anything"
+                        "scope":"write:pets",
+                        "description":"write to your pets"
                      }
                   ]
                },
@@ -89,8 +89,8 @@
                "authorizations":{
                   "oauth2":[
                      {
-                        "scope":"test:anything",
-                        "description":"anything"
+                        "scope":"write:pets",
+                        "description":"write to your pets"
                      }
                   ]
                },
