@@ -32,6 +32,13 @@ class Validate(object):
         if isinstance(obj.maximum, six.string_types):
             obj.update_field('maximum', _conver_from_string(obj.type, obj.maximum))
 
+        # make sure there is 'item' along with 'array'
+        if not (obj.type == 'array') == (obj.items != None):
+            raise ValueError('array should be existed along with items')
+        if obj.uniqueItems != None and obj.type != 'array':
+            raise ValueError('uniqueItems is only used for array type.')
+
+
     @Disp.register([Parameter])
     def _validate_param(self, scope, name, obj, _):
         """ validate option combination of Parameter object """
