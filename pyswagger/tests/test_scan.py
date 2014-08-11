@@ -24,7 +24,7 @@ class CountObject(object):
         self.long_name = ''
 
     @Disp.register([Resource, Authorization, Operation])
-    def _count(self, _, name, obj):
+    def _count(self, scope, name, obj, _):
         self.total[obj.__class__] = self.total[obj.__class__] + 1        
         return name
 

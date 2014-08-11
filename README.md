@@ -8,7 +8,6 @@ A python REST client for swagger enabled rest API, which integrated with differe
 ex. AsyncHTTPClient in tornado. For me, the use case is to unittest a torando REST server.
 
 Here are **TODO**s:
-- resolve [$ref](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#dataTypeRef)
 - support model inheritance. (refer to [subType](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#modelSubTypes) and [discriminator](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#modelDiscriminator))
 - limitation checking
 - API-key and basic-auth

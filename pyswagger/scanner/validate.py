@@ -10,7 +10,7 @@ class Validate(object):
     class Disp(Dispatcher): pass
 
     @Disp.register([DataTypeObj])
-    def _validate_data(self, scope, name, obj):
+    def _validate_data(self, scope, name, obj, _):
         """ convert string value to integer/float value """
         if obj.type == None and obj.ref == None:
             raise ValueError('type or $ref should be existed: ' + name + ', in scope:' + scope)
@@ -33,7 +33,7 @@ class Validate(object):
             obj.update_field('maximum', _conver_from_string(obj.type, obj.maximum))
 
     @Disp.register([Parameter])
-    def _validate_param(self, scope, name, obj):
+    def _validate_param(self, scope, name, obj, _):
         """ validate option combination of Parameter object """
         if obj.allowMultiple:
             if not obj.paramType in ('path', 'query', 'header'):

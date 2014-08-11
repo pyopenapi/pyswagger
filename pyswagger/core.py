@@ -3,7 +3,7 @@ from six.moves import urllib
 from .getter import HttpGetter, FileGetter
 from .parser import ResourceListContext
 from .scan import Scanner
-from .scanner import Validate, TypeReduce
+from .scanner import Validate, TypeReduce, Resolve
 from .utils import ScopeDict
 import inspect
 
@@ -68,6 +68,9 @@ class SwaggerApp(object):
         setattr(app, '_' + kls.__name__ + '__m', ScopeDict(tr.model))
         # 'op' for operation
         setattr(app, '_' + kls.__name__ + '__op', ScopeDict(tr.op))
+
+        # resolve reference
+        s.scan(route=[Resolve()])
 
         return app
 

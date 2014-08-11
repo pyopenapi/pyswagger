@@ -226,7 +226,7 @@ class DataTypeTestCase(unittest.TestCase):
         """ operation """ 
         op = app.schema.apis['pet'].apis['findPetsByStatus']
         self.assertEqual(op.type, 'array')
-        self.assertEqual(op.items.ref, 'Pet')
+        self.assertEqual(op.items.ref.id, app.m['pet', 'Pet'].id)
 
     def test_parameter(self):
         """ parameter """ 
@@ -247,7 +247,7 @@ class DataTypeTestCase(unittest.TestCase):
         self.assertEqual(p['id'].minimum, 0.0)
         self.assertEqual(p['id'].maximum, 100.0)
         # category
-        self.assertEqual(p['category'].ref, 'Category')
+        self.assertEqual(p['category'].ref.id, app.m['pet', 'Category'].id)
         # name
         self.assertEqual(p['name'].type, 'string')
         # photoUrls
@@ -257,7 +257,7 @@ class DataTypeTestCase(unittest.TestCase):
         # tag
         self.assertEqual(p['tags'].type, 'array')
         self.assertTrue(isinstance(p['tags'].items, Items))
-        self.assertEqual(p['tags'].items.ref, 'Tag')
+        self.assertEqual(p['tags'].items.ref.id, app.m['pet', 'Tag'].id)
         # status
         self.assertEqual(p['status'].type, 'string')
         self.assertEqual(sorted(p['status'].enum), sorted(['available', 'pending', 'sold']))

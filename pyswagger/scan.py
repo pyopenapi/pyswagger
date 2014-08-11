@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from .base import BaseObj
-from .utils import compose_scope
+from .utils import scope_compose
 import six
 
 
@@ -11,7 +11,7 @@ def default_tree_traversal(app):
         scope, name, obj = objs.pop()
 
         # get children
-        new_scope = compose_scope(scope, name)
+        new_scope = scope_compose(scope, name)
         objs.extend(map(lambda c: (new_scope,) + c, obj._children_))
 
         yield scope, name, obj
@@ -110,7 +110,7 @@ class Scanner(object):
                     f = r.get(cls, None)
                     if f:
                         for ff in f:
-                            res(the_self, ff(the_self, scope, name, obj)) if res else ff(the_self, scope, name, obj)
+                            res(the_self, ff(the_self, scope, name, obj, self.app)) if res else ff(the_self, scope, name, obj, self.app)
 
                 for cls in obj.__class__.__mro__[:-1]:
                     if cls is BaseObj:
