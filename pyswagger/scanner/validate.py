@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
-from ..obj import DataTypeObj, Parameter
+from ..obj import DataTypeObj, Parameter, Property, Items
 import six
 
 
@@ -38,7 +38,6 @@ class Validate(object):
         if obj.uniqueItems != None and obj.type != 'array':
             raise ValueError('uniqueItems is only used for array type.')
 
-
     @Disp.register([Parameter])
     def _validate_param(self, scope, name, obj, _):
         """ validate option combination of Parameter object """
@@ -56,4 +55,20 @@ class Validate(object):
                 raise ValueError('File parameter should be form type: ' + obj.name + ', in scope:' + scope)
             if 'multipart/form-data' not in obj._parent_.consumes:
                 raise ValueError('File parameter should consume multipart/form-data: ' + obj.name + ', in scope:' + scope)
+
+        if obj.type == 'void':
+            raise ValueError('void is only allowed in Operation object, not in Parameter object, name: ' + name + ', in scope:' + scope)
+
+    @Disp.register([Property])
+    def _validate_prop(self, scope, name, obj, _):
+        """ validate option combination of Property object """
+        if obj.type == 'void':
+            raise ValueError('void is only allowed in Operation object, not in Property object, name: ' + name + ', in scope:' + scope)
+
+    @Disp.register([Items])
+    def _validate_items(self, scope, name, obj, _):
+        """ validate option combination of Property object """
+        if obj.type == 'void':
+            raise ValueError('void is only allowed in Operation object, not in Items object, in scope:' + scope)
+
 
