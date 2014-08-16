@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from six.moves import urllib
 from .getter import HttpGetter, FileGetter
-from .parser import ResourceListContext
+from .ctx import ResourceListContext
 from .scan import Scanner
 from .scanner import Validate, TypeReduce, Resolve
 from .utils import ScopeDict
