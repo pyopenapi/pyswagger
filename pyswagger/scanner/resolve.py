@@ -2,7 +2,9 @@ from __future__ import absolute_import
 from ..scan import Dispatcher
 from ..obj import DataTypeObj, Items, Model
 from ..utils import scope_split, scope_compose
+from ..prim import is_primitive
 import weakref
+import six
 
 
 class Resolve(object):
@@ -13,9 +15,12 @@ class Resolve(object):
     @Disp.register([Items, DataTypeObj])
     def _resolve(self, scope, name, obj, app):
         """ resolve ref to models """
-        if obj.ref == None:
-            return
-        elif isinstance(obj.ref, Model):
+        to_resolve = None
+        if isinstance(obj.ref, six.string_types):
+            to_resolve = 'ref'
+        elif isinstance(obj.type, six.string_types) and not is_primitive(obj):
+            to_resolve = 'type'
+        else:
             # already resolved.
             return
 
@@ -26,10 +31,5 @@ class Resolve(object):
 
         # compose the model's scope name and
         # try to load the model 
-        try:
-            obj.update_field('ref', weakref.proxy(app.m[scope_compose(r, obj.ref)]))
-        except Exception as e:
-            raise e
-            # TODO: log
-            raise Exception('Unable to resovle this ref: ' + str(scope) + ', name:' + str(name) + ', ref:' + str(obj.ref))
+        obj.update_field(to_resolve, weakref.proxy(app.m[scope_compose(r, getattr(obj, to_resolve))]))
 
