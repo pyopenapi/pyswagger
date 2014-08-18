@@ -8,6 +8,8 @@ A python REST client for swagger enabled rest API, which integrated with differe
 ex. AsyncHTTPClient in tornado. For me, the use case is to unittest a torando REST server.
 
 Here are **TODO**s:
+- Global consumes & produces v.s. local ones
+- The right way to i/o date and date-time
 - support model inheritance. (refer to [subType](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#modelSubTypes) and [discriminator](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#modelDiscriminator))
 - limitation checking
 - API-key and basic-auth
@@ -48,3 +50,5 @@ python -m py.test -s -v --cov=pyswagger --cov-config=.coveragerc --cov-report=ht
 ###FAQ
 - Thread safe?
   - SwaggerApp is readonly and stateless -> safe, SwaggerClient is not.
+- Format of date-time and date?
+  - The preferred way is [json schema](http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14) according to this [issue](https://github.com/wordnik/swagger-spec/issues/95)
