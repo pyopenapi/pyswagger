@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 from .base import BaseObj, FieldMeta, Context
+from .io import SwaggerRequest
+from pyswagger import prim
 import six
 
 
@@ -8,6 +10,9 @@ class Items(six.with_metaclass(FieldMeta, BaseObj)):
     """
     __swagger_fields__ = ['type', '$ref']
     __swagger_rename__ = {'$ref': 'ref'}
+
+    def _prim_(self, v):
+        return prim.prim_factory(self, v)
 
 
 class ItemsContext(Context):
@@ -44,9 +49,10 @@ class DataTypeObj(BaseObj):
         type_fields = set(DataTypeObj.__swagger_fields__) - set(ctx.__swagger_required__)
         for field in type_fields:
             # almost every data field is not required.
-            # TODO: need to make sure either 'type' or '$ref' is shown.
-            local_obj = ctx._obj.get(field, None)
-            self.update_field(field, local_obj)
+            self.update_field(field, ctx._obj.get(field, None))
+
+    def _prim_(self, v):
+        return prim.prim_factory(self, v)
 
 
 class Scope(six.with_metaclass(FieldMeta, BaseObj)):
@@ -57,7 +63,6 @@ class Scope(six.with_metaclass(FieldMeta, BaseObj)):
 
 
 class LoginEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ LoginEndpoint Object
     """
 
@@ -65,7 +70,6 @@ class LoginEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
 
 
 class Implicit(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ Implicit Object
     """
 
@@ -73,7 +77,6 @@ class Implicit(six.with_metaclass(FieldMeta, BaseObj)):
 
 
 class TokenRequestEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ TokenRequestEndpoint Object
     """
 
@@ -81,7 +84,6 @@ class TokenRequestEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
 
 
 class TokenEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ TokenEndpoint Object
     """
 
@@ -89,7 +91,6 @@ class TokenEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
 
 
 class AuthorizationCode(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ AuthorizationCode Object
     """
 
@@ -97,7 +98,6 @@ class AuthorizationCode(six.with_metaclass(FieldMeta, BaseObj)):
 
 
 class GrantType(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ GrantType Object
     """
 
@@ -105,7 +105,6 @@ class GrantType(six.with_metaclass(FieldMeta, BaseObj)):
 
 
 class Authorizations(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ Authorizations Object
     """
 
@@ -113,7 +112,6 @@ class Authorizations(six.with_metaclass(FieldMeta, BaseObj)):
 
 
 class Authorization(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ Authorization Object
     """
 
@@ -121,7 +119,6 @@ class Authorization(six.with_metaclass(FieldMeta, BaseObj)):
 
 
 class ResponseMessage(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ ResponseMessage Object
     """
 
@@ -133,6 +130,9 @@ class Parameter(six.with_metaclass(FieldMeta, DataTypeObj)):
     """
 
     __swagger_fields__ = ['paramType', 'name', 'required', 'allowMultiple']
+
+    def _prim_(self, v):
+        return prim.prim_factory(self, v, self.allowMultiple)
 
 
 class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
@@ -153,9 +153,15 @@ class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
         'path'
     ]
 
+    def __call__(self, **kwargs):
+        
+        def _ret_(v):
+            return self._prim_(v)
+
+        return SwaggerRequest(self, kwargs), _ret_
+
 
 class Api(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ Api Object
     """
 
@@ -170,15 +176,16 @@ class Property(six.with_metaclass(FieldMeta, DataTypeObj)):
 
 
 class Model(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ Model Object
     """
 
     __swagger_fields__ = ['id', 'required', 'properties', 'subTypes', 'discriminator']
 
+    def _prim_(self, v):
+        return prim.Model(self, v)
+
 
 class Resource(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ Resource Object
     """
 
@@ -217,7 +224,6 @@ class Resource(six.with_metaclass(FieldMeta, BaseObj)):
 
 
 class Info(six.with_metaclass(FieldMeta, BaseObj)):
-
     """ Info Object
     """
 
