@@ -104,6 +104,16 @@ class Model(dict):
             self[k] = prim_factory(v, to_update)
 
 
+class Void(object):
+    """
+    """
+    def __init__(self, v):
+        pass
+
+    def __eq__(self, v):
+        return v == None
+
+
 class File(object):
     """
     """
@@ -133,8 +143,13 @@ prim_obj_map = {
     ('boolean', ''): bool,
     ('boolean', None): bool,
 
+    # File
     ('File', ''): File,
     ('File', None): File,
+
+    # void
+    ('void', ''): Void,
+    ('void', None): Void,
 };
 
 

@@ -8,7 +8,7 @@ app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik'))
 
 
 class SwaggerRequest_Pet_TestCase(unittest.TestCase):
-    """ test Operation's __call__ """
+    """ test SwaggerRequest from Operation's __call__ """
 
     def test_updatePet(self):
         """ Pet.updatePet """
@@ -125,7 +125,52 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertEqual(req.data, {})
         self.assertEqual(req.query, {})
 
-    def _test_uploadFile(self):
+    def test_uploadFile(self):
         """ Pet.uploadFile """
         # TODO: implement File upload
+
+
+class SwaggerResponse_TestCase(unittest.TestCase):
+    """ test SwaggerResponse from Pet's Operation's __call__ """
+
+    def test_updatePet(self):
+        """ Pet.updatePet """
+        _, resp = app.op['updatePet'](body=dict(id=1, name='Mary'))
+
+        # update raw before status should raise exception
+        self.assertRaises(Exception, resp.apply_with, raw={})
+
+        resp.apply_with(status=400)
+        self.assertEqual(resp.message, 'Invalid ID supplied')
+        resp.apply_with(status=404)
+        self.assertEqual(resp.message, 'Pet not found')
+        resp.apply_with(status=405)
+        self.assertEqual(resp.message, 'Validation exception')
+
+    def test_findPetsByTags(self):
+        """ Pet.findPetsByTags """
+        _, resp = app.op['findPetsByTags'](tags=[])
+
+        resp.apply_with(status=200, raw=[
+            dict(id=1, name='Tom', category=dict(id=1, name='dog'), tags=[dict(id=1, name='small')]),
+            dict(id=2, name='QQ', tags=[dict(id=1, name='small')])
+        ])
+        self.assertEqual(resp.message, '')
+
+        d = resp.data
+        self.assertTrue(isinstance(d, prim.Array))
+        d1 = d[0]
+        self.assertTrue(isinstance(d1, prim.Model))
+        self.assertEqual(d1.id, 1)
+        self.assertEqual(d1.name, 'Tom')
+        self.assertEqual(d1.tags, [dict(id=1, name='small')])
+        self.assertEqual(d1.tags[0].name, 'small')
+
+    def test_updatePetWithForm(self):
+        """ Pet.updatePetWithForm, test void """
+        _, resp = app.op['updatePetWithForm'](petId=23)
+
+        resp.apply_with(status=200, raw={})
+        self.assertEqual(resp.data, None)
+        self.assertTrue(isinstance(resp.data, prim.Void))
 

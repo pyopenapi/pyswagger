@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from .base import BaseObj
 
 
 class SwaggerRequest(object):
@@ -101,25 +102,74 @@ class SwaggerResponse(object):
         """
         """
         self.__op = op
+        self.__raw = self.__data = None
 
-    def apply(self, **kwargs):
+        # init properties
+        self.__status_code = 0
+        self.__header = {}
+
+    def apply_with(self, status=None, raw=None, header=None):
+        """ update header, status code, raw datum, ...etc
         """
-        """
-        pass
+        def _find_rm():
+            """ helper function to find
+            ResponseMessage object.
+            """
+            for rm in self.__op.responseMessages:
+                if rm.code == self.status_code:
+                    return rm
+            return None
+
+        rm = None
+
+        if status != None:
+            self.__status_code = status
+
+            # looking for responseMessages in Operation object
+            rm = _find_rm()
+            self.__message = '' if not rm else rm.message
+
+        if raw != None:
+            # TODO: should raw be bytes or decoded json object?
+            if self.status_code == 0:
+                raise Exception('Update status code before assigning raw data')
+
+            self.__raw = raw
+
+            # update data from Opeartion if succeed else from responseMessage.responseModel
+            rm = _find_rm() if not rm else rm
+            if rm and isinstance(rm.responseModel, BaseObj):
+                self.__data = rm.responseModel._prim_(self.raw)
+
+            if not self.__data:
+                # when nothing works, convert raw with Operation's return type.
+                self.__data = self.__op._prim_(self.__raw)
+
+        if header != None:
+            self.__header.update(header)
 
     @property
     def status_code(self):
         """ status code """
+        return self.__status_code
 
     @property
     def message(self):
-        """ error message when failed """
+        """ response message """
+        return self.__message
 
     @property
     def data(self):
         """ responsed data """
+        return self.__data
 
     @property
     def raw(self):
         """ raw response """
+        return self.__raw
+
+    @property
+    def header(self):
+        """ header of response """
+        return self.__header
 
