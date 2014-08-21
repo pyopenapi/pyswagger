@@ -95,7 +95,13 @@ class Model(dict):
 
         # init model as dict
         for k, v in obj.properties.iteritems():
-            self[k] = prim_factory(v, val.get(k, None))
+            to_update = val.get(k, None)
+
+            # check require properties of a Model
+            if to_update == None and k in obj.required:
+                raise ValueError('Model:[' + str(obj.id) + '], require:[' + str(k) + ']')
+
+            self[k] = prim_factory(v, to_update)
 
 
 class File(object):

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from .base import BaseObj, FieldMeta, Context
-from .io import SwaggerRequest
+from .io import SwaggerRequest, SwaggerResponse
 from pyswagger import prim
 import six
 
@@ -154,11 +154,8 @@ class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
     ]
 
     def __call__(self, **kwargs):
-        
-        def _ret_(v):
-            return self._prim_(v)
-
-        return SwaggerRequest(self, kwargs), _ret_
+        req = SwaggerRequest(self, params=kwargs, produces=self._parent_.produces, consumes=self._parent_.consumes)
+        return req, SwaggerResponse(self)
 
 
 class Api(six.with_metaclass(FieldMeta, BaseObj)):
@@ -215,7 +212,9 @@ class Resource(six.with_metaclass(FieldMeta, BaseObj)):
                 if name in new_api.keys():
                     raise ValueError('duplication operation found: ' + name)
 
+                # Operation objects now have 'path' attribute.
                 op.update_field('path', new_path)
+                # Operation objects' parent is now Resource object(API Declaration).
                 op._parent__ = self
                 new_api[name] = op
 
