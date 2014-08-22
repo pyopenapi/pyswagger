@@ -81,6 +81,12 @@ class Array(list):
         v = set(v) if unique else v
         self.extend(map(functools.partial(prim_factory, item_type, multiple=False), v))
 
+    def __str__(self):
+        s = ''
+        for v in self:
+            s = ''.join([s, ',' if s else '', str(v)])
+        return s
+
 
 class Model(dict):
     """
@@ -112,6 +118,12 @@ class Void(object):
 
     def __eq__(self, v):
         return v == None
+
+    def __str__(self):
+        return ''
+
+    def to_json(self):
+        return None
 
 
 class File(object):
@@ -169,7 +181,7 @@ def prim_factory(obj, v, multiple=False):
     if v == None:
         return None
 
-    # wrap 'allowmultiple' date with array    
+    # wrap 'allowmultiple' date with array
     if multiple and obj.type != 'array' and isinstance(v, (tuple, list)):
         return Array(obj, v, unique=False);
 

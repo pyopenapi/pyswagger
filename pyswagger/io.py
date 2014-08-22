@@ -34,7 +34,12 @@ class SwaggerRequest(object):
             if p.type == 'File' and val:
                 self.__has_file = True
 
-            self.__p[p.paramType][p.name] = p._prim_(val)
+            converted = p._prim_(val)
+            # we could only have string for those parameter types
+            if p.paramType in ('path', 'query', 'header'):
+                converted = str(converted)
+
+            self.__p[p.paramType][p.name] = converted
 
         # combine path parameters into url
         self.__url = self.__url.format(**self.__p['path'])
@@ -105,7 +110,7 @@ class SwaggerResponse(object):
         self.__raw = self.__data = None
 
         # init properties
-        self.__status_code = 0
+        self.__status = 0
         self.__header = {}
 
     def apply_with(self, status=None, raw=None, header=None):
@@ -116,14 +121,14 @@ class SwaggerResponse(object):
             ResponseMessage object.
             """
             for rm in self.__op.responseMessages:
-                if rm.code == self.status_code:
+                if rm.code == self.status:
                     return rm
             return None
 
         rm = None
 
         if status != None:
-            self.__status_code = status
+            self.__status = status
 
             # looking for responseMessages in Operation object
             rm = _find_rm()
@@ -131,7 +136,7 @@ class SwaggerResponse(object):
 
         if raw != None:
             # TODO: should raw be bytes or decoded json object?
-            if self.status_code == 0:
+            if self.status == 0:
                 raise Exception('Update status code before assigning raw data')
 
             self.__raw = raw
@@ -149,9 +154,9 @@ class SwaggerResponse(object):
             self.__header.update(header)
 
     @property
-    def status_code(self):
+    def status(self):
         """ status code """
-        return self.__status_code
+        return self.__status
 
     @property
     def message(self):

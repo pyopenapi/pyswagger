@@ -29,12 +29,12 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
 
     def test_findPetsByStatus(self):
         """ Pet.findPetsByStatus """
-        req, _ = app.op['findPetsByStatus'](status='available')
+        req, _ = app.op['findPetsByStatus'](status=['available', 'sold'])
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/findByStatus')
         self.assertEqual(req.verb, 'GET')
         self.assertEqual(req.header, {'Accept': 'application/json'})
         self.assertEqual(req.data, {})
-        self.assertEqual(req.query, {'status': 'available'})
+        self.assertEqual(req.query, {'status': 'available,sold'})
 
     def test_findPetsByTags(self):
         """ Pet.findPetsByTags """
@@ -43,7 +43,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertEqual(req.verb, 'GET')
         self.assertEqual(req.header, {'Accept': 'application/json'})
         self.assertEqual(req.data, {})
-        self.assertEqual(req.query, {'tags': ['small', 'cute', 'north']})
+        self.assertEqual(req.query, {'tags': 'small,cute,north'})
 
     def test_partialUpdate(self):
         """ Pet.partialUpdate """
