@@ -8,7 +8,7 @@ class SwaggerRequest(object):
     def __init__(self, op, params={}, produces=None, consumes=None):
         """
         """
-        self.__verb = op.method
+        self.__method = op.method
         self.__p = dict(header={}, query={}, path={}, body={}, form={})
         self.__url = op.path
         self.__has_file = False
@@ -85,9 +85,9 @@ class SwaggerRequest(object):
         return self.__p['query']
 
     @property
-    def verb(self):
+    def method(self):
         """ HTTP verb of this request """
-        return self.__verb
+        return self.__method
 
     @property
     def header(self):
