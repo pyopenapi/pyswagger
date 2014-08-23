@@ -1,8 +1,10 @@
 from __future__ import absolute_import
-import datetime, time
+from .utils import from_iso8601
+import datetime
 import functools
 import six
 import base64
+import json
 
 
 class Primitive(object):
@@ -41,8 +43,9 @@ class Time(Primitive):
         return str(self.to_json())
 
     def to_json(self):
-        # TODO: convert to ISO8601 format 
-        return time.mktime(self.v.timetuple())
+        # according to
+        #   https://github.com/wordnik/swagger-spec/issues/95
+        return self.isoformat()
 
 
 class Date(Time):
@@ -54,6 +57,8 @@ class Date(Time):
             self.v = datetime.date.fromtimestamp(v)
         elif isinstance(v, datetime.date):
             self.v = v
+        elif isinstance(v, six.string_types):
+            self.v = from_iso8601(v).date()
         else:
             raise ValueError('Unrecognized type for Date: ' + str(type(v)))
 
@@ -67,6 +72,8 @@ class Datetime(Time):
             self.v = datetime.datetime.fromtimestamp(v)
         elif isinstance(v, datetime.datetime):
             self.v = v
+        elif isinstance(v, six.string_types):
+            self.v = from_iso8601(v)
         else:
             raise ValueError('Unrecognized type for Datetime: ' + str(type(v)))
 
@@ -75,7 +82,12 @@ class Array(list):
     """
     """
     def __init__(self, item_type, v, unique=False):
+        """ v: list or string_types
+        """
         super(Array, self).__init__()
+
+        if isinstance(v, six.string_types):
+            v = json.loads(v)
 
         # init array as list
         v = set(v) if unique else v
@@ -97,7 +109,12 @@ class Model(dict):
     __setattr__ = dict.__setitem__
 
     def __init__(self, obj, val):
+        """ val: dict or string_types
+        """
         super(Model, self).__init__()
+
+        if isinstance(val, six.string_types):
+            val = json.loads(val)
 
         # init model as dict
         for k, v in obj.properties.iteritems():
