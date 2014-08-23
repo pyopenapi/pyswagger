@@ -14,7 +14,9 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         """ Pet.updatePet """
         req, _ = app.op['updatePet'](body=dict(id=1, name='Mary', category=dict(id=1, name='dog')))
         self.assertEqual(req.method, 'PUT')
-        self.assertEqual(req.header, {'Accept': 'application/json'})
+        self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
+        self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet')
+        self.assertEqual(req.query, {})
 
         m = req.data['body']
         self.assertTrue(isinstance(m, prim.Model))
@@ -23,9 +25,6 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertTrue(isinstance(m.category, prim.Model))
         self.assertEqual(m.category.id, 1)
         self.assertEqual(m.category.name, 'dog')
-
-        self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet')
-        self.assertEqual(req.query, {})
 
     def test_findPetsByStatus(self):
         """ Pet.findPetsByStatus """
@@ -50,7 +49,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req, _ = app.op['partialUpdate'](petId=0, body=dict(id=2, name='Tom', category=dict(id=2, name='cat'), tags=[dict(id=0, name='cute'), dict(id=1, name='small')]))
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/0')
         self.assertEqual(req.method, 'PATCH')
-        self.assertEqual(req.header, {'Accept': 'application/json'})
+        self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
 
         m = req.data['body']
         self.assertTrue(isinstance(m, prim.Model))
@@ -92,7 +91,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req, _ = app.op['addPet'](body=dict(id=34, name='Qoo', category=dict(id=2, name='cat'), status='available'))
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet')
         self.assertEqual(req.method, 'POST')
-        self.assertEqual(req.header, {'Accept': 'application/json'})
+        self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
 
         m = req.data['body']
         self.assertTrue(isinstance(m, prim.Model))

@@ -18,11 +18,6 @@ class SwaggerRequest(object):
         if len(unknown):
             raise ValueError('Unknown parameters: ' + str(unknown))
 
-        # let produces/consumes in Operation override global ones.
-        produces = op.produces if op.produces else produces
-        consumes = op.consumes if op.consumes else consumes
-        self.set_header(op, produces, consumes)
-
         # convert params into internal types
         for p in op.parameters:
             val = params.get(p.name, None)
@@ -40,6 +35,11 @@ class SwaggerRequest(object):
                 converted = str(converted)
 
             self.__p[p.paramType][p.name] = converted
+
+        # let produces/consumes in Operation override global ones.
+        produces = op.produces if op.produces else produces
+        consumes = op.consumes if op.consumes else consumes
+        self.set_header(op, produces, consumes)
 
         # combine path parameters into url
         self.__url = self.__url.format(**self.__p['path'])
