@@ -33,7 +33,6 @@ class SwaggerClient(Client):
         resp.apply_with(
             status=rs.status_code,
             header=rs.headers,
-            # TODO: text or content(in bytes)?
             raw=rs.text
         )
 

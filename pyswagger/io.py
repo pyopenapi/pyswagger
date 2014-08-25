@@ -166,7 +166,6 @@ class SwaggerResponse(object):
             self.__message = '' if not rm else rm.message
 
         if raw != None:
-            # TODO: should raw be bytes or decoded json object?
             if self.status == 0:
                 raise Exception('Update status code before assigning raw data')
 

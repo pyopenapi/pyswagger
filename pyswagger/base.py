@@ -31,7 +31,6 @@ class Context(list):
         and put it back to parent context.
         """
         if not self._obj:
-            # TODO: a warning for empty object?
             return
 
         obj = self.__class__.__swagger_ref_object__(self)
@@ -39,7 +38,6 @@ class Context(list):
 
         if isinstance(parent_obj[backref], list):
             parent_obj[backref].append(obj)
-            # TODO: check for uniqueness
         else:
             parent_obj[backref] = obj
 

@@ -28,6 +28,7 @@ class Validate(object):
 
         if isinstance(obj.minimum, six.string_types):
             # TODO: float or double or int or long
+            # this part would be better defined in swagger 2.0.
             obj.update_field('minimum', _conver_from_string(obj.type, obj.minimum))
         if isinstance(obj.maximum, six.string_types):
             obj.update_field('maximum', _conver_from_string(obj.type, obj.maximum))
