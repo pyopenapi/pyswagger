@@ -1,17 +1,22 @@
 from __future__ import absolute_import
 from .base import BaseObj
+from .prim import PrimJSONEncoder
+import six
+import json
 
 
 class SwaggerRequest(object):
     """ Request layer
     """
+
+    file_key = 'file_'
+
     def __init__(self, op, params={}, produces=None, consumes=None):
         """
         """
         self.__method = op.method
-        self.__p = dict(header={}, query={}, path={}, body={}, form={})
+        self.__p = dict(header={}, query={}, path={}, body={}, form={}, file_={})
         self.__url = op.path
-        self.__has_file = False
 
         # check for unknown parameters
         unknown = set(params.keys()) - set([p.name for p in op.parameters])
@@ -26,28 +31,35 @@ class SwaggerRequest(object):
             if val == None and p.required:
                 raise ValueError('requires parameter: ' + p.name)
 
-            if p.type == 'File' and val:
-                self.__has_file = True
-
             converted = p._prim_(val)
             # we could only have string for those parameter types
-            if p.paramType in ('path', 'query', 'header'):
+            if p.paramType in ('path', 'query'):
+                converted = six.moves.urllib.parse.quote(str(converted))
+            elif p.paramType == 'header':
                 converted = str(converted)
 
-            self.__p[p.paramType][p.name] = converted
+            self.__p[p.paramType if p.type != 'File' else SwaggerRequest.file_key][p.name] = converted
 
         # let produces/consumes in Operation override global ones.
         produces = op.produces if op.produces else produces
         consumes = op.consumes if op.consumes else consumes
-        self.set_header(op, produces, consumes)
+        self._set_header(op, produces, consumes)
 
         # combine path parameters into url
         self.__url = self.__url.format(**self.__p['path'])
 
         # update data parameter
-        self.__data = self.__p['form'] if self.__p['form'] else self.__p['body']
+        if self.__p[SwaggerRequest.file_key]:
+            self.__data = self.__p[SwaggerRequest.file_key]
+        elif 'Content-Type' in self.header:
+            self.__data = self._encode(
+                self.header['Content-Type'],
+                self.__p['form'] if self.__p['form'] else self.__p['body']
+            )
+        else:
+            self.__data = None
 
-    def set_header(self, op, produces, consumes):
+    def _set_header(self, op, produces, consumes):
         """ prepare header section, reference implementation:
             https://github.com/wordnik/swagger-js/blob/master/lib/swagger.js
         """
@@ -56,11 +68,10 @@ class SwaggerRequest(object):
 
         self.__header = self.__p['header']
 
-        if self.__p['form']:
-            if self.__has_file:
-                content_type = 'multipart/form-data'
-            else:
-                content_type = 'application/x-www-form-urlencoded'
+        if self.__p[SwaggerRequest.file_key]:
+            content_type = 'multipart/form-data'
+        elif self.__p['form']:
+            content_type = 'application/x-www-form-urlencoded'
         elif op.method == 'DELETE':
             self.__p['body'] = {}
 
@@ -73,6 +84,21 @@ class SwaggerRequest(object):
             self.__header['Content-Type'] = content_type 
         if accepts:
             self.__header['Accept'] = accepts
+
+    def _encode(self, content_type, data):
+        """
+        """
+        ret = ''
+
+        if content_type == 'application/x-www-form-urlencoded':
+            ret = six.moves.urllib.parse.urlencode(data)
+        elif content_type == 'application/json':
+            ret = json.dumps(data, cls=PrimJSONEncoder)
+        elif content_type == 'multipart/form-data':
+            # it's wrong to pass any file related to here.
+            raise Exception('multipart/form-data encoding is not supported yet')
+
+        return ret
 
     @property
     def url(self):
@@ -98,6 +124,11 @@ class SwaggerRequest(object):
     def data(self):
         """ data carried by this request """
         return self.__data
+
+    @property
+    def p(self):
+        """ for unittest/debug purpose """
+        return self.__p
 
 
 class SwaggerResponse(object):
@@ -152,6 +183,11 @@ class SwaggerResponse(object):
 
         if header != None:
             self.__header.update(header)
+
+    def _encode(self):
+        """ encode data
+        """
+        pass
 
     @property
     def status(self):

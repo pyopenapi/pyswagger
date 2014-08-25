@@ -150,6 +150,15 @@ class File(object):
         pass
 
 
+class PrimJSONEncoder(json.JSONEncoder):
+    """
+    """
+    def default(self, obj):
+        if hasattr(obj, 'to_json'):
+            return obj.to_json()
+        return json.JSONEncoder.default(self, obj)
+
+
 # refer to 4.3.1 Primitives in v1.2
 prim_obj_map = {
     # int
