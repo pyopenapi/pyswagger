@@ -4,3 +4,5 @@ pudb==2014.1
 pytest>=2.6.0
 pytest-cov>=1.6
 tornado>=3.2.0
+httpretty>=0.8.3
+requests>=2.3.0        

@@ -247,5 +247,11 @@ class FieldMeta(type):
         return type.__new__(metacls, name, bases, spc)
 
 
+class Client(object):
+    """ base implementation of SwaggerClient """
 
+    def __init__(self, app):
+        self.__app = app
 
+    def request(self, req_and_resp, opt={}):
+        pass
