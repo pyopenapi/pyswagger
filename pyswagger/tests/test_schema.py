@@ -65,7 +65,8 @@ class PropertyTestCase(unittest.TestCase):
         implicit = app.schema.authorizations['oauth2'].grantTypes.implicit
         self.assertTrue(isinstance(implicit.loginEndpoint, LoginEndpoint))
         self.assertEqual(implicit.loginEndpoint.url,
-            'http://petstore.swagger.wordnik.com/oauth/dialog')
+            'http://petstore.swagger.wordnik.com/api/oauth/dialog')
+            
 
     def test_authorization_code(self):
         """ authorization code """
@@ -77,7 +78,7 @@ class PropertyTestCase(unittest.TestCase):
         auth = app.schema.authorizations['oauth2'].grantTypes.authorization_code
         self.assertTrue(isinstance(auth.tokenRequestEndpoint,TokenRequestEndpoint))
         self.assertEqual(auth.tokenRequestEndpoint.url,
-            'http://petstore.swagger.wordnik.com/oauth/requestToken')
+            'http://petstore.swagger.wordnik.com/api/oauth/requestToken')
         self.assertEqual(auth.tokenRequestEndpoint.clientIdName, 'client_id')
         self.assertEqual(auth.tokenRequestEndpoint.clientSecretName, 'client_secret')
 
@@ -86,7 +87,7 @@ class PropertyTestCase(unittest.TestCase):
         auth = app.schema.authorizations['oauth2'].grantTypes.authorization_code
         self.assertTrue(isinstance(auth.tokenEndpoint, TokenEndpoint))
         self.assertEqual(auth.tokenEndpoint.url,
-            'http://petstore.swagger.wordnik.com/oauth/token')
+            'http://petstore.swagger.wordnik.com/api/oauth/token')
         self.assertEqual(auth.tokenEndpoint.tokenName, 'auth_code')
 
     def test_resource_pet(self):

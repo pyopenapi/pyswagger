@@ -8,6 +8,42 @@
    ],
    "apis":[
       {
+         "path":"/store/order",
+         "operations":[
+            {
+               "method":"POST",
+               "summary":"Place an order for a pet",
+               "notes":"",
+               "type":"void",
+               "nickname":"placeOrder",
+               "authorizations":{
+                  "oauth2":[
+                     {
+                        "scope":"write:pets",
+                        "description":"write to your pets"
+                     }
+                  ]
+               },
+               "parameters":[
+                  {
+                     "name":"body",
+                     "description":"order placed for purchasing the pet",
+                     "required":true,
+                     "type":"Order",
+                     "paramType":"body",
+                     "allowMultiple":false
+                  }
+               ],
+               "responseMessages":[
+                  {
+                     "code":400,
+                     "message":"Invalid order"
+                  }
+               ]
+            }
+         ]
+      },
+      {
          "path":"/store/order/{orderId}",
          "operations":[
             {
@@ -72,42 +108,6 @@
                   {
                      "code":404,
                      "message":"Order not found"
-                  }
-               ]
-            }
-         ]
-      },
-      {
-         "path":"/store/order",
-         "operations":[
-            {
-               "method":"POST",
-               "summary":"Place an order for a pet",
-               "notes":"",
-               "type":"void",
-               "nickname":"placeOrder",
-               "authorizations":{
-                  "oauth2":[
-                     {
-                        "scope":"write:pets",
-                        "description":"write to your pets"
-                     }
-                  ]
-               },
-               "parameters":[
-                  {
-                     "name":"body",
-                     "description":"order placed for purchasing the pet",
-                     "required":true,
-                     "type":"Order",
-                     "paramType":"body",
-                     "allowMultiple":false
-                  }
-               ],
-               "responseMessages":[
-                  {
-                     "code":400,
-                     "message":"Invalid order"
                   }
                ]
             }
