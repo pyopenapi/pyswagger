@@ -33,7 +33,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         self.assertEqual(httpretty.last_request().method, 'PUT')
         self.assertEqual(httpretty.last_request().headers['content-type'], 'application/json')
-        self.assertEqual(httpretty.last_request().body, '{"body": {"category": {"id": 1, "name": "dog"}, "status": null, "name": "Mary", "tags": null, "photoUrls": null, "id": 1}}')
+        self.assertEqual(httpretty.last_request().body, '{"body": {"category": {"id": 1, "name": "dog"}, "name": "Mary", "id": 1}}') 
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
@@ -119,7 +119,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         resp = client.request(app.op['addPet'](body=pet_Kay))
 
-        self.assertEqual(httpretty.last_request().parsed_body, {u'body': {u'category': {u'id': 2, u'name': u'cat'}, u'status': u'available', u'name': u'Kay', u'tags': None, u'photoUrls': None, u'id': 4}})
+        self.assertEqual(httpretty.last_request().parsed_body, {u'body': {u'category': {u'id': 2, u'name': u'cat'}, u'status': u'available', u'name': u'Kay', u'id': 4}})
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
@@ -148,7 +148,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         self.assertEqual(resp.status, 200)
         self.assertTrue(isinstance(resp.data, prim.Model))
-        self.assertEqual(resp.data, {u'category': None, u'status': None, u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}], u'photoUrls': None, u'id': 1})
+        self.assertEqual(resp.data, {u'id': 1, u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}]})
 
     @httpretty.activate
     def test_uploadFile(self):

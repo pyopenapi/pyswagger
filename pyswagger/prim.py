@@ -121,8 +121,10 @@ class Model(dict):
             to_update = val.get(k, None)
 
             # check require properties of a Model
-            if to_update == None and k in obj.required:
-                raise ValueError('Model:[' + str(obj.id) + '], require:[' + str(k) + ']')
+            if to_update == None:
+                if k in obj.required:
+                    raise ValueError('Model:[' + str(obj.id) + '], require:[' + str(k) + ']')
+                continue
 
             self[k] = prim_factory(v, to_update)
 
