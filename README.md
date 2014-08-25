@@ -46,7 +46,5 @@ python -m py.test -s -v --cov=pyswagger --cov-config=.coveragerc --cov-report=ht
 ```
 
 ###FAQ
-- Thread safe?
-  - SwaggerApp is readonly and stateless -> safe, SwaggerClient is not.
 - Format of date-time and date?
   - The preferred way is [json schema](http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14) according to this [issue](https://github.com/wordnik/swagger-spec/issues/95)

@@ -27,6 +27,10 @@ class SwaggerApp(object):
     def m(self):
         return self.__m
 
+    @property
+    def auth(self):
+        return self.schema.authorizations
+
     @classmethod
     def _create_(kls, url, getter=None):
         """

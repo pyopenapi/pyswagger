@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
-from ..obj import DataTypeObj, Parameter, Property, Items
+from ..obj import DataTypeObj, Parameter, Property, Items, Authorization, Operation
 import six
 
 
@@ -72,4 +72,28 @@ class Validate(object):
         if obj.type == 'void':
             raise ValueError('void is only allowed in Operation object, not in Items object, in scope:' + scope)
 
+    @Disp.register([Authorization])
+    def _validate_auth(self, scope, name, obj, _):
+        """ validate that apiKey and oauth2 requirements """
+        if obj.type == 'apiKey':
+            if not obj.passAs:
+                raise ValueError('need \'passAs\' for apiKey')
+            if not obj.keyname:
+                raise ValueError('need \'keyname\' for apiKey')
+
+        elif obj.type == 'oauth2':
+            if not obj.grantTypes:
+                raise ValueError('need \'grantTypes\' for oauth2')
+
+    @Disp.register([Operation])
+    def _validate_auths(self, scope, name, obj, app):
+        """ make sure that apiKey and basicAuth are empty list
+        in Operation object.
+        """
+        for k, v in obj.authorizations.iteritems():
+            if k not in app.auth:
+                raise ValueError('auth {0} in scope {1} not found in resource list'.format(k, scope))
+
+            if app.auth[k].type in ('basicAuth', 'apiKey') and v != []:
+                raise ValueError('auth {0} in scope {1} should be an empty list'.format(k, scope))
 
