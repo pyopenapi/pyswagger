@@ -5,7 +5,7 @@ from ...utils import get_test_data_folder
 import unittest
 import httpretty
 import json
-import six
+import sys
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
@@ -18,6 +18,8 @@ pet_Sue = dict(id=3, name='Sue', tags=[dict(id=0, name='available')])
 pet_Kay = dict(id=4, name='Kay', category=dict(id=2, name='cat'), status='available')
 pet_QQQ = dict(id=1, name='QQQ', category=dict(id=1, name='dog'))
 
+
+@unittest.skipIf(sys.version_info[:2] >= (3, 4), 'httpretty corrupt tornado.testing in python3.4')
 class RequestsClient_Pet_TestCase(unittest.TestCase):
     """ test SwaggerClient implemented by requests """
 
