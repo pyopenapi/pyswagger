@@ -6,6 +6,7 @@ import six
 import base64
 import json
 
+# TODO: enum
 
 class Primitive(object):
     """ base of all overrided primitives
@@ -122,7 +123,7 @@ class Model(dict):
 
             # check require properties of a Model
             if to_update == None:
-                if k in obj.required:
+                if obj.required and k in obj.required:
                     raise ValueError('Model:[' + str(obj.id) + '], require:[' + str(k) + ']')
                 continue
 
