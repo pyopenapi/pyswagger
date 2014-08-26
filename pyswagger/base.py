@@ -47,7 +47,7 @@ class Context(list):
     def parse(self, obj=None):
         """ go deeper into objects
         """
-        if not obj:
+        if obj == None:
             return
 
         if not isinstance(obj, dict):
@@ -87,6 +87,11 @@ class NamedContext(Context):
     """ for named object
     """
     def parse(self, obj=None):
+        """ parse named object
+        """
+        if obj == None:
+            return
+
         if not isinstance(obj, dict):
             raise ValueError('invalid obj passed: ' + str(type(obj)))
 
@@ -244,12 +249,3 @@ class FieldMeta(type):
 
         return type.__new__(metacls, name, bases, spc)
 
-
-class Client(object):
-    """ base implementation of SwaggerClient """
-
-    def __init__(self, app):
-        self.__app = app
-
-    def request(self, req_and_resp, opt={}):
-        pass
