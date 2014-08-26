@@ -1,6 +1,8 @@
 from tornado import web, testing
 from ...utils import create_pet_db
 import json
+import sys
+import pytest
 
 
 """ refer to pyswagger.test.data.wordnik for details """
@@ -52,6 +54,7 @@ app = web.Application([
         ], debug=True)
 
 
+@pytest.mark.skipif(sys.version_info[:2] >= (3, 4), reason='httpretty corrupt tornado.testing in python3.4')
 class TornadoTestCase(testing.AsyncHTTPTestCase):
     """
     """
