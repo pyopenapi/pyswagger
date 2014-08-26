@@ -1,6 +1,14 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
-from ..obj import DataTypeObj, Parameter, Property, Items, Authorization, Operation
+from ..obj import (
+    DataTypeObj,
+    Parameter,
+    Property,
+    Items,
+    Authorization,
+    Operation,
+    GrantType
+    )
 import six
 
 
@@ -85,15 +93,21 @@ class Validate(object):
             if not obj.grantTypes:
                 raise ValueError('need \'grantTypes\' for oauth2')
 
+    @Disp.register([GrantType])
+    def _validate_granttype(self, scope, name, obj, _):
+        """ make sure either implicit or authorization_code is defined """
+        if not obj.implicit and not obj.authorization_code:
+            raise ValueError('Either implicit or authorization_code should be defined, {0}'.format(scope))
+
     @Disp.register([Operation])
     def _validate_auths(self, scope, name, obj, app):
         """ make sure that apiKey and basicAuth are empty list
         in Operation object.
         """
         for k, v in obj.authorizations.iteritems():
-            if k not in app.auth:
+            if k not in app.schema.authorizations:
                 raise ValueError('auth {0} in scope {1} not found in resource list'.format(k, scope))
 
-            if app.auth[k].type in ('basicAuth', 'apiKey') and v != []:
+            if app.schema.authorizations[k].type in ('basicAuth', 'apiKey') and v != []:
                 raise ValueError('auth {0} in scope {1} should be an empty list'.format(k, scope))
 
