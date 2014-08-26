@@ -93,7 +93,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
             'Content-Type': u'application/x-www-form-urlencoded',
             'Accept': 'application/json'
         })
-        self.assertEqual(req.data, 'status=pending&name=Gary')
+        self.assertTrue(req.data.find('status=pending') != -1)
+        self.assertTrue(req.data.find('name=Gary') != -1)
         self.assertEqual(req.query, {})
 
     def test_addPet(self):

@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import six
 
 
 class Context(list):
@@ -95,7 +96,7 @@ class NamedContext(Context):
         if not isinstance(obj, dict):
             raise ValueError('invalid obj passed: ' + str(type(obj)))
 
-        for k, v in obj.iteritems():
+        for k, v in six.iteritems(obj):
             if isinstance(v, list):
                 self._parent_obj[self._backref][k] = []
                 for item in v:
@@ -213,7 +214,7 @@ class BaseObj(object):
                 for v in obj:
                     down(name, v)
             elif isinstance(obj, dict):
-                for k, v in obj.iteritems():
+                for k, v in six.iteritems(obj):
                     down(k, v)
 
         for n in names:

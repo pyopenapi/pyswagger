@@ -25,7 +25,7 @@ class ScopeDict(dict):
         - n, m
         - m (if no collision is found)
         """
-        k = reduce(lambda k1, k2: scope_compose(k1, k2), keys[0]) if isinstance(keys[0], tuple) else keys[0]
+        k = six.moves.reduce(lambda k1, k2: scope_compose(k1, k2), keys[0]) if isinstance(keys[0], tuple) else keys[0]
         try:
             return super(ScopeDict, self).__getitem__(k)
         except KeyError as e:

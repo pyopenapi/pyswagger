@@ -104,7 +104,7 @@ class Validate(object):
         """ make sure that apiKey and basicAuth are empty list
         in Operation object.
         """
-        for k, v in obj.authorizations.iteritems():
+        for k, v in six.iteritems(obj.authorizations):
             if k not in app.schema.authorizations:
                 raise ValueError('auth {0} in scope {1} not found in resource list'.format(k, scope))
 

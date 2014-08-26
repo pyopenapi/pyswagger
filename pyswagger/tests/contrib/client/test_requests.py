@@ -5,6 +5,7 @@ from ...utils import get_test_data_folder
 import unittest
 import httpretty
 import json
+import six
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
@@ -15,7 +16,7 @@ pet_Tom = dict(id=1, name='Tom', tags=[dict(id=0, name='available'), dict(id=1, 
 pet_Qoo = dict(id=2, name='Qoo', tags=[dict(id=0, name='available')])
 pet_Sue = dict(id=3, name='Sue', tags=[dict(id=0, name='available')])
 pet_Kay = dict(id=4, name='Kay', category=dict(id=2, name='cat'), status='available')
-
+pet_QQQ = dict(id=1, name='QQQ', category=dict(id=1, name='dog'))
 
 class RequestsClient_Pet_TestCase(unittest.TestCase):
     """ test SwaggerClient implemented by requests """
@@ -29,11 +30,11 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
             status=200
         )
 
-        resp = client.request(app.op['updatePet'](body=dict(id=1, name='Mary', category=dict(id=1, name='dog'))))
+        resp = client.request(app.op['updatePet'](body=pet_QQQ))
 
         self.assertEqual(httpretty.last_request().method, 'PUT')
         self.assertEqual(httpretty.last_request().headers['content-type'], 'application/json')
-        self.assertEqual(httpretty.last_request().body, '{"body": {"category": {"id": 1, "name": "dog"}, "name": "Mary", "id": 1}}') 
+        self.assertEqual(json.loads(httpretty.last_request().body.decode('utf-8')), dict(body=pet_QQQ)) 
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)

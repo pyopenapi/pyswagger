@@ -118,7 +118,7 @@ class Model(dict):
             val = json.loads(val)
 
         # init model as dict
-        for k, v in obj.properties.iteritems():
+        for k, v in six.iteritems(obj.properties):
             to_update = val.get(k, None)
 
             # check require properties of a Model

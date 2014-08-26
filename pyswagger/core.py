@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from six.moves import urllib
 from .getter import HttpGetter, FileGetter
 from .ctx import ResourceListContext
 from .scan import Scanner
@@ -7,6 +6,7 @@ from .scanner import Validate, TypeReduce, Resolve
 from .utils import ScopeDict
 import inspect
 import base64
+import six
 
 
 class SwaggerApp(object):
@@ -34,7 +34,7 @@ class SwaggerApp(object):
         """
 
         local_getter = getter or HttpGetter
-        p = urllib.parse.urlparse(url)
+        p = six.moves.urllib.parse.urlparse(url)
         if p.scheme == "":
             if p.netloc == "" and p.path != "":
                 # it should be a file path
@@ -93,7 +93,7 @@ class SwaggerAuth(object):
         cred = auth_info
         header = True
         if auth.type == 'basicAuth':
-            cred = 'Basic ' + base64.standard_b64encode('{0}:{1}'.format(*auth_info))
+            cred = 'Basic ' + base64.standard_b64encode(six.b('{0}:{1}'.format(*auth_info))).decode('utf-8')
             key = 'Authorization'
         elif auth.type == 'apiKey':
             key = auth.keyname
@@ -115,7 +115,7 @@ class SwaggerAuth(object):
         if not req._auths:
             return req
 
-        for k, v in req._auths.iteritems():
+        for k, v in six.iteritems(req._auths):
             if not k in self.__auths:
                 continue
 
