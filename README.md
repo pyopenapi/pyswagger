@@ -39,7 +39,7 @@ pip install -r requirement-dev.txt
 
 unit testing
 ```bash
-python -m py.test -s -v --cov=pyswagger --cov-config=.coveragerc --cov-report=html pyswagger/tests
+python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc --cov-report=html pyswagger/tests
 ```
 
 ###FAQ
