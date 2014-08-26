@@ -13,12 +13,14 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
     def test_updatePet(self):
         """ Pet.updatePet """
         req, _ = app.op['updatePet'](body=dict(id=1, name='Mary', category=dict(id=1, name='dog')))
+        req.prepare()
+
         self.assertEqual(req.method, 'PUT')
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet')
         self.assertEqual(req.query, {})
 
-        m = req.p['body']['body']
+        m = req._p['body']['body']
         self.assertTrue(isinstance(m, prim.Model))
         self.assertEqual(m.id, 1)
         self.assertEqual(m.name, 'Mary')
@@ -29,6 +31,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
     def test_findPetsByStatus(self):
         """ Pet.findPetsByStatus """
         req, _ = app.op['findPetsByStatus'](status=['available', 'sold'])
+        req.prepare()
+
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/findByStatus')
         self.assertEqual(req.method, 'GET')
         self.assertEqual(req.header, {'Accept': 'application/json'})
@@ -38,6 +42,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
     def test_findPetsByTags(self):
         """ Pet.findPetsByTags """
         req, _ = app.op['findPetsByTags'](tags=['small', 'cute', 'north'])
+        req.prepare()
+
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/findByTags')
         self.assertEqual(req.method, 'GET')
         self.assertEqual(req.header, {'Accept': 'application/json'})
@@ -47,11 +53,13 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
     def test_partialUpdate(self):
         """ Pet.partialUpdate """
         req, _ = app.op['partialUpdate'](petId=0, body=dict(id=2, name='Tom', category=dict(id=2, name='cat'), tags=[dict(id=0, name='cute'), dict(id=1, name='small')]))
+        req.prepare()
+
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/0')
         self.assertEqual(req.method, 'PATCH')
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
 
-        m = req.p['body']['body']
+        m = req._p['body']['body']
         self.assertTrue(isinstance(m, prim.Model))
         self.assertEqual(m.id, 2)
         self.assertEqual(m.name, 'Tom')
@@ -77,6 +85,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
     def test_updatePetWithForm(self):
         """ Pet.updatePetWithForm """
         req, _ = app.op['updatePetWithForm'](petId=23, name='Gary', status='pending')
+        req.prepare()
+
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/23')
         self.assertEqual(req.method, 'POST')
         self.assertEqual(req.header,{
@@ -89,11 +99,13 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
     def test_addPet(self):
         """ Pet.addPet """
         req, _ = app.op['addPet'](body=dict(id=34, name='Qoo', category=dict(id=2, name='cat'), status='available'))
+        req.prepare()
+
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet')
         self.assertEqual(req.method, 'POST')
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
 
-        m = req.p['body']['body']
+        m = req._p['body']['body']
         self.assertTrue(isinstance(m, prim.Model))
         self.assertEqual(m.id, 34)
         self.assertEqual(m.name, 'Qoo')
@@ -109,6 +121,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
     def test_deletePet(self):
         """ Pet.deletePet """
         req, _ = app.op['deletePet'](petId=22)
+        req.prepare()
+
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/22')
         self.assertEqual(req.method, 'DELETE')
         self.assertEqual(req.header, {'Accept': 'application/json'})
@@ -118,6 +132,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
     def test_getPetById(self):
         """ Pet.getPetById """
         req, _ = app.op['getPetById'](petId=100)
+        req.prepare()
+
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/100')
         self.assertEqual(req.method, 'GET')
         self.assertEqual(req.header, {'Accept': 'application/json'})

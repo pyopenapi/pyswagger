@@ -6,6 +6,7 @@ from .scan import Scanner
 from .scanner import Validate, TypeReduce, Resolve
 from .utils import ScopeDict
 import inspect
+import base64
 
 
 class SwaggerApp(object):
@@ -26,10 +27,6 @@ class SwaggerApp(object):
     @property
     def m(self):
         return self.__m
-
-    @property
-    def auth(self):
-        return self.schema.authorizations
 
     @classmethod
     def _create_(kls, url, getter=None):
@@ -79,13 +76,68 @@ class SwaggerApp(object):
         return app
 
 
-class Client(object):
-    """
-    Base Client Implementation
-    """
-    def __init__(self, *args, **kwargs):
-        super(Client, self).__init__()
+class SwaggerAuth(object):
+    """ authorization handler """
 
-    def request(self, req, opt={}):
-        raise NotImplementedError()
+    def __init__(self, app):
+        self.__app = app
+        self.__auths = {}
+
+    def update_with(self, name, auth_info):
+        """
+        """
+        auth = self.__app.schema.authorizations.get(name, None)
+        if auth == None:
+            raise ValueError('Unknown authorization name: [{0}]'.format(name))
+
+        cred = auth_info
+        header = True
+        if auth.type == 'basicAuth':
+            cred = 'Basic ' + base64.standard_b64encode('{0}:{1}'.format(*auth_info))
+            key = 'Authorization'
+        elif auth.type == 'apiKey':
+            key = auth.keyname
+            header = auth.passAs == 'header'
+        elif auth.type == 'oauth2':
+            if auth.grantTypes.implicit:
+                key = auth.grantTypes.implicit.tokenName
+            else:
+                key = auth.grantTypes.authorization_code.tokenEndpoint.tokenName
+            key = key if key else 'access_token'
+        else:
+            raise ValueError('Unsupported Authorization type: [{0}, {1}]'.format(name, auth.type))
+
+        self.__auths.update({name: (header, {key: cred})})
+
+    def __call__(self, req):
+        """
+        """
+        if not req._auths:
+            return req
+
+        for k, v in req._auths.iteritems():
+            if not k in self.__auths:
+                continue
+
+            header, cred = self.__auths[k]
+            req._p['header'].update(cred) if header else req.query.update(cred)
+
+        return req
+
+
+class Client(object):
+    """ base implementation of SwaggerClient """
+
+    def __init__(self, app, auth=None):
+        self.__app = app
+        self.__auth = auth
+
+    def request(self, req_and_resp, opt={}):
+        req, resp = req_and_resp
+
+        # apply authorizations
+        if self.__auth:
+            self.__auth.prepare(req) 
+
+        return req, resp
 

@@ -154,7 +154,10 @@ class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
     ]
 
     def __call__(self, **kwargs):
-        req = SwaggerRequest(self, params=kwargs, produces=self._parent_.produces, consumes=self._parent_.consumes)
+        req = SwaggerRequest(self, params=kwargs,
+            produces=self._parent_.produces,
+            consumes=self._parent_.consumes,
+            authorizations=self._parent_.authorizations)
         return req, SwaggerResponse(self)
 
 

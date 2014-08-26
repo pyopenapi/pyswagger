@@ -11,12 +11,18 @@ class SwaggerRequest(object):
 
     file_key = 'file_'
 
-    def __init__(self, op, params={}, produces=None, consumes=None):
+    def __init__(self, op, params={}, produces=None, consumes=None, authorizations=None):
         """
         """
         self.__method = op.method
         self.__p = dict(header={}, query={}, path={}, body={}, form={}, file_={})
         self.__url = op.path
+
+        # TODO: this part can be resolved once by using scanner.
+        # let produces/consumes/authorizations in Operation override global ones.
+        self.__produces = op.produces if op.produces else produces
+        self.__consumes = op.consumes if op.consumes else consumes
+        self.__authorizations = op.authorizations if op.authorizations else authorizations
 
         # check for unknown parameters
         unknown = set(params.keys()) - set([p.name for p in op.parameters])
@@ -40,26 +46,7 @@ class SwaggerRequest(object):
 
             self.__p[p.paramType if p.type != 'File' else SwaggerRequest.file_key][p.name] = converted
 
-        # let produces/consumes in Operation override global ones.
-        produces = op.produces if op.produces else produces
-        consumes = op.consumes if op.consumes else consumes
-        self._set_header(op, produces, consumes)
-
-        # combine path parameters into url
-        self.__url = self.__url.format(**self.__p['path'])
-
-        # update data parameter
-        if self.__p[SwaggerRequest.file_key]:
-            self.__data = self.__p[SwaggerRequest.file_key]
-        elif 'Content-Type' in self.header:
-            self.__data = self._encode(
-                self.header['Content-Type'],
-                self.__p['form'] if self.__p['form'] else self.__p['body']
-            )
-        else:
-            self.__data = None
-
-    def _set_header(self, op, produces, consumes):
+    def _set_header(self):
         """ prepare header section, reference implementation:
             https://github.com/wordnik/swagger-js/blob/master/lib/swagger.js
         """
@@ -72,13 +59,13 @@ class SwaggerRequest(object):
             content_type = 'multipart/form-data'
         elif self.__p['form']:
             content_type = 'application/x-www-form-urlencoded'
-        elif op.method == 'DELETE':
+        elif self.__method == 'DELETE':
             self.__p['body'] = {}
 
-        if content_type and consumes and content_type not in consumes:
-            content_type = consumes[0]
-        if accepts and produces and accepts not in produces:
-            accepts = produces[0]
+        if content_type and self.__consumes and content_type not in self.__consumes:
+            content_type = self.__consumes[0]
+        if accepts and self.__produces and accepts not in self.__produces:
+            accepts = self.__produces[0]
 
         if (content_type and self.__p['body']) or content_type == 'application/x-www-form-urlencoded':
             self.__header['Content-Type'] = content_type 
@@ -100,6 +87,28 @@ class SwaggerRequest(object):
 
         return ret
 
+    def prepare(self):
+        """ make this request ready for any Client
+        """
+
+        self._set_header()
+
+        # combine path parameters into url
+        self.__url = self.__url.format(**self.__p['path'])
+
+        # update data parameter
+        if self.__p[SwaggerRequest.file_key]:
+            self.__data = self.__p[SwaggerRequest.file_key]
+        elif 'Content-Type' in self.header:
+            self.__data = self._encode(
+                self.header['Content-Type'],
+                self.__p['form'] if self.__p['form'] else self.__p['body']
+            )
+        else:
+            self.__data = None
+
+        return self
+
     @property
     def url(self):
         """ url of this request """
@@ -118,7 +127,7 @@ class SwaggerRequest(object):
     @property
     def header(self):
         """ header of this request """
-        return self.__p['header']
+        return self.__header
 
     @property
     def data(self):
@@ -126,9 +135,14 @@ class SwaggerRequest(object):
         return self.__data
 
     @property
-    def p(self):
-        """ for unittest/debug purpose """
+    def _p(self):
+        """ for unittest/debug/internal purpose """
         return self.__p
+
+    @property
+    def _auths(self):
+        """ list of authorizations required """
+        return self.__authorizations
 
 
 class SwaggerResponse(object):
@@ -182,11 +196,6 @@ class SwaggerResponse(object):
 
         if header != None:
             self.__header.update(header)
-
-    def _encode(self):
-        """ encode data
-        """
-        pass
 
     @property
     def status(self):

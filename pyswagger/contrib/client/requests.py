@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from ...base import Client
+from ...core import Client
 from requests import Session, Request
 
 
@@ -7,18 +7,19 @@ class SwaggerClient(Client):
     """ Client implementation based on requests
     """
 
-    def __init__(self, app):
+    def __init__(self, app, auth=None):
         """
         """
-        super(SwaggerClient, self).__init__(app)
+        super(SwaggerClient, self).__init__(app, auth)
         self.__s = Session()
 
     def request(self, req_and_resp, opt={}):
         """
         """
-        super(SwaggerClient, self).request(req_and_resp, opt={})
+        req, resp = super(SwaggerClient, self).request(req_and_resp, opt)
 
-        req, resp = req_and_resp
+        # apply request-related options before preparation.
+        req.prepare()
 
         rq = Request(
             method=req.method,

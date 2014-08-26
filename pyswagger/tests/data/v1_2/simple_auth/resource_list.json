@@ -1,0 +1,36 @@
+{
+   "apiVersion":"1.0.0",
+   "swaggerVersion":"1.2",
+   "apis":[
+      {
+         "path":"/user",
+         "description":"Operations about user"
+      }
+   ],
+   "authorizations":{
+        "simple_key": {
+            "type": "apiKey",
+            "passAs": "query",
+            "keyname": "simpleQK"
+        },
+        "simple_basic": {
+            "type": "basicAuth"
+        },
+        "simple_basic2": {
+            "type": "basicAuth"
+        },
+        "simple_key2": {
+            "type": "apiKey",
+            "passAs": "header",
+            "keyname": "simpleHK"
+        }
+   },
+   "info":{
+      "title":"Swagger Sample App",
+      "description":"",
+      "termsOfServiceUrl":"http://helloreverb.com/terms/",
+      "contact":"simple_auth@fakemail.com",
+      "license":"Apache 2.0",
+      "licenseUrl":"http://www.apache.org/licenses/LICENSE-2.0.html"
+   }
+}
