@@ -26,7 +26,7 @@ your API, the first option is [Swagger-codegen](https://github.com/wordnik/swagg
 - type safe, input/output are converted according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in swagger.
 - builtin client implementation based on various http clients in python.
   - [requests](https://github.com/kennethreitz/requests)
-  - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)
+  - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)(coming soon)
 
 ---------
 
