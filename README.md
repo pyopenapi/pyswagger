@@ -22,8 +22,7 @@ your API, the first option is [Swagger-codegen](https://github.com/wordnik/swagg
 ---------
 
 ##Features
-- support Swagger **1.2**
-- suppoer python **2.6**, **2.7**, **3.3**, **3.4**
+- support Swagger **1.2** on python **2.6**, **2.7**, **3.3**, **3.4**
 - type safe, input/output are converted according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in swagger.
 - builtin client implementation based on various http clients in python.
   - [requests](https://github.com/kennethreitz/requests)
