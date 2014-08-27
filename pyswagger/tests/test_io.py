@@ -63,8 +63,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertTrue(isinstance(m, prim.Model))
         self.assertEqual(m.id, 2)
         self.assertEqual(m.name, 'Tom')
-        self.assertTrue('photoUrls' not in m)
-        self.assertTrue('status' not in m)
+        self.assertEqual(m.photoUrls, None)
+        self.assertEqual(m.status, None)
 
         self.assertTrue(isinstance(m.category, prim.Model))
         mm = m.category

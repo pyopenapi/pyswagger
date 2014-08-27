@@ -14,8 +14,8 @@ client = SwaggerClient(app)
 pet_Tom = dict(id=1, name='Tom', tags=[dict(id=0, name='available'), dict(id=1, name='sold')])
 pet_Qoo = dict(id=2, name='Qoo', tags=[dict(id=0, name='available')])
 pet_Sue = dict(id=3, name='Sue', tags=[dict(id=0, name='available')])
-pet_Kay = dict(id=4, name='Kay', category=dict(id=2, name='cat'), status='available')
-pet_QQQ = dict(id=1, name='QQQ', category=dict(id=1, name='dog'))
+pet_Kay = dict(id=4, name='Kay', category=dict(id=2, name='cat'), status='available', photoUrls=None, tags=None)
+pet_QQQ = dict(id=1, name='QQQ', category=dict(id=1, name='dog'), tags=None, status=None)
 
 
 class RequestsClient_Pet_TestCase(unittest.TestCase):
@@ -34,7 +34,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         self.assertEqual(httpretty.last_request().method, 'PUT')
         self.assertEqual(httpretty.last_request().headers['content-type'], 'application/json')
-        self.assertEqual(json.loads(httpretty.last_request().body.decode('utf-8')), dict(body=pet_QQQ)) 
+        self.assertTrue(json.loads(httpretty.last_request().body.decode('utf-8')), dict(body=pet_QQQ))
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
@@ -120,7 +120,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         resp = client.request(app.op['addPet'](body=pet_Kay))
 
-        self.assertEqual(httpretty.last_request().parsed_body, {u'body': {u'category': {u'id': 2, u'name': u'cat'}, u'status': u'available', u'name': u'Kay', u'id': 4}})
+        self.assertEqual(httpretty.last_request().parsed_body, {u'body': pet_Kay})
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
@@ -149,7 +149,9 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         self.assertEqual(resp.status, 200)
         self.assertTrue(isinstance(resp.data, prim.Model))
-        self.assertEqual(resp.data, {u'id': 1, u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}]})
+        self.assertEqual(resp.data,
+            {u'category': None, u'status': None, u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}], u'photoUrls': None, u'id': 1}
+            )
 
     @httpretty.activate
     def test_uploadFile(self):

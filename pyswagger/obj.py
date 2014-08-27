@@ -179,7 +179,16 @@ class Model(six.with_metaclass(FieldMeta, BaseObj)):
     """ Model Object
     """
 
-    __swagger_fields__ = ['id', 'required', 'properties', 'subTypes', 'discriminator']
+    __swagger_fields__ = [
+        'id',
+        'required',
+        'properties',
+        'subTypes',
+        'discriminator',
+
+        # for model inheritance
+        '_extends_'
+        ]
 
     def _prim_(self, v):
         return prim.Model(self, v)

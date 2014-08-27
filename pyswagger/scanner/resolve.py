@@ -55,3 +55,35 @@ class Resolve(object):
 
         self._find_and_update('responseModel', scope, obj, app)      
 
+    @Disp.register([Model])
+    def _resolve_model_inheritance(self, scope, name, obj, app):
+        """ build up model inheritance """
+        if not obj.subTypes:
+            if obj.discriminator:
+                raise ValueError('discriminator should be along with subTypes')
+            return
+
+        ks = set(obj.properties.keys())
+        if not obj.discriminator in ks:
+            raise ValueError('discriminator should be refer to \
+                the name of a property, not [{0}]'.format(obj.discriminator))
+
+        r = scope_split(scope)[0]
+        for m in obj.subTypes:
+            ns = scope_compose(r, m)
+            m_obj = app.m[ns]
+            if not m_obj:
+                raise ValueError('Unable to find model:{0}'.format(ns))
+
+            if m_obj._extends_ != None:
+                raise ValueError('Multiple Inheritance detected: [{0}]'.format(ns))
+
+            if m_obj.discriminator:
+                raise ValueError('discriminator should be on root Model only.[{0}]'.format(ns))
+
+            overlap = set(m_obj.properties.keys()) & ks
+            if len(overlap) != 0:
+                raise ValueError('child Model can\'t override parent\'s properties: [{0}]'.format(str(overlap)))
+
+            m_obj.update_field('_extends_', weakref.proxy(obj))
+            

@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import six
+import weakref
 
 
 class Context(list):
@@ -209,7 +210,8 @@ class BaseObj(object):
 
         def down(name, obj):
             if isinstance(obj, BaseObj):
-                ret.append((name, obj))
+                if not isinstance(obj, weakref.ProxyTypes):
+                    ret.append((name, obj))
             elif isinstance(obj, list):
                 for v in obj:
                     down(name, v)

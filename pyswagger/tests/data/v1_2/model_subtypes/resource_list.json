@@ -1,0 +1,20 @@
+{
+   "apiVersion":"1.0.0",
+   "swaggerVersion":"1.2",
+   "apis":[
+      {
+         "path":"/user",
+         "description":"Operations about user"
+      }
+   ],
+   "authorizations":{
+   },
+   "info":{
+      "title":"Swagger Sample App",
+      "description":"",
+      "termsOfServiceUrl":"http://helloreverb.com/terms/",
+      "contact":"model_subtypes@fakemail.com",
+      "license":"Apache 2.0",
+      "licenseUrl":"http://www.apache.org/licenses/LICENSE-2.0.html"
+   }
+}

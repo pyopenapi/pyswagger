@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .utils import from_iso8601
+from .utils import from_iso8601, dict_compare
 import datetime
 import functools
 import six
@@ -117,17 +117,31 @@ class Model(dict):
         if isinstance(val, six.string_types):
             val = json.loads(val)
 
-        # init model as dict
-        for k, v in six.iteritems(obj.properties):
-            to_update = val.get(k, None)
+        cur = obj
+        while cur != None:
+            # init model as dict
+            for k, v in six.iteritems(cur.properties):
+                to_update = val.get(k, None)
 
-            # check require properties of a Model
-            if to_update == None:
-                if obj.required and k in obj.required:
-                    raise ValueError('Model:[' + str(obj.id) + '], require:[' + str(k) + ']')
-                continue
+                # update discriminator with model's id
+                if cur.discriminator and cur.discriminator == k:
+                    to_update = obj.id
 
-            self[k] = prim_factory(v, to_update)
+                # check require properties of a Model
+                if to_update == None:
+                    if cur.required and k in cur.required:
+                        raise ValueError('Model:[' + str(cur.id) + '], require:[' + str(k) + ']')
+
+                self[k] = prim_factory(v, to_update)
+
+            cur = cur._extends_
+
+    def __eq__(self, other):
+        return dict_compare(self, other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 
 class Void(object):

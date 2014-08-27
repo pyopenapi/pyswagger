@@ -116,3 +116,16 @@ def from_iso8601(s):
         tzinfo=tz
     )
 
+def dict_compare(a, b):
+    """ make 'None' and 'No such attribute' the same """
+    for k, v in six.iteritems(a):
+        if v != b.get(k, None):
+            return False
+
+    residual = set(b.keys()) - set(a.keys())
+    for k in residual:
+        if b[k] != None:
+            return False
+
+    return True
+
