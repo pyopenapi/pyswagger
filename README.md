@@ -45,7 +45,7 @@ auth.update_with('simple_api_key', '123123123')
 client = SwaggerClient(app, auth)
 
 # a request to create a new pet
-client.request(app.op['addPet'](body=dict(id=1, name='Tom'))
+client.request(app.op['addPet'])(body=dict(id=1, name='Tom'))
 
 # a request to get the pet back
 pet = client.request(app.op['getPetById'])(petId=1).data
