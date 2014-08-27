@@ -4,6 +4,7 @@ import json
 import six
 import os
 
+
 class Getter(six.Iterator):
     """
     """
@@ -21,11 +22,15 @@ class Getter(six.Iterator):
         obj = self.load(path)
         if isinstance(obj, six.string_types):
             obj = json.loads(obj)
+        elif isinstance(obj, six.binary_type):
+            obj = json.loads(obj.decode('utf-8'))
+        else:
+            raise ValueError('Unknown types: [{0}]'.format(str(type(obj))))
 
         # find urls to retrieve from resource listing file
         if name == '':
             urls = self.__find_urls(obj)
-            # TODO: not worked in FileGetter & DictGetter
+            # TODO: not worked in DictGetter
             self.urls.extend(zip(
                 map(lambda u: self.base_path + u, urls),
                 map(lambda u: u[1:], urls)
@@ -84,19 +89,19 @@ class HttpGetter(Getter):
     default getter implementation for remote resource file
     """
     def __init__(self, path):
-        super(HttpGetter, self).__init__(self)
+        super(HttpGetter, self).__init__(path)
         if self.base_path.endswith('/'):
             self.base_path = self.base_path[:-1]
         self.urls = [(path, '')]
 
     def load(self, path):
-        ret = None
+        ret = f = None
         try:
-            f = six.moves.urllib.urlopen(path)
+            f = six.moves.urllib.request.urlopen(path)
             ret = f.read()
-
         finally:
-            f.close()
+            if f:
+                f.close()
 
         return ret
 
