@@ -125,7 +125,7 @@ class SwaggerAuth(object):
         return req
 
 
-class Client(object):
+class BaseClient(object):
     """ base implementation of SwaggerClient """
 
     def __init__(self, app, auth=None):

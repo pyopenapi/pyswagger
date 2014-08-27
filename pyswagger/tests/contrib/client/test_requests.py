@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from pyswagger import SwaggerApp, prim
-from pyswagger.contrib.client.requests import SwaggerClient
+from pyswagger.contrib.client.requests import Client
 from ...utils import get_test_data_folder
 import unittest
 import httpretty
@@ -8,7 +8,7 @@ import json
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
-client = SwaggerClient(app)
+client = Client(app)
 
 
 pet_Tom = dict(id=1, name='Tom', tags=[dict(id=0, name='available'), dict(id=1, name='sold')])

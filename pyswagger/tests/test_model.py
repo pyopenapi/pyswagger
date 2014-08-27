@@ -1,5 +1,5 @@
 from pyswagger import SwaggerApp
-from pyswagger.contrib.client.requests import SwaggerClient
+from pyswagger.contrib.client.requests import Client
 from pyswagger.prim import Model
 from .utils import get_test_data_folder
 import unittest
@@ -8,7 +8,7 @@ import json
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='model_subtypes')) 
-client = SwaggerClient(app)
+client = Client(app)
 
 u_mission = dict(id=1, username='mission', password='123123')
 uwi_mary = dict(id=2, username='mary', password='456456', email='m@a.ry', phone='123')
