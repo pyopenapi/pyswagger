@@ -5,5 +5,6 @@ global-exclude *.pyc
 global-exclude __pycache__/*
 global-exclude *.so
 global-exclude .DS_Store
-global-exclude tests/*
+global-exclude README.md
+prune pyswagger/tests
 
