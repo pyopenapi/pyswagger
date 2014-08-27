@@ -190,3 +190,21 @@ class SwaggerResponse_TestCase(unittest.TestCase):
         self.assertEqual(resp.data, None)
         self.assertTrue(isinstance(resp.data, prim.Void))
 
+    def test_invalid_enum(self):
+        """ invalid enum value """
+        self.assertRaises(ValueError, app.op['findPetsByStatus'], status=['wrong_enum'])
+
+    def test_default_value(self):
+        """ make sure defaultValue works """
+        req, _ = app.op['findPetsByStatus']()
+        self.assertEqual(req._p['query'], {'status': 'available'})
+
+
+    def test_min_max(self):
+        """ make sure minimum/maximum works """
+        req, _ = app.op['getPetById'](petId=-100)
+        self.assertEqual(req._p['path']['petId'], '1')
+
+        req, _ = app.op['getPetById'](petId=1000000)
+        self.assertEqual(req._p['path']['petId'], '100000')
+

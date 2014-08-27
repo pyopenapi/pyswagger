@@ -6,22 +6,11 @@ import six
 import base64
 import json
 
-# TODO: enum
 
-class Primitive(object):
-    """ base of all overrided primitives
-    """
-    def __str__(self):
-        raise NotImplementedError()
-
-    def to_json(self):
-        raise NotImplementedError()
-
-
-class Byte(Primitive):
+class Byte(object):
     """
     """
-    def __init__(self, v):
+    def __init__(self, _, v):
         if isinstance(v, six.string_types):
             self.v = v
         else:
@@ -37,7 +26,7 @@ class Byte(Primitive):
         return base64.urlsafe_b64encode(self.v)
 
 
-class Time(Primitive):
+class Time(object):
     """ Base of Datetime & Date
     """
     def __str__(self):
@@ -52,7 +41,7 @@ class Time(Primitive):
 class Date(Time):
     """
     """
-    def __init__(self, v):
+    def __init__(self, _, v):
         self.v = None
         if isinstance(v, float):
             self.v = datetime.date.fromtimestamp(v)
@@ -67,7 +56,7 @@ class Date(Time):
 class Datetime(Time):
     """
     """
-    def __init__(self, v):
+    def __init__(self, _, v):
         self.v = None
         if isinstance(v, float):
             self.v = datetime.datetime.fromtimestamp(v)
@@ -143,11 +132,10 @@ class Model(dict):
         return not self.__eq__(other)
 
 
-
 class Void(object):
     """
     """
-    def __init__(self, v):
+    def __init__(self, _, v):
         pass
 
     def __eq__(self, v):
@@ -163,7 +151,7 @@ class Void(object):
 class File(object):
     """
     """
-    def __init__(self, val):
+    def __init__(self, obj, val):
         pass
 
 
@@ -175,20 +163,38 @@ class PrimJSONEncoder(json.JSONEncoder):
             return obj.to_json()
         return json.JSONEncoder.default(self, obj)
 
+def create_numeric(obj, v, t):
+    # truncate based on min/max
+    v = obj.minimum if obj.minimum and v < obj.minimum else v
+    v = obj.maximum if obj.maximum and v > obj.maximum else v
+ 
+    return t(v)
+
+def create_int(obj, v):
+    return create_numeric(obj, v, int)
+
+def create_float(obj, v):
+    return create_numeric(obj, v, float)
+
+def create_str(obj, v):
+    if obj.enum and v not in obj.enum:
+        raise ValueError('{0} is not a valid enum for {1}'.format(v, str(obj.enum)))
+
+    return str(v)
 
 # refer to 4.3.1 Primitives in v1.2
 prim_obj_map = {
     # int
-    ('integer', 'int32'): int,
-    ('integer', 'int64'): int,
+    ('integer', 'int32'): create_int,
+    ('integer', 'int64'): create_int,
 
     # float
-    ('number', 'float'): float,
-    ('number', 'double'): float,
+    ('number', 'float'): create_float,
+    ('number', 'double'): create_float,
 
     # str
-    ('string', ''): str,
-    ('string', None): str,
+    ('string', ''): create_str,
+    ('string', None): create_str,
 
     ('string', 'byte'): Byte,
     ('string', 'date'): Date,
@@ -221,6 +227,7 @@ prim_types = [
 def prim_factory(obj, v, multiple=False):
     """
     """
+    v = obj.defaultValue if v == None else v
     if v == None:
         return None
 
@@ -233,14 +240,12 @@ def prim_factory(obj, v, multiple=False):
     elif isinstance(obj.type, six.string_types):
         if obj.type == 'array':
             return Array(obj.items, v, unique=obj.uniqueItems)
-        elif obj.type == 'File':
-            return File(v)
         else:
             t = prim_obj_map.get((obj.type, obj.format), None)
             if not t:
                 raise ValueError('Can\'t resolve type from:(' + str(obj.type) + ', ' + str(obj.format) + ')')
 
-            return t(v)
+            return t(obj, v)
 
     else:
         # obj.type is a reference to a Model

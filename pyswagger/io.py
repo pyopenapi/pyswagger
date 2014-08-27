@@ -34,6 +34,7 @@ class SwaggerRequest(object):
             val = params.get(p.name, None)
 
             # check required parameter
+            val = p.defaultValue if val == None else val
             if val == None and p.required:
                 raise ValueError('requires parameter: ' + p.name)
 
