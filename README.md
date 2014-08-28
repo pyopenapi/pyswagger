@@ -76,7 +76,7 @@ pip install pyswagger
 All exported API are described in following sections.
 
 ###SwaggerApp
-The initialization of pyswagger starts from **SwaggerApp.\_create_(url)**, where **url** could either be a _url_ or a _file_ path. This function returns a SwaggerApp instance, which would be used to initiate SwaggerClient and SwaggerAuth.
+The initialization of pyswagger starts from **SwaggerApp.\_create_(url)**, where **url** could either be a _url_ or a _file_ path. This function returns a SwaggerApp instance, which would be used to initiate SwaggerAuth.
 
 **SwaggerApp.op** provides a shortcut to access Operation objects, which will produce a set of request/response for SwaggerClient to access API. The way we provide here would help to minimize the possible difference introduced by Swagger2.0 when everything is merged into one file.
 ```python
@@ -87,10 +87,10 @@ SwaggerApp.op['user', 'getById'] # call getById in user resource
 SwaggerApp.op['pet', 'getById']  # call getById in pet resource
 ```
 ###SwaggerClient
-You also need **SwaggerClient(auth=None)** to access API, this layer wraps the difference nature of those http libraries in python. where **auth**(optional) is SwaggerAuth, which helps to handle authorizations of each request.
+You also need **SwaggerClient(auth=None)** to access API, this layer wraps the difference between those http libraries in python. where **auth**(optional) is SwaggerAuth, which helps to handle authorizations of each request.
 
 ```python
-client.request(app.op['addPet'])(body=dict(id=1, name='Tom'))
+client.request(app.op['addPet'](body=dict(id=1, name='Tom')))
 ```
 To make a request, you need to create a pair of request/response from **SwaggerApp.op** by providing essential parameters. Then passing the tuple of (request, response) to **SwaggerClient.request(req_and_resp, opt={})** likes the code segment above. Below is a reference mapping between python objects and Swagger primitives. Check this mapping when you need to construct a parameter set:
 - **dict** corresponds to _Model_
@@ -106,7 +106,7 @@ The return value is a **SwaggerResponse** object, with these attributes:
 - raw, raw data without touching.
 
 ###SwaggerAuth
-Holder/Dispatcher for user-provided authorization info. Initialize this object like **SwaggerAuth(app)**, where **app** is an instance of SwaggerApp. To add authorization, call **SwaggerApp.update\_with(name, token)**, where **name** is the name of Authorizations object in Swagger spec, and **token** is different for different kinds of authorization:
+Holder/Dispatcher for user-provided authorization info. Initialize this object like **SwaggerAuth(app)**, where **app** is an instance of SwaggerApp. To add authorization, call **SwaggerAuth.update\_with(name, token)**, where **name** is the name of Authorizations object in Swagger spec, and **token** is different for different kinds of authorizations:
 - basic authorization: (username, password)
 - api key: the api key
 - oauth2: the access\_token
