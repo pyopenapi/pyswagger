@@ -120,7 +120,7 @@ class PropertyTestCase(unittest.TestCase):
 
         updatePet = pet.apis['updatePet']
         self.assertTrue(isinstance(updatePet, Operation))
-        self.assertEqual(updatePet.path, 'http://petstore.swagger.wordnik.com/api/pet')
+        self.assertEqual(updatePet.path, '/pet')
         self.assertEqual(updatePet.method, 'PUT')
         self.assertRaises(AttributeError, getattr, updatePet, 'summary')
         self.assertRaises(AttributeError, getattr, updatePet, 'note')

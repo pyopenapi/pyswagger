@@ -218,14 +218,13 @@ class Resource(six.with_metaclass(FieldMeta, BaseObj)):
 
         new_api = {}
         for api in ctx._obj['apis']:
-            new_path = self.basePath + api.path
             for op in api.operations:
                 name = op.nickname
                 if name in new_api.keys():
                     raise ValueError('duplication operation found: ' + name)
 
                 # Operation objects now have 'path' attribute.
-                op.update_field('path', new_path)
+                op.update_field('path', api.path)
                 # Operation objects' parent is now Resource object(API Declaration).
                 op._parent__ = self
                 new_api[name] = op
