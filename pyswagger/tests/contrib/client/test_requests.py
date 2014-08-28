@@ -150,7 +150,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         self.assertTrue(isinstance(resp.data, prim.Model))
         self.assertEqual(resp.data,
-            {u'category': None, u'status': None, u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}], u'photoUrls': None, u'id': 1}
+            {u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}], u'id': 1}
             )
 
     @httpretty.activate

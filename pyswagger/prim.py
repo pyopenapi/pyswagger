@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .utils import from_iso8601
+from .utils import from_iso8601, none_count
 import datetime
 import functools
 import six
@@ -145,6 +145,19 @@ class Model(dict):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def to_json(self):
+        """ strip None values before sending on the wire """
+        # only when regenerate an dict is effective enough
+        if none_count(self) * 10 / len(self.keys()) < 3:
+            return self
+
+        ret = {}
+        for k, v in six.iteritems(self):
+            if v == None:
+                continue
+            ret.update({k: v})
+        return ret
 
 
 class Void(object):
