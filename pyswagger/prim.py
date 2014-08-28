@@ -165,8 +165,10 @@ class PrimJSONEncoder(json.JSONEncoder):
 
 def create_numeric(obj, v, t):
     # truncate based on min/max
-    v = obj.minimum if obj.minimum and v < obj.minimum else v
-    v = obj.maximum if obj.maximum and v > obj.maximum else v
+    if obj.minimum and v < obj.minimum:
+        raise ValueError('below minimum: {0}, {1}'.format(v, obj.minimum))
+    if obj.maximum and v > obj.maximum:
+        raise ValueError('above maximum: {0}, {1}'.format(v, obj.maximum))
  
     return t(v)
 

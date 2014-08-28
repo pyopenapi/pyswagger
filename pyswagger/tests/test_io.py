@@ -202,9 +202,6 @@ class SwaggerResponse_TestCase(unittest.TestCase):
 
     def test_min_max(self):
         """ make sure minimum/maximum works """
-        req, _ = app.op['getPetById'](petId=-100)
-        self.assertEqual(req._p['path']['petId'], '1')
-
-        req, _ = app.op['getPetById'](petId=1000000)
-        self.assertEqual(req._p['path']['petId'], '100000')
+        self.assertRaises(ValueError, app.op['getPetById'], petId=-100)
+        self.assertRaises(ValueError, app.op['getPetById'], petId=1000000)
 
