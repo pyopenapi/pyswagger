@@ -128,8 +128,7 @@ class SwaggerAuth(object):
 class BaseClient(object):
     """ base implementation of SwaggerClient """
 
-    def __init__(self, app, auth=None):
-        self.__app = app
+    def __init__(self, auth=None):
         self.__auth = auth
 
     def request(self, req_and_resp, opt={}):

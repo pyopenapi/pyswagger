@@ -10,10 +10,10 @@ class TornadoClient(BaseClient):
     tornado.http.AsyncHTTPClient.
     """
 
-    def __init__(self, app, auth=None):
+    def __init__(self, auth=None):
         """
         """
-        super(TornadoClient, self).__init__(app, auth)
+        super(TornadoClient, self).__init__(auth)
         self.__client = AsyncHTTPClient()
 
     @gen.coroutine

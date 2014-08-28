@@ -8,7 +8,7 @@ import json
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
-client = Client(app)
+client = Client()
 
 
 pet_Tom = dict(id=1, name='Tom', tags=[dict(id=0, name='available'), dict(id=1, name='sold')])

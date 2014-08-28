@@ -44,7 +44,7 @@ auth.update_with('simple_api_key', '12312312312312312313q') # api key
 auth.update_with('simple_oauth2', '12334546556521123fsfss') # oauth2
 
 # init client
-client = SwaggerClient(app, auth)
+client = SwaggerClient(auth)
 
 # a request to create a new pet
 pet_Tom=dict(id=1, name='Tom') # a dict is enough
@@ -87,7 +87,7 @@ SwaggerApp.op['user', 'getById'] # call getById in user resource
 SwaggerApp.op['pet', 'getById']  # call getById in pet resource
 ```
 ###SwaggerClient
-You also need **SwaggerClient(app, auth=None)** to access API, this layer wraps the difference nature of those http libraries in python. **app** is a SwaggerApp, and **auth**(optional) helps to handle authorizations of each request.
+You also need **SwaggerClient(auth=None)** to access API, this layer wraps the difference nature of those http libraries in python. where **auth**(optional) is SwaggerAuth, which helps to handle authorizations of each request.
 
 ```python
 client.request(app.op['addPet'])(body=dict(id=1, name='Tom'))

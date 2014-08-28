@@ -7,10 +7,10 @@ class Client(BaseClient):
     """ Client implementation based on requests
     """
 
-    def __init__(self, app, auth=None):
+    def __init__(self, auth=None):
         """
         """
-        super(Client, self).__init__(app, auth)
+        super(Client, self).__init__(auth)
         self.__s = Session()
 
     def request(self, req_and_resp, opt={}):

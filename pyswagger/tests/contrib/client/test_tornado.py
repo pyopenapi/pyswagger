@@ -88,7 +88,7 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
     """
     def setUp(self):
         super(TornadoTestCase, self).setUp()
-        self.client = TornadoClient(app)
+        self.client = TornadoClient()
 
     def get_new_ioloop(self):
         return IOLoop.instance()
