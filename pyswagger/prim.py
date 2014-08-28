@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .utils import from_iso8601, dict_compare
+from .utils import from_iso8601
 import datetime
 import functools
 import six
@@ -105,6 +105,9 @@ class Model(dict):
 
         if isinstance(val, six.string_types):
             val = json.loads(val)
+        elif isinstance(val, six.binary_type):
+            # TODO: encoding problem...
+            val = json.loads(val.decode('utf-8'))
 
         cur = obj
         while cur != None:
@@ -126,7 +129,19 @@ class Model(dict):
             cur = cur._extends_
 
     def __eq__(self, other):
-        return dict_compare(self, other)
+        if other == None:
+            return False
+
+        for k, v in six.iteritems(self):
+            if v != other.get(k, None):
+                return False
+
+        residual = set(other.keys()) - set(self.keys())
+        for k in residual:
+            if other[k] != None:
+                return False
+
+        return True
 
     def __ne__(self, other):
         return not self.__eq__(other)

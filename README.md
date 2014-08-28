@@ -11,7 +11,7 @@ your API, the first option is [Swagger-codegen](https://github.com/wordnik/swagg
 **pyswagger** is much easier to use (you don't need to prepare a scala environment) and tries hard to fully supports
 [Swagger Spec](https://helloreverb.com/developers/swagger)
 
-**TODO:** File uploading (the last piece finally), tornado.httpclient.AsyncHTTPClient (coming soon)
+**TODO:** File uploading (the last piece finally)
 
 
 - [Features](https://github.com/AntXlab/pyswagger/blob/master/README.md#features)
@@ -28,7 +28,7 @@ your API, the first option is [Swagger-codegen](https://github.com/wordnik/swagg
 - type safe, input/output are converted according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in swagger.
 - builtin client implementation based on various http clients in python.
   - [requests](https://github.com/kennethreitz/requests)
-  - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)(coming soon)
+  - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)
 
 ---------
 
