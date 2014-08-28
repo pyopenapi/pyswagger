@@ -1,6 +1,7 @@
 from pyswagger import SwaggerApp
 from .utils import get_test_data_folder
 from pyswagger import prim
+from pyswagger.io import SwaggerRequest
 import unittest
 
 
@@ -141,6 +142,14 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertEqual(req.data, None)
         self.assertEqual(req.query, {})
 
+    def test_opt_url_netloc(self):
+        """ test the replace of net loc """
+        req, _ = app.op['getPetById'](petId=100)
+        req.prepare()
+
+        req._patch({SwaggerRequest.opt_url_netloc: 'localhost:9001'})
+        self.assertEqual(req.url, 'http://localhost:9001/api/pet/100')
+
     def test_uploadFile(self):
         """ Pet.uploadFile """
         # TODO: implement File upload
@@ -198,7 +207,6 @@ class SwaggerResponse_TestCase(unittest.TestCase):
         """ make sure defaultValue works """
         req, _ = app.op['findPetsByStatus']()
         self.assertEqual(req._p['query'], {'status': 'available'})
-
 
     def test_min_max(self):
         """ make sure minimum/maximum works """

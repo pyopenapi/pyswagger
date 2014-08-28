@@ -133,7 +133,12 @@ class BaseClient(object):
         self.__auth = auth
 
     def request(self, req_and_resp, opt={}):
+        """
+        """
         req, resp = req_and_resp
+
+        # handle options
+        req._patch(opt)
 
         # apply authorizations
         if self.__auth:

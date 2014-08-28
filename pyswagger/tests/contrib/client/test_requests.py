@@ -38,7 +38,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
-        self.assertEqual(resp.header['content-type'], 'text/plain; charset=utf-8')
+        self.assertEqual(resp.header['content-type'][0], 'text/plain; charset=utf-8')
 
     @httpretty.activate
     def test_findPetsByStatus(self):

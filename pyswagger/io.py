@@ -11,12 +11,16 @@ class SwaggerRequest(object):
 
     file_key = 'file_'
 
+    # options
+    opt_url_netloc = 'url_netloc'
+
     def __init__(self, op, params={}, produces=None, consumes=None, authorizations=None):
         """
         """
         self.__method = op.method
         self.__p = dict(header={}, query={}, path={}, body={}, form={}, file_={})
-        self.__url = op.path
+        self.__url = op._parent_.basePath + op.path
+        self.__prepared = False
 
         # TODO: this part can be resolved once by using scanner.
         # let produces/consumes/authorizations in Operation override global ones.
@@ -88,9 +92,26 @@ class SwaggerRequest(object):
 
         return ret
 
+    def _patch(self, opt={}):
+        """
+        """
+        opt_netloc = opt.pop(SwaggerRequest.opt_url_netloc, None)
+        if opt_netloc:
+            scheme, netloc, path, params, query, fragment = six.moves.urllib.parse.urlparse(self.__url)    
+            self.__url = six.moves.urllib.parse.urlunparse(
+                (scheme, opt_netloc, path, params, query, fragment)
+                )
+
+        # if already prepared, prepare again to apply 
+        # those patches.
+        if self.__prepared:
+            self.prepare()
+
     def prepare(self):
         """ make this request ready for any Client
         """
+
+        self.__prepared = True
 
         self._set_header()
 
@@ -196,7 +217,14 @@ class SwaggerResponse(object):
                 self.__data = self.__op._prim_(self.__raw)
 
         if header != None:
-            self.__header.update(header)
+            for k, v in six.iteritems(header):
+                # split v into comma separated list
+                v = str(v).split(',')
+
+                if k in self.__header:
+                    self.__header[k].extend(v)
+                else:
+                    self.__header[k] = v
 
     @property
     def status(self):
