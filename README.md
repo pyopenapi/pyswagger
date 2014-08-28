@@ -133,4 +133,3 @@ python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc --cov-report=htm
   - The way to encode/decode byte is [base64](https://github.com/wordnik/swagger-spec/issues/50).
 - Format of datetime on the wire?
   - should be an ISO8601 string, according to this [issue](https://github.com/wordnik/swagger-spec/issues/95).
-  - 
