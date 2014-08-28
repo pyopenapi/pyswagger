@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from .getter import HttpGetter, FileGetter
-from .ctx import ResourceListContext
+from .parser import ResourceListContext
 from .scan import Scanner
 from .scanner import Validate, TypeReduce, Resolve
 from .utils import ScopeDict
