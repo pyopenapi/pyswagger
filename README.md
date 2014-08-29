@@ -34,6 +34,9 @@ your API, the first option you find would be [Swagger-codegen](https://github.co
 
 ##Quick Start
 ```python
+from pyswagger import SwaggerApp, SwaggerAuth
+from pyswagger.contrib.client.requests import Client
+
 # load Swagger resource file into SwaggerApp object
 app = SwaggerApp._create_('http://petstore.swagger.wordnik.com/api/api-docs')
 
@@ -43,8 +46,8 @@ auth.update_with('simple_basic_auth', ('user', 'password')) # basic auth
 auth.update_with('simple_api_key', '12312312312312312313q') # api key
 auth.update_with('simple_oauth2', '12334546556521123fsfss') # oauth2
 
-# init client
-client = SwaggerClient(auth)
+# init swagger client
+client = Client(auth)
 
 # a request to create a new pet
 pet_Tom=dict(id=1, name='Tom') # a dict is enough
