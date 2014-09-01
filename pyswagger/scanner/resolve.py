@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from ..scan import Dispatcher
 from ..obj import DataTypeObj, Items, Model, ResponseMessage
 from ..utils import scope_split, scope_compose
-from ..prim import is_primitive
+from ..primitives import is_primitive
 import weakref
 import six
 

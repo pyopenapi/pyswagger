@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from .base import BaseObj, FieldMeta, Context
 from .io import SwaggerRequest, SwaggerResponse
-from pyswagger import prim
+from pyswagger import primitives
 import six
 
 
@@ -12,7 +12,7 @@ class Items(six.with_metaclass(FieldMeta, BaseObj)):
     __swagger_rename__ = {'$ref': 'ref'}
 
     def _prim_(self, v):
-        return prim.prim_factory(self, v)
+        return primitives.prim_factory(self, v)
 
 
 class ItemsContext(Context):
@@ -52,7 +52,7 @@ class DataTypeObj(BaseObj):
             self.update_field(field, ctx._obj.get(field, None))
 
     def _prim_(self, v):
-        return prim.prim_factory(self, v)
+        return primitives.prim_factory(self, v)
 
 
 class Scope(six.with_metaclass(FieldMeta, BaseObj)):
@@ -132,7 +132,7 @@ class Parameter(six.with_metaclass(FieldMeta, DataTypeObj)):
     __swagger_fields__ = ['paramType', 'name', 'required', 'allowMultiple']
 
     def _prim_(self, v):
-        return prim.prim_factory(self, v, self.allowMultiple)
+        return primitives.prim_factory(self, v, self.allowMultiple)
 
 
 class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
@@ -191,7 +191,7 @@ class Model(six.with_metaclass(FieldMeta, BaseObj)):
         ]
 
     def _prim_(self, v):
-        return prim.Model(self, v)
+        return primitives.Model(self, v)
 
 
 class Resource(six.with_metaclass(FieldMeta, BaseObj)):

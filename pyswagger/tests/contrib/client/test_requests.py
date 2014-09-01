@@ -1,7 +1,8 @@
 from __future__ import absolute_import
-from pyswagger import SwaggerApp, prim
+from pyswagger import SwaggerApp
 from pyswagger.contrib.client.requests import Client
 from ...utils import get_test_data_folder
+from ....primitives import Model, Array, Void
 import unittest
 import httpretty
 import json
@@ -55,12 +56,12 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(httpretty.last_request().querystring, dict(status=['available,sold']))
 
         self.assertEqual(resp.status, 200)
-        self.assertTrue(isinstance(resp.data, prim.Array))
+        self.assertTrue(isinstance(resp.data, Array))
         self.assertTrue(len(resp.data), 2)
-        self.assertTrue(isinstance(resp.data[0], prim.Model))
+        self.assertTrue(isinstance(resp.data[0], Model))
         self.assertEqual(resp.data[0].id, 1)
         self.assertEqual(resp.data[0].name, 'Tom')
-        self.assertTrue(isinstance(resp.data[0].tags, prim.Array))
+        self.assertTrue(isinstance(resp.data[0].tags, Array))
 
     @httpretty.activate
     def test_findPetsByTags(self):
@@ -75,12 +76,12 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(httpretty.last_request().querystring, dict(tags=['small,cute,north']))
 
         self.assertEqual(resp.status, 200)
-        self.assertTrue(isinstance(resp.data, prim.Array))
+        self.assertTrue(isinstance(resp.data, Array))
         self.assertTrue(len(resp.data), 2)
-        self.assertTrue(isinstance(resp.data[0], prim.Model))
+        self.assertTrue(isinstance(resp.data[0], Model))
         self.assertEqual(resp.data[1].id, 2)
         self.assertEqual(resp.data[1].name, 'Qoo')
-        self.assertTrue(isinstance(resp.data[1].tags, prim.Array))
+        self.assertTrue(isinstance(resp.data[1].tags, Array))
 
     @httpretty.activate
     def test_partialUpdate(self):
@@ -95,10 +96,10 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         ))
 
         self.assertEqual(resp.status, 200)
-        self.assertTrue(isinstance(resp.data, prim.Array))
+        self.assertTrue(isinstance(resp.data, Array))
         self.assertEqual(resp.data[1].id, 3)
         self.assertEqual(resp.data[1].name, 'Sue')
-        self.assertTrue(isinstance(resp.data[1].tags, prim.Array))
+        self.assertTrue(isinstance(resp.data[1].tags, Array))
 
     @httpretty.activate
     def test_updatePetWithForm(self):
@@ -136,7 +137,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
-        self.assertTrue(isinstance(resp.data, prim.Void))
+        self.assertTrue(isinstance(resp.data, Void))
 
     @httpretty.activate
     def test_getPetById(self):
@@ -149,7 +150,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         resp = client.request(app.op['getPetById'](petId=1))
 
         self.assertEqual(resp.status, 200)
-        self.assertTrue(isinstance(resp.data, prim.Model))
+        self.assertTrue(isinstance(resp.data, Model))
         self.assertEqual(resp.data,
             {u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}], u'id': 1}
             )

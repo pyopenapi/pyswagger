@@ -1,6 +1,6 @@
 from pyswagger import SwaggerApp
 from .utils import get_test_data_folder
-from pyswagger import prim
+from ..primitives import Model, Array, Void
 from pyswagger.io import SwaggerRequest
 import unittest
 
@@ -22,10 +22,10 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertEqual(req.query, {})
 
         m = req._p['body']['body']
-        self.assertTrue(isinstance(m, prim.Model))
+        self.assertTrue(isinstance(m, Model))
         self.assertEqual(m.id, 1)
         self.assertEqual(m.name, 'Mary')
-        self.assertTrue(isinstance(m.category, prim.Model))
+        self.assertTrue(isinstance(m.category, Model))
         self.assertEqual(m.category.id, 1)
         self.assertEqual(m.category.name, 'dog')
 
@@ -61,23 +61,23 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
 
         m = req._p['body']['body']
-        self.assertTrue(isinstance(m, prim.Model))
+        self.assertTrue(isinstance(m, Model))
         self.assertEqual(m.id, 2)
         self.assertEqual(m.name, 'Tom')
         self.assertEqual(m.photoUrls, None)
         self.assertEqual(m.status, None)
 
-        self.assertTrue(isinstance(m.category, prim.Model))
+        self.assertTrue(isinstance(m.category, Model))
         mm = m.category
         self.assertEqual(mm.id, 2)
         self.assertEqual(mm.name, 'cat')
 
-        self.assertTrue(isinstance(m.tags, prim.Array))
+        self.assertTrue(isinstance(m.tags, Array))
         self.assertEqual(len(m.tags), 2)
-        self.assertTrue(isinstance(m.tags[0], prim.Model))
+        self.assertTrue(isinstance(m.tags[0], Model))
         self.assertEqual(m.tags[0].id, 0)
         self.assertEqual(m.tags[0].name, 'cute')
-        self.assertTrue(isinstance(m.tags[1], prim.Model))
+        self.assertTrue(isinstance(m.tags[1], Model))
         self.assertEqual(m.tags[1].id, 1)
         self.assertEqual(m.tags[1].name, 'small')
 
@@ -108,13 +108,13 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
 
         m = req._p['body']['body']
-        self.assertTrue(isinstance(m, prim.Model))
+        self.assertTrue(isinstance(m, Model))
         self.assertEqual(m.id, 34)
         self.assertEqual(m.name, 'Qoo')
         self.assertEqual(m.status, 'available')
 
         mm = m.category
-        self.assertTrue(isinstance(mm, prim.Model))
+        self.assertTrue(isinstance(mm, Model))
         self.assertEqual(mm.id, 2)
         self.assertEqual(mm.name, 'cat')
 
@@ -183,9 +183,9 @@ class SwaggerResponse_TestCase(unittest.TestCase):
         self.assertEqual(resp.message, '')
 
         d = resp.data
-        self.assertTrue(isinstance(d, prim.Array))
+        self.assertTrue(isinstance(d, Array))
         d1 = d[0]
-        self.assertTrue(isinstance(d1, prim.Model))
+        self.assertTrue(isinstance(d1, Model))
         self.assertEqual(d1.id, 1)
         self.assertEqual(d1.name, 'Tom')
         self.assertEqual(d1.tags, [dict(id=1, name='small')])
@@ -197,7 +197,7 @@ class SwaggerResponse_TestCase(unittest.TestCase):
 
         resp.apply_with(status=200, raw={})
         self.assertEqual(resp.data, None)
-        self.assertTrue(isinstance(resp.data, prim.Void))
+        self.assertTrue(isinstance(resp.data, Void))
 
     def test_invalid_enum(self):
         """ invalid enum value """

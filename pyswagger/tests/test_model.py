@@ -1,6 +1,6 @@
 from pyswagger import SwaggerApp
 from pyswagger.contrib.client.requests import Client
-from pyswagger.prim import Model
+from pyswagger.primitives import Model
 from .utils import get_test_data_folder
 import unittest
 import httpretty
