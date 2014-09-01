@@ -186,6 +186,6 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
             ))
 
         self.assertEqual(resp.status, 200)
-        self.assertEqual(received_file, 'a test Content')
+        self.assertEqual(received_file.decode(), 'a test Content')
         self.assertEqual(received_meta, 'a test file')
 

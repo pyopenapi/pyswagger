@@ -120,13 +120,16 @@ class SwaggerRequest(object):
                 body.write(six.b('\r\n'))
             body.write(six.b('\r\n'))
 
-
             # body
             if not v.data:
                 with open(v.filename, 'rb') as f:
                     body.write(f.read())
             else:
-                body.write(v.data.read())
+                data = v.data.read()
+                if isinstance(data, six.text_type):
+                    w(body).write(data)
+                else:
+                    body.write(data)
 
             body.write(six.b('\r\n'))
 
