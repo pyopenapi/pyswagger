@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from .getter import HttpGetter, FileGetter
 from .parser import ResourceListContext
 from .scan import Scanner
-from .scanner import Validate, TypeReduce, Resolve
+from .scanner import Validate, TypeReduce, Resolve, FixMinMax
 from .utils import ScopeDict
 import inspect
 import base64
@@ -63,7 +63,7 @@ class SwaggerApp(object):
 
         # convert types
         s = Scanner(app)
-        s.scan(route=[Validate(), tr])
+        s.scan(route=[FixMinMax(), tr])
 
         # 'm' for model
         setattr(app, '_' + kls.__name__ + '__m', ScopeDict(tr.model))

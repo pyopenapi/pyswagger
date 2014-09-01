@@ -26,7 +26,6 @@ class ScopeContext(Context):
     """ Context of Scope Object
     """
     __swagger_ref_object__ = Scope
-    __swagger_required__ = ['scope']
 
 
 class AuthorizationsContext(NamedContext):
@@ -36,14 +35,12 @@ class AuthorizationsContext(NamedContext):
     this one is used in API Declaration
     """
     __swagger_ref_object__ = Authorizations
-    __swagger_required__ = ['scope']
 
 
 class LoginEndpointContext(Context):
     """ Context of LoginEndpoint Object
     """
     __swagger_ref_object__ = LoginEndpoint
-    __swagger_required__ = ['url']
 
 
 class ImplicitContext(Context):
@@ -51,21 +48,18 @@ class ImplicitContext(Context):
     """
     __swagger_ref_object__ = Implicit
     __swagger_child__ = [('loginEndpoint', LoginEndpointContext)]
-    __swagger_required__ = ['loginEndpoint']
 
 
 class TokenRequestEndpointContext(Context):
     """ Context of TokenRequestEndpoint Object
     """
     __swagger_ref_object__ = TokenRequestEndpoint
-    __swagger_required__ = ['url']
 
 
 class TokenEndpointContext(Context):
     """ Context of Token Object
     """
     __swagger_ref_object__ = TokenEndpoint
-    __swagger_required__ = ['url']
 
 
 class AuthorizationCodeContext(Context):
@@ -76,7 +70,6 @@ class AuthorizationCodeContext(Context):
         ('tokenRequestEndpoint', TokenRequestEndpointContext),
         ('tokenEndpoint', TokenEndpointContext)
     ]
-    __swagger_required__ = ['tokenRequestEndpoint', 'tokenEndpoint']
 
 
 class GrantTypeContext(Context):
@@ -97,22 +90,17 @@ class AuthorizationContext(NamedContext):
         ('scopes', ScopeContext),
         ('grantTypes', GrantTypeContext)
     ]
-    __swagger_required__ = ['type']
 
 
 class ResponseMessageContext(Context):
     """ Context of ResponseMessage Object
     """
     __swagger_ref_object__ = ResponseMessage
-    __swagger_required__ = ['code', 'message']
-
  
 class ParameterContext(Context):
     """ Context of Parameter Object
     """
     __swagger_ref_object__ = Parameter 
-    __swagger_required__ = ['paramType', 'name']
-
 
 class OperationContext(Context):
     """ Context of Operation Object
@@ -123,7 +111,6 @@ class OperationContext(Context):
         ('parameters', ParameterContext),
         ('responseMessages', ResponseMessageContext)
     ]
-    __swagger_required__ = ['method', 'nickname', 'parameters']
 
 
 class ApiContext(Context):
@@ -131,7 +118,6 @@ class ApiContext(Context):
     """
     __swagger_ref_object__ = Api
     __swagger_child__ = [('operations', OperationContext)]
-    __swagger_required__ = ['path', 'operations']
 
 
 class PropertyContext(NamedContext):
@@ -145,8 +131,6 @@ class ModelContext(NamedContext):
     """
     __swagger_ref_object__ = Model
     __swagger_child__ = [('properties', PropertyContext)]
-    __swagger_required__ = ['id', 'properties']
-
 
 class ResourceContext(Context):
     """ Context of Resource Object
@@ -156,14 +140,12 @@ class ResourceContext(Context):
         ('apis', ApiContext),
         ('models', ModelContext)
     ]
-    __swagger_required__ = ['swaggerVersion', 'basePath', 'apis']
 
 
 class InfoContext(Context):
     """ Context of Info Object
     """
     __swagger_ref_object__ = Info
-    __swagger_required__ = ['title', 'description']
 
 
 class ResourceListContext(Context):
@@ -173,7 +155,6 @@ class ResourceListContext(Context):
     __swagger_child__ = [
         ('info', InfoContext),
         ('authorizations', AuthorizationContext)]
-    __swagger_required__ = ['swaggerVersion', 'apis']
 
     def __init__(self, parent, backref, getter):
         super(ResourceListContext, self).__init__(parent, backref)

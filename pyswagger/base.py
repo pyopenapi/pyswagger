@@ -6,13 +6,11 @@ import weakref
 class Context(list):
     """ Base of all Contexts
 
-    __swagger_required__: required fields
     __swagger_child__: list of tuples about nested context
     __swagger_ref_obj__: class of reference object, would be used when
     performing request.
     """
 
-    __swagger_required__ = []
     __swagger_child__ = []
 
     def __init__(self, parent_obj, backref):
@@ -54,12 +52,6 @@ class Context(list):
 
         if not isinstance(obj, dict):
             raise ValueError('invalid obj passed: ' + str(type(obj)))
-
-        if hasattr(self, '__swagger_required__'):
-            # check required field
-            missing = set(self.__class__.__swagger_required__) - set(obj.keys())
-            if len(missing):
-                raise ValueError('Required: ' + str(missing))
 
         if hasattr(self, '__swagger_child__'):
             # to nested objects
@@ -132,12 +124,8 @@ class BaseObj(object):
         if not issubclass(type(ctx), Context):
             raise TypeError('should provide args[0] as Context, not: ' + ctx.__class__.__name__)
 
-        # handle required fields
-        for field in set(ctx.__swagger_required__) & set(self.__swagger_fields__):
-            self.update_field(field, ctx._obj[field])
-
-        # handle not-required fields
-        for field in set(self.__swagger_fields__) - set(ctx.__swagger_required__):
+        # handle fields
+        for field in self.__swagger_fields__:
             self.update_field(field, ctx._obj.get(field, None))
 
         # set self as childrent's parent

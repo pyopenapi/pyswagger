@@ -19,7 +19,6 @@ class ItemsContext(Context):
     """ Context of Items Object
     """
     __swagger_ref_object__ = Items
-    __swagger_required__ = []
 
 
 class DataTypeObj(BaseObj):
@@ -46,8 +45,7 @@ class DataTypeObj(BaseObj):
         with ItemsContext(ctx._obj, 'items') as items_ctx:
             items_ctx.parse(ctx._obj.get('items', None))
 
-        type_fields = set(DataTypeObj.__swagger_fields__) - set(ctx.__swagger_required__)
-        for field in type_fields:
+        for field in DataTypeObj.__swagger_fields__:
             # almost every data field is not required.
             self.update_field(field, ctx._obj.get(field, None))
 
