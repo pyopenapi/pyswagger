@@ -180,7 +180,16 @@ class File(object):
     """
     """
     def __init__(self, obj, val):
-        pass
+        """
+        header:
+            Content-Type -> content-type
+            Content-Transfer-Encoding -> content-transder-encoding
+        filename -> name
+        file-like object or path -> data
+        """
+        self.header = val.get('header', {})
+        self.data = val.get('data', None)
+        self.filename = val.get('filename', '')
 
 
 class PrimJSONEncoder(json.JSONEncoder):

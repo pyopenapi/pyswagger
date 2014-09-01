@@ -21,7 +21,7 @@ class TornadoClient(BaseClient):
         """
         """
         req, resp = super(TornadoClient, self).request(req_and_resp, opt)
-        req.prepare()
+        req.prepare(handle_files=True)
 
         url = url_concat(req.url, req.query)
 

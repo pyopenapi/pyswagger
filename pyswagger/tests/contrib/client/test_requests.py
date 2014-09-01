@@ -5,6 +5,7 @@ from ...utils import get_test_data_folder
 import unittest
 import httpretty
 import json
+import six
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
@@ -156,5 +157,18 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
     @httpretty.activate
     def test_uploadFile(self):
         """ Pet.uploadFile """
-        # TODO: implement File upload
+        httpretty.register_uri(httpretty.POST, 'http://petstore.swagger.wordnik.com/api/pet/uploadImage',
+            status=200)
+
+        resp = client.request(app.op['uploadFile'](
+            additionalMetadata='a test image', file=dict(data=six.StringIO('a test Content'), filename='test.txt')))
+
+        self.assertEqual(resp.status, 200)
+
+        body = httpretty.last_request().body.decode()
+        self.assertTrue(body.find('additionalMetadata') != -1)
+        self.assertTrue(body.find('a test image') != -1)
+        self.assertTrue(body.find('file') != -1)
+        self.assertTrue(body.find('a test Content') != -1)
+        self.assertTrue(body.find('filename="test.txt"') != -1)
 

@@ -1,15 +1,15 @@
 from __future__ import absolute_import
 from .base import BaseObj
 from .prim import PrimJSONEncoder
+from uuid import uuid4
 import six
 import json
+import io, codecs
 
 
 class SwaggerRequest(object):
     """ Request layer
     """
-
-    file_key = 'file_'
 
     # options
     opt_url_netloc = 'url_netloc'
@@ -18,9 +18,10 @@ class SwaggerRequest(object):
         """
         """
         self.__method = op.method
-        self.__p = dict(header={}, query={}, path={}, body={}, form={}, file_={})
+        self.__p = dict(header={}, query={}, path={}, body={}, form={}, File={})
         self.__url = op._parent_.basePath + op.path
-        self.__prepared = False
+        self.__is_prepared = False
+        self.__header = {}
 
         # TODO: this part can be resolved once by using scanner.
         # let produces/consumes/authorizations in Operation override global ones.
@@ -49,48 +50,90 @@ class SwaggerRequest(object):
             elif p.paramType == 'header':
                 converted = str(converted)
 
-            self.__p[p.paramType if p.type != 'File' else SwaggerRequest.file_key][p.name] = converted
+            self.__p[p.paramType if p.type != 'File' else 'File'][p.name] = converted
 
-    def _set_header(self):
-        """ prepare header section, reference implementation:
-            https://github.com/wordnik/swagger-js/blob/master/lib/swagger.js
-        """
+        # update 'accept' header section
         accepts = 'application/json'
-        content_type = 'application/json'
-
-        self.__header = self.__p['header']
-
-        if self.__p[SwaggerRequest.file_key]:
-            content_type = 'multipart/form-data'
-        elif self.__p['form']:
-            content_type = 'application/x-www-form-urlencoded'
-        elif self.__method == 'DELETE':
-            self.__p['body'] = {}
-
-        if content_type and self.__consumes and content_type not in self.__consumes:
-            content_type = self.__consumes[0]
         if accepts and self.__produces and accepts not in self.__produces:
             accepts = self.__produces[0]
 
-        if (content_type and self.__p['body']) or content_type == 'application/x-www-form-urlencoded':
-            self.__header['Content-Type'] = content_type 
         if accepts:
-            self.__header['Accept'] = accepts
+            self.__header.update({'Accept': accepts})
 
-    def _encode(self, content_type, data):
+    def _prepare_forms(self):
         """
         """
-        ret = ''
+        content_type = 'application/x-www-form-urlencoded'
+        if self.__consumes and content_type not in self.__consumes:
+            raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
-        if content_type == 'application/x-www-form-urlencoded':
-            ret = six.moves.urllib.parse.urlencode(data)
-        elif content_type == 'application/json':
-            ret = json.dumps(data, cls=PrimJSONEncoder)
-        elif content_type == 'multipart/form-data':
-            # it's wrong to pass any file related to here.
-            raise Exception('multipart/form-data encoding is not supported yet')
+        return content_type, six.moves.urllib.parse.urlencode(self.__p['form'])
 
-        return ret
+    def _prepare_body(self):
+        """
+        """
+        content_type = 'application/json'
+        if self.__consumes and content_type not in self.__consumes:
+            raise ValueError('unable to locate content-type: {0}'.format(content_type))
+
+        return content_type, json.dumps(
+            self.__p['body'], cls=PrimJSONEncoder)
+
+    def _prepare_files(self, encoding):
+        """
+        """
+        content_type = 'multipart/form-data'
+        if self.__consumes and content_type not in self.__consumes:
+            raise ValueError('unable to locate content-type: {0}'.format(content_type))
+
+        boundary = uuid4().hex
+        content_type += '; boundary={0}'
+        content_type = content_type.format(boundary)
+
+        # init stream
+        body = io.BytesIO()
+        w = codecs.getwriter(encoding)
+
+        for k, v in six.iteritems(self.__p['form']):
+            body.write(six.b('--{0}\r\n'.format(boundary)))
+
+            w(body).write('Content-Disposition: form-data; name="{0}"'.format(k))
+            body.write(six.b('\r\n'))
+            body.write(six.b('\r\n'))
+
+            w(body).write(v)
+
+            body.write(six.b('\r\n'))
+
+        # begin of file section
+        for k, v in six.iteritems(self.__p['File']):
+            body.write(six.b('--{0}\r\n'.format(boundary)))
+
+            # header
+            w(body).write('Content-Disposition: form-data; name="{0}"; filename="{1}"'.format(k, v.filename))
+            body.write(six.b('\r\n'))
+            if 'Content-Type' in v.header:
+                w(body).write('Content-Type: {0}'.format(v.header['Content-Type']))
+                body.write(six.b('\r\n'))
+            if 'Content-Transfer-Encoding' in v.header:
+                w(body).write('Content-Transfer-Encoding: {0}'.format(v.header['Content-Transfer-Encoding']))
+                body.write(six.b('\r\n'))
+            body.write(six.b('\r\n'))
+
+
+            # body
+            if not v.data:
+                with open(v.filename, 'rb') as f:
+                    body.write(f.read())
+            else:
+                body.write(v.data.read())
+
+            body.write(six.b('\r\n'))
+
+        # final boundary
+        body.write(six.b('--{0}--\r\n'.format(boundary)))
+
+        return content_type, body.getvalue()
 
     def _patch(self, opt={}):
         """
@@ -104,32 +147,46 @@ class SwaggerRequest(object):
 
         # if already prepared, prepare again to apply 
         # those patches.
-        if self.__prepared:
+        if self.__is_prepared:
             self.prepare()
 
-    def prepare(self):
+    def prepare(self, handle_files=True, encoding='utf-8'):
         """ make this request ready for any Client
         """
 
-        self.__prepared = True
-
-        self._set_header()
+        self.__is_prepared = True
 
         # combine path parameters into url
         self.__url = self.__url.format(**self.__p['path'])
 
+        # header parameters
+        self.__header.update(self.__p['header'])
+
         # update data parameter
-        if self.__p[SwaggerRequest.file_key]:
-            self.__data = self.__p[SwaggerRequest.file_key]
-        elif 'Content-Type' in self.header:
-            self.__data = self._encode(
-                self.header['Content-Type'],
-                self.__p['form'] if self.__p['form'] else self.__p['body']
-            )
+        content_type = None
+        if self.__p['File']:
+            if handle_files:
+                content_type, self.__data = self._prepare_files(encoding)
+            else:
+                # client that can encode multipart/form-data, should
+                # access form-data via data property and file from file
+                # property.
+
+                # only form data can be carried along with files,
+                self.__data = self.__p['form']
+
+        elif self.__p['form']:
+            content_type, self.__data = self._prepare_forms()
+        elif self.__p['body']:
+            content_type, self.__data = self._prepare_body()
         else:
             self.__data = None
 
+        if content_type:
+            self.__header.update({'Content-Type': content_type})
+
         return self
+    
 
     @property
     def url(self):
@@ -155,6 +212,11 @@ class SwaggerRequest(object):
     def data(self):
         """ data carried by this request """
         return self.__data
+
+    @property
+    def files(self):
+        """ files of this request """
+        return self.__p['File']
 
     @property
     def _p(self):

@@ -11,8 +11,6 @@ your API, the first option you find would be [Swagger-codegen](https://github.co
 **pyswagger** is much easier to use (you don't need to prepare a scala environment) and tries hard to fully supports
 [Swagger Spec](https://helloreverb.com/developers/swagger) in all aspects.
 
-**TODO:** File uploading (the last piece finally)
-
 
 - [Features](https://github.com/AntXlab/pyswagger/blob/master/README.md#features)
 - [Quick Start](https://github.com/AntXlab/pyswagger/blob/master/README.md#quick-start)

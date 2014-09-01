@@ -7,9 +7,12 @@ from ...utils import create_pet_db, get_test_data_folder, pet_Mary
 import json
 import sys
 import pytest
+import six
 
 
 sapp = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
+received_file = None
+received_meta = None
 
 """ refer to pyswagger.tests.data.v1_2.wordnik for details """
 
@@ -73,12 +76,26 @@ class PetIdRequestHandler(RESTHandler):
         self.finish()
 
 
+class ImageRequestHandler(web.RequestHandler):
+    """ test for file upload """
+
+    def post(self):
+        """ pass additionalMetadata and file to global
+        variables.
+        """
+        global received_file
+        global received_meta
+
+        received_file = self.request.files['file'][0].body
+        received_meta = self.get_argument('additionalMetadata')
+
 """ global variables """
 
 pet_db = create_pet_db()
 app = web.Application([
     (r'/api/pet', PetRequestHandler, dict(db=pet_db)),
-    (r'/api/pet/(\d+)', PetIdRequestHandler, dict(db=pet_db))
+    (r'/api/pet/(\d+)', PetIdRequestHandler, dict(db=pet_db)),
+    (r'/api/pet/uploadImage', ImageRequestHandler)
 ], debug=True)
 
 
@@ -87,8 +104,15 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
     """
     """
     def setUp(self):
+        global received_file
+        global received_meta
+
+        # reset global
+        received_file = received_meta = None
+
         super(TornadoTestCase, self).setUp()
         self.client = TornadoClient()
+
 
     def get_new_ioloop(self):
         return IOLoop.instance()
@@ -147,4 +171,21 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, pet_Mary)
+
+    @testing.gen_test
+    def test_uploadFile(self):
+        """ uploadFile """
+        global received_file
+        global received_meta
+
+        resp = yield self.client.request(
+            sapp.op['uploadFile'](
+                additionalMetadata='a test file', file=dict(data=six.StringIO('a test Content'), filename='test.txt')),
+            opt=dict(
+                url_netloc='localhost:'+str(self.get_http_port())
+            ))
+
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(received_file, 'a test Content')
+        self.assertEqual(received_meta, 'a test file')
 
