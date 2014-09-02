@@ -105,20 +105,3 @@ class HttpGetter(Getter):
 
         return ret
 
-
-class DictGetter(Getter):
-    """
-    getter for resource in memory, need special initialization.
-    """
-    def __init__(self, path=None):
-        super(DictGetter, self).__init__(path)
-
-    def load(self, path):
-        """
-        """
-
-    def upload(self, name, obj):
-        """
-        upload json object, could be either string or object.
-        """
-
