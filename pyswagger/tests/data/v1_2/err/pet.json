@@ -14,7 +14,6 @@
          "path":"/pet/{petId}",
          "operations":[
             {
-               "method":"GET",
                "summary":"Find pet by ID",
                "notes":"Returns a pet based on ID",
                "type":"Pet",
@@ -24,20 +23,18 @@
                },
                "parameters":[
                   {
-                     "name":"petId",
                      "description":"ID of pet that needs to be fetched",
                      "required":true,
                      "type":"integer",
                      "format":"int64",
-                     "paramType":"path",
-                     "allowMultiple":false,
+                     "paramType":"form",
+                     "allowMultiple":true,
                      "minimum":"1.0",
                      "maximum":"100000.0"
                   }
                ],
                "responseMessages":[
                   {
-                     "code":400,
                      "message":"Invalid ID supplied"
                   },
                   {
@@ -51,7 +48,6 @@
                "summary":"Deletes a pet",
                "notes":"",
                "type":"void",
-               "nickname":"deletePet",
                "authorizations":{
                   "oauth2":[
                      {
@@ -107,12 +103,12 @@
                      "name":"petId",
                      "description":"ID of pet that needs to be fetched",
                      "required":true,
-                     "type":"string",
+                     "type":"void",
                      "paramType":"path",
                      "allowMultiple":false
                   },
                   {
-                     "name":"body",
+                     "name":"qqq",
                      "description":"Pet object that needs to be added to the store",
                      "required":true,
                      "type":"Pet",
@@ -414,10 +410,7 @@
                }
             },
             "tags":{
-               "type":"array",
-               "items":{
-                  "$ref":"Tag"
-               }
+               "type":"array"
             },
             "status":{
                "type":"string",

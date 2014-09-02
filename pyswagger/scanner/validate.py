@@ -32,7 +32,7 @@ class Validate(object):
     class Disp(Dispatcher): pass
 
     def __init__(self):
-        self.errs = {}
+        self.errs = []
 
     @Disp.register([DataTypeObj])
     def _validate_data(self, scope, name, obj, _):
@@ -48,7 +48,7 @@ class Validate(object):
         if obj.uniqueItems != None and obj.type != 'array':
             errs.append('uniqueItems is only used for array type.')
 
-        return scope, name, obj.__class__.__name__, errs
+        return '' if scope == None else scope, name, obj.__class__.__name__, errs
 
     @Disp.register([Parameter])
     def _validate_param(self, scope, name, obj, _):
@@ -61,7 +61,7 @@ class Validate(object):
             if obj.type == 'array':
                 errs.append('array Type with allowMultiple is not supported.')
 
-        if obj.type == 'body' and obj.name not in ('', 'body'):
+        if obj.paramType == 'body' and obj.name not in ('', 'body'):
             errs.append('body parameter with invalid name: {0}'.format(obj.name))
 
         if obj.type == 'File':
@@ -73,7 +73,7 @@ class Validate(object):
         if obj.type == 'void':
             errs.append('void is only allowed in Operation object.')
 
-        return scope, name, obj.__class__.__name__, errs
+        return '' if scope == None else scope, name, obj.__class__.__name__, errs
 
     @Disp.register([Property])
     def _validate_prop(self, scope, name, obj, _):
@@ -83,7 +83,7 @@ class Validate(object):
         if obj.type == 'void':
             errs.append('void is only allowed in Operation object.')
 
-        return scope, name, obj.__class__.__name__, errs
+        return '' if scope == None else scope, name, obj.__class__.__name__, errs
 
     @Disp.register([Items])
     def _validate_items(self, scope, name, obj, _):
@@ -93,7 +93,7 @@ class Validate(object):
         if obj.type == 'void':
             errs.append('void is only allowed in Operation object.')
 
-        return scope, name, obj.__class__.__name__, errs
+        return '' if scope == None else scope, name, obj.__class__.__name__, errs
 
     @Disp.register([Authorization])
     def _validate_auth(self, scope, name, obj, _):
@@ -110,7 +110,7 @@ class Validate(object):
             if not obj.grantTypes:
                 errs.append('need "grantTypes" for oauth2')
 
-        return scope, name, obj.__class__.__name__, errs
+        return '' if scope == None else scope, name, obj.__class__.__name__, errs
 
     @Disp.register([GrantType])
     def _validate_granttype(self, scope, name, obj, _):
@@ -120,7 +120,7 @@ class Validate(object):
         if not obj.implicit and not obj.authorization_code:
             errs.append('Either implicit or authorization_code should be defined.')
 
-        return scope, name, obj.__class__.__name__, errs
+        return '' if scope == None else scope, name, obj.__class__.__name__, errs
 
 
     @Disp.register([Operation])
@@ -137,7 +137,7 @@ class Validate(object):
             if app.schema.authorizations[k].type in ('basicAuth', 'apiKey') and v != []:
                 errs.append('auth {0} should be an empty list'.format(k))
 
-        return scope, name, obj.__class__.__name__, errs
+        return '' if scope == None else scope, name, obj.__class__.__name__, errs
 
     """ requirement """
 
@@ -145,10 +145,10 @@ class Validate(object):
     def _check_reqs(scope, name, obj, reqs):
         errs = []
         for r in reqs:
-           if not hasattr(obj, r):
+           if not hasattr(obj, r) or None == getattr(obj, r):
                 errs.append('requirement {0} not meet.'.format(r))
 
-        return scope, name, obj.__class__.__name__, errs
+        return '' if scope == None else scope, name, obj.__class__.__name__, errs
 
     @Disp.register([Scope])
     def scope_require(self, scope, name, obj, _):
@@ -216,14 +216,14 @@ class Validate(object):
         return self._check_reqs(scope, name, obj, ['title', 'description'])
 
     @Disp.result
-    def result(self, scope, name, cls_name, errs):
+    def result(self, result):
         """ aggregate result """
-        if len(errs) == 0:
+        if result:
+            if len(result[3]) == 0:
+                return
+        else:
             return
 
-        key = (scope_compose(scope, name), cls_name)
-        if key in self.errs:
-            self.errs[key].extend(errs)
-        else:
-            self.errs[key] = errs
+        key = (scope_compose(result[0], result[1]), result[2])
+        self.errs.extend([(key, err) for err in result[3]])
 

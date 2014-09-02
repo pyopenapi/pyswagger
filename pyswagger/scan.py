@@ -110,7 +110,9 @@ class Scanner(object):
                     f = r.get(cls, None)
                     if f:
                         for ff in f:
-                            res(the_self, ff(the_self, scope, name, obj, self.app)) if res else ff(the_self, scope, name, obj, self.app)
+                            ret = ff(the_self, scope, name, obj, self.app)
+                            if res:
+                                res(the_self, ret)
 
                 for cls in obj.__class__.__mro__[:-1]:
                     if cls is BaseObj:

@@ -28,6 +28,19 @@ class SwaggerApp(object):
     def m(self):
         return self.__m
 
+    def validate(self, strict=True):
+        """
+        """
+        s = Scanner(self)
+        v = Validate()
+
+        s.scan(route=[v])
+
+        if strict and len(v.errs) > 0:
+            raise ValueError('this Swagger App contains error: {0}.'.format(len(v.errs)))
+
+        return v.errs
+
     @classmethod
     def _create_(kls, url, getter=None):
         """

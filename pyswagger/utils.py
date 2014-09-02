@@ -6,7 +6,11 @@ import re
 
 
 def scope_compose(scope, name):
-    new_scope = scope if scope else name
+    if name == None:
+        new_scope = scope
+    else:
+        new_scope = scope if scope else name
+
     if scope and name:
         new_scope = scope + SCOPE_SEPARATOR + name
 

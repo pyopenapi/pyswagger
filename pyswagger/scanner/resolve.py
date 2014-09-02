@@ -40,7 +40,9 @@ class Resolve(object):
             # already resolved.
             return
         else:
-            raise ValueError('Unknown object to resolve, ref:[' + str(obj.ref) + '], type:[' + str(obj.type) + ']')
+            raise ValueError(
+                'Unknown object to resolve, ref:{0},{1}, in scope:{2}, type:{3}'.format(
+                    obj.ref, obj.type, scope, obj.__class__.__name__))
 
         self._find_and_update(to_resolve, scope, obj, app)
 
