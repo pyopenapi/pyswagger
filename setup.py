@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 setup(
     name = 'pyswagger',
     packages = find_packages(exclude=['*.tests.*']),
-    version = '0.0.1',
+    version = '0.0.2',
     description = 'A type safe Swagger Client',
     author = 'Mission Liao',
     author_email = 'missionaryliao@gmail.com',
