@@ -42,8 +42,12 @@ class DataTypeObj(BaseObj):
 
         # Items Object, too lazy to create a Context for DataTypeObj
         # to wrap this child.
-        with ItemsContext(ctx._obj, 'items') as items_ctx:
-            items_ctx.parse(ctx._obj.get('items', None))
+        items_data = ctx._obj.get('items', None)
+        if items_data:
+            with ItemsContext(ctx._obj, 'items') as items_ctx:
+                items_ctx.parse(items_data)
+        else:
+            self.update_field('items', None)
 
         for field in DataTypeObj.__swagger_fields__:
             # almost every data field is not required.

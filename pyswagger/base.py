@@ -30,7 +30,7 @@ class Context(list):
         """ update what we get as a reference object,
         and put it back to parent context.
         """
-        if not self._obj:
+        if self._obj == None:
             return
 
         obj = self.__class__.__swagger_ref_object__(self)
@@ -57,6 +57,9 @@ class Context(list):
             # to nested objects
             for key, ctx_kls in self.__swagger_child__:
                 items = obj.get(key, None)
+                if items == None:
+                    continue
+
                 if isinstance(items, list):
                     # for objects grouped in list
                     self._obj[key] = []
@@ -65,9 +68,8 @@ class Context(list):
                             ctx.parse(obj=item)
                 else:
                     self._obj[key] = {}
-                    nested_obj = obj.get(key, None)
                     with ctx_kls(self._obj, key) as ctx:
-                        ctx.parse(obj=nested_obj)
+                        ctx.parse(obj=items)
 
         # update _obj with obj
         if self._obj != None:
@@ -101,6 +103,8 @@ class NamedContext(Context):
                 self.back2parent(self._parent_obj[self._backref], k)
             else:
                 raise ValueError('Unknown item type: ' + str(type(v)))
+
+        self._obj = None
 
 
 class BaseObj(object):
@@ -136,10 +140,8 @@ class BaseObj(object):
                 if isinstance(obj, list):
                     for v in obj:
                         assign_parent(v, cls, parent)
-                else:
-                    if not isinstance(obj, cls.__swagger_ref_object__):
-                        raise ValueError('Unknown child found: ' + name + ', with class:' + obj.__class__.__name__)
-                    obj._parent__ = parent
+                elif isinstance(obj, cls.__swagger_ref_object__):
+                        obj._parent__ = parent
 
             if isinstance(obj, dict):
                 # Objects from NamedContext
