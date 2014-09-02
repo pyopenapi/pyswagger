@@ -6,8 +6,12 @@ import os
 
 
 class Getter(six.Iterator):
+    """ base of getter object
+
+    Idealy, to subclass a getter, you just need to override load function.
+    The part to extend getter would be finalized once Swagger 2.0 is ready.
     """
-    """
+
     def __init__(self, path):
         self.base_path = path
 
@@ -39,15 +43,19 @@ class Getter(six.Iterator):
         return obj, name
 
     def load(self, path):
-        """
+        """ load the resource, and return for parsing.
+
+        :return: name and json object of resources
+        :rtype: (str, dict)
         """
         raise NotImplementedError()
 
     def __find_urls(self, obj):
-        """
-        the only thing to do here is to find next resource-file to retrieve.
-        to simplify implementation of getter, we need to maintain minimun
-        knowledge of swagger schema.
+        """ helper function to located relative url in Resource Listing object.
+
+        :param dict obj: json of Resource Listing object.
+        :return: urls of resources
+        :rtype: a list of str
         """
         urls = []
         if const.SCHEMA_APIS in obj:
@@ -61,8 +69,7 @@ class Getter(six.Iterator):
 
 
 class FileGetter(Getter):
-    """
-    default getter implmenetation for local resource file
+    """ default getter implmenetation for local resource file
     """
     def __init__(self, path):
         super(FileGetter, self).__init__(path)
@@ -85,8 +92,7 @@ class FileGetter(Getter):
 
 
 class HttpGetter(Getter):
-    """
-    default getter implementation for remote resource file
+    """ default getter implementation for remote resource file
     """
     def __init__(self, path):
         super(HttpGetter, self).__init__(path)

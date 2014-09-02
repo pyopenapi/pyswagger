@@ -11,16 +11,27 @@ class SwaggerRequest(object):
     """ Request layer
     """
 
-    # options
+    # option: url_netloc, replace netloc part in url, useful
+    # when testing a set of Swagger APIs locally.
     opt_url_netloc = 'url_netloc'
 
     def __init__(self, op, params={}, produces=None, consumes=None, authorizations=None):
+        """ constrcutor
+
+        :param Operation op: the related Operation object
+        :param dict params: parameter set provided by user
+        :param produces: list of 'Content-Type' from parent object
+        :param consumes: list of 'Accepts' from parent object
+        :param authorizations: list of required authorizations from parent object
         """
-        """
+
         self.__method = op.method
         self.__p = dict(header={}, query={}, path={}, body={}, form={}, File={})
         self.__url = op._parent_.basePath + op.path
+
+        # a flag to indicate if prepared
         self.__is_prepared = False
+
         self.__header = {}
 
         # TODO: this part can be resolved once by using scanner.
@@ -61,7 +72,7 @@ class SwaggerRequest(object):
             self.__header.update({'Accept': accepts})
 
     def _prepare_forms(self):
-        """
+        """ private function to prepare content for paramType=form
         """
         content_type = 'application/x-www-form-urlencoded'
         if self.__consumes and content_type not in self.__consumes:
@@ -70,7 +81,7 @@ class SwaggerRequest(object):
         return content_type, six.moves.urllib.parse.urlencode(self.__p['form'])
 
     def _prepare_body(self):
-        """
+        """ private function to prepare content for paramType=body
         """
         content_type = 'application/json'
         if self.__consumes and content_type not in self.__consumes:
@@ -80,7 +91,7 @@ class SwaggerRequest(object):
             self.__p['body'], cls=PrimJSONEncoder)
 
     def _prepare_files(self, encoding):
-        """
+        """ private function to prepare content for paramType=form with File
         """
         content_type = 'multipart/form-data'
         if self.__consumes and content_type not in self.__consumes:
@@ -139,7 +150,10 @@ class SwaggerRequest(object):
         return content_type, body.getvalue()
 
     def _patch(self, opt={}):
-        """
+        """ private function to patch this request. This function
+        could be called before/after preparation.
+
+        :param dict opt: options, used options would be popped. Refer to SwaggerRequest.opt_* for details.
         """
         opt_netloc = opt.pop(SwaggerRequest.opt_url_netloc, None)
         if opt_netloc:
@@ -154,7 +168,11 @@ class SwaggerRequest(object):
             self.prepare()
 
     def prepare(self, handle_files=True, encoding='utf-8'):
-        """ make this request ready for any Client
+        """ make this request ready for Clients
+
+        :param bool handle_files: False to skip multipart/form-data encoding
+        :param str encoding: encoding for body content.
+        :rtype: SwaggerRequest
         """
 
         self.__is_prepared = True
@@ -193,50 +211,76 @@ class SwaggerRequest(object):
 
     @property
     def url(self):
-        """ url of this request """
+        """ url of this request
+
+        :type: str 
+        """
         return self.__url
 
     @property
     def query(self):
-        """ query string of this request """
+        """ query part of this request
+        
+        :type: dict
+        """
         return self.__p['query']
 
     @property
     def method(self):
-        """ HTTP verb of this request """
+        """ HTTP verb of this request
+
+        :type: str
+        """
         return self.__method
 
     @property
     def header(self):
-        """ header of this request """
+        """ header of this request
+
+        :type: dict
+        """
         return self.__header
 
     @property
     def data(self):
-        """ data carried by this request """
+        """ data carried by this request
+
+        :type: byte
+        """
         return self.__data
 
     @property
     def files(self):
-        """ files of this request """
+        """ files of this Request
+
+        :type: dict of (name, primitives.File)
+        """
         return self.__p['File']
 
     @property
     def _p(self):
-        """ for unittest/debug/internal purpose """
+        """ access internal placeholder of all parameters,
+        for unittest/debug/internal purpose
+        """
         return self.__p
 
     @property
     def _auths(self):
-        """ list of authorizations required """
+        """ list of authorizations required
+        
+        :type: dict of list of Authorizations object.
+        """
         return self.__authorizations
 
 
 class SwaggerResponse(object):
     """ Response layer
     """
+
     def __init__(self, op):
-        """
+        """ constructor
+
+        :param Operation op: the related Operation object
         """
         self.__op = op
         self.__raw = self.__data = None
@@ -247,6 +291,10 @@ class SwaggerResponse(object):
 
     def apply_with(self, status=None, raw=None, header=None):
         """ update header, status code, raw datum, ...etc
+
+        :param int status: status code
+        :param str raw: body content
+        :param dict header: header section
         """
         def _find_rm():
             """ helper function to find
@@ -293,26 +341,41 @@ class SwaggerResponse(object):
 
     @property
     def status(self):
-        """ status code """
+        """ status code
+
+        :type: int
+        """
         return self.__status
 
     @property
     def message(self):
-        """ response message """
+        """ response message
+
+        :type: str
+        """
         return self.__message
 
     @property
     def data(self):
-        """ responsed data """
+        """ responsed data
+
+        :type: primitives.Model
+        """
         return self.__data
 
     @property
     def raw(self):
-        """ raw response """
+        """ raw response
+
+        :type: str
+        """
         return self.__raw
 
     @property
     def header(self):
-        """ header of response """
+        """ header of Response
+        
+        :type: dict of list, ex. {'Content-Type': [xxx, xxx]}
+        """
         return self.__header
 

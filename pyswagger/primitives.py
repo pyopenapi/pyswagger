@@ -8,9 +8,14 @@ import json
 
 
 class Byte(object):
+    """ for string type, byte format
     """
-    """
+
     def __init__(self, _, v):
+        """ constructor
+
+        :param str v: only accept six.string_types
+        """
         if isinstance(v, six.string_types):
             self.v = v
         else:
@@ -29,6 +34,7 @@ class Byte(object):
 class Time(object):
     """ Base of Datetime & Date
     """
+
     def __str__(self):
         return str(self.to_json())
 
@@ -39,9 +45,15 @@ class Time(object):
 
 
 class Date(Time):
+    """ for string type, date format
     """
-    """
+
     def __init__(self, _, v):
+        """ constructor
+
+        :param v: things used to constrcut date
+        :type v: timestamp in float, datetime.date object, or ISO-8601 in str
+        """
         self.v = None
         if isinstance(v, float):
             self.v = datetime.date.fromtimestamp(v)
@@ -54,9 +66,15 @@ class Date(Time):
 
 
 class Datetime(Time):
+    """ for string type, datetime format
     """
-    """
+
     def __init__(self, _, v):
+        """ constructor
+
+        :param v: things used to constrcut date
+        :type v: timestamp in float, datetime.datetime object, or ISO-8601 in str
+        """
         self.v = None
         if isinstance(v, float):
             self.v = datetime.datetime.fromtimestamp(v)
@@ -69,8 +87,9 @@ class Datetime(Time):
 
 
 class Array(list):
+    """ for array type, or parameter when allowMultiple=True
     """
-    """
+
     def __init__(self, item_type, v, unique=False):
         """ v: list or string_types
         """
@@ -84,6 +103,12 @@ class Array(list):
         self.extend(map(functools.partial(prim_factory, item_type, multiple=False), v))
 
     def __str__(self):
+        """ array primitives should be for 'path', 'header', 'query'.
+        Therefore, this kind of convertion is reasonable.
+
+        :return: the converted string
+        :rtype: str
+        """
         s = ''
         for v in self:
             s = ''.join([s, ',' if s else '', str(v)])
@@ -91,7 +116,7 @@ class Array(list):
 
 
 class Model(dict):
-    """
+    """ for complex type: models
     """
 
     # access dict like object
@@ -99,7 +124,11 @@ class Model(dict):
     __setattr__ = dict.__setitem__
 
     def __init__(self, obj, val):
-        """ val: dict or string_types
+        """ constructor
+
+        :param obj.Model obj: model object to instruct how to create this model
+        :param val: things used to construct this model
+        :type val: dict of json string in str or byte
         """
         super(Model, self).__init__()
 
@@ -129,6 +158,12 @@ class Model(dict):
             cur = cur._extends_
 
     def __eq__(self, other):
+        """ equality operater, 
+        will skip checking when both value are None or no attribute.
+
+        :param other: another model
+        :type other: primitives.Model or dict
+        """
         if other == None:
             return False
 
@@ -147,7 +182,10 @@ class Model(dict):
         return not self.__eq__(other)
 
     def to_json(self):
-        """ strip None values before sending on the wire """
+        """ convert to json string
+        
+        note: strip None values before sending on the wire
+        """
         # only when regenerate an dict is effective enough
         if none_count(self) * 10 / len(self.keys()) < 3:
             return self
@@ -161,7 +199,7 @@ class Model(dict):
 
 
 class Void(object):
-    """
+    """ for type void
     """
     def __init__(self, _, v):
         pass
@@ -177,15 +215,22 @@ class Void(object):
 
 
 class File(object):
+    """ for type File
     """
-    """
-    def __init__(self, obj, val):
-        """
-        header:
-            Content-Type -> content-type
-            Content-Transfer-Encoding -> content-transder-encoding
-        filename -> name
-        file-like object or path -> data
+    def __init__(self, _, val):
+        """ constructor
+
+        example val:
+        {
+            'header': {
+                'Content-Type': 'text/plain',
+                'Content-Transfer-Encoding': 'binary'
+            },
+            filename: 'a.txt',
+            data: None (or any file-like object)
+        }
+
+        :param val: dict containing file info.
         """
         self.header = val.get('header', {})
         self.data = val.get('data', None)
@@ -193,7 +238,7 @@ class File(object):
 
 
 class PrimJSONEncoder(json.JSONEncoder):
-    """
+    """ json encoder for primitives
     """
     def default(self, obj):
         if hasattr(obj, 'to_json'):
@@ -264,7 +309,13 @@ prim_types = [
 ]
 
 def prim_factory(obj, v, multiple=False):
-    """
+    """ factory function to create primitives
+
+    :param DataTypeObj obj: spec to construct primitives
+    :param v: value to construct primitives
+    :param bool multiple: if multiple value is enabled.
+
+    :return: the created primitive
     """
     v = obj.defaultValue if v == None else v
     if v == None:
@@ -293,6 +344,9 @@ def prim_factory(obj, v, multiple=False):
 def is_primitive(obj):
     """ check if a given object refering to a primitive
     defined in spec.
+
+    :param dict obj: object to be checked
+    :return: True if this object is a primitive.
     """
     return obj.type in prim_types
 

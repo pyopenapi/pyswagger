@@ -6,6 +6,13 @@ import re
 
 
 def scope_compose(scope, name):
+    """ compose a new scope
+
+    :param str scope: current scope
+    :param str name: name of next level in scope
+    :return the composed scope
+    """
+
     if name == None:
         new_scope = scope
     else:
@@ -17,17 +24,26 @@ def scope_compose(scope, name):
     return new_scope
 
 def scope_split(scope):
+    """ split a scope into names
+    
+    :param str scope: scope to be splitted
+    :return: list of str for scope names
+    """
+
     return scope.split(SCOPE_SEPARATOR) if scope else [None]
 
 
 class ScopeDict(dict):
     """ ScopeDict
     """
+
     def __getitem__(self, *keys):
         """ to access an obj with key: 'n!##!m', caller can pass as key:
         - n!##!m
         - n, m
         - m (if no collision is found)
+
+        :param dict keys: keys to access via scopes.
         """
         k = six.moves.reduce(lambda k1, k2: scope_compose(k1, k2), keys[0]) if isinstance(keys[0], tuple) else keys[0]
         try:
@@ -73,6 +89,9 @@ def from_iso8601(s):
     """ convert iso8601 string to datetime object.
     refer to http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14
     for details.
+
+    :param str s: time in ISO-8601
+    :rtype: datetime.datetime
     """
     m = _iso8601_fmt.match(s)
     if not m:
