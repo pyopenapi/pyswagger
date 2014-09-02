@@ -7,7 +7,7 @@ setup(
     author = 'Mission Liao',
     author_email = 'missionaryliao@gmail.com',
     url = 'https://github.com/AntXlab/pyswagger', # use the URL to the github repo
-    download_url = 'https://github.com/AntXlab/pyswagger/tarball/0.0.1', # I'll explain this in a second
+    download_url = 'https://github.com/AntXlab/pyswagger/tarball/0.0.2',
     keywords = ['swagger', 'REST'], # arbitrary keywords
     classifiers = [
         'Development Status :: 4 - Beta',
