@@ -6,3 +6,4 @@ pytest-cov>=1.6
 tornado>=3.2.0
 httpretty>=0.8.3
 requests>=2.3.0        
+Sphinx>=1.2.2
