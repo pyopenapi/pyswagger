@@ -87,6 +87,8 @@ SwaggerApp.op['getPetById']
 SwaggerApp.op['user', 'getById'] # call getById in user resource
 SwaggerApp.op['pet', 'getById']  # call getById in pet resource
 ```
+**SwaggerApp.validate(strict=True)** provides validation against the loaded Swagger API definition. When passing _strict=True_, an exception would be raised if validation failed. It returns a list of errors in tuple: _(where, type, msg)_.
+
 ###SwaggerClient
 You also need **SwaggerClient(auth=None)** to access API, this layer wraps the difference between those http libraries in python. where **auth**(optional) is SwaggerAuth, which helps to handle authorizations of each request.
 
@@ -128,8 +130,6 @@ python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc --cov-report=htm
 ---------
 
 ##FAQ
-- Format of date-time and date?
-  - The preferred way is [json schema](http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14) according to this [issue](https://github.com/wordnik/swagger-spec/issues/95)
 - Format of byte?
   - The way to encode/decode byte is [base64](https://github.com/wordnik/swagger-spec/issues/50).
 - Format of datetime on the wire?
