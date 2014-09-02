@@ -6,7 +6,7 @@ pyswagger
 
 A python client for [Swagger](https://helloreverb.com/developers/swagger) enabled REST API. It wouldn't be easier to
 try Swagger REST API by [Swagger-UI](https://github.com/wordnik/swagger-ui). However, when it's time to **unittest**
-your API, the first option you find would be [Swagger-codegen](https://github.com/wordnik/swagger-codegen), but the best option is us.
+your API, the first option you find would be [Swagger-codegen](https://github.com/wordnik/swagger-codegen), but the better option is us.
 
 **pyswagger** is much easier to use (you don't need to prepare a scala environment) and tries hard to fully supports
 [Swagger Spec](https://helloreverb.com/developers/swagger) in all aspects.
