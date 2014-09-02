@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .base import Context, NamedContext
+from .base import Context, ContainerType
 from .obj import (
     Scope,
     LoginEndpoint,
@@ -28,7 +28,7 @@ class ScopeContext(Context):
     __swagger_ref_object__ = Scope
 
 
-class AuthorizationsContext(NamedContext):
+class AuthorizationsContext(Context):
     """ Context of Authorization's' Object
     
     Do not get confused with Authorization Object,
@@ -47,7 +47,7 @@ class ImplicitContext(Context):
     """ Context of Implicit Object
     """
     __swagger_ref_object__ = Implicit
-    __swagger_child__ = [('loginEndpoint', LoginEndpointContext)]
+    __swagger_child__ = [('loginEndpoint', None, LoginEndpointContext)]
 
 
 class TokenRequestEndpointContext(Context):
@@ -67,8 +67,8 @@ class AuthorizationCodeContext(Context):
     """
     __swagger_ref_object__ = AuthorizationCode
     __swagger_child__ = [
-        ('tokenRequestEndpoint', TokenRequestEndpointContext),
-        ('tokenEndpoint', TokenEndpointContext)
+        ('tokenRequestEndpoint', None, TokenRequestEndpointContext),
+        ('tokenEndpoint', None, TokenEndpointContext)
     ]
 
 
@@ -77,18 +77,18 @@ class GrantTypeContext(Context):
     """
     __swagger_ref_object__ = GrantType
     __swagger_child__ = [
-        ('implicit', ImplicitContext),
-        ('authorization_code', AuthorizationCodeContext)
+        ('implicit', None, ImplicitContext),
+        ('authorization_code', None, AuthorizationCodeContext)
     ]
 
 
-class AuthorizationContext(NamedContext):
+class AuthorizationContext(Context):
     """ Context of Authorization Object
     """
     __swagger_ref_object__ = Authorization
     __swagger_child__ = [
-        ('scopes', ScopeContext),
-        ('grantTypes', GrantTypeContext)
+        ('scopes', ContainerType.list_, ScopeContext),
+        ('grantTypes', None, GrantTypeContext)
     ]
 
 
@@ -107,9 +107,9 @@ class OperationContext(Context):
     """
     __swagger_ref_object__ = Operation
     __swagger_child__ = [
-        ('authorizations', AuthorizationsContext),
-        ('parameters', ParameterContext),
-        ('responseMessages', ResponseMessageContext)
+        ('authorizations', ContainerType.dict_of_list_, AuthorizationsContext),
+        ('parameters', ContainerType.list_, ParameterContext),
+        ('responseMessages', ContainerType.list_, ResponseMessageContext)
     ]
 
 
@@ -117,28 +117,28 @@ class ApiContext(Context):
     """ Context of Api Object
     """
     __swagger_ref_object__ = Api
-    __swagger_child__ = [('operations', OperationContext)]
+    __swagger_child__ = [('operations', ContainerType.list_, OperationContext)]
 
 
-class PropertyContext(NamedContext):
+class PropertyContext(Context):
     """ Context of Property Object
     """
     __swagger_ref_object__ = Property
 
 
-class ModelContext(NamedContext):
+class ModelContext(Context):
     """ Context of Model Object
     """
     __swagger_ref_object__ = Model
-    __swagger_child__ = [('properties', PropertyContext)]
+    __swagger_child__ = [('properties', ContainerType.dict_, PropertyContext)]
 
 class ResourceContext(Context):
     """ Context of Resource Object
     """
     __swagger_ref_object__ = Resource
     __swagger_child__ = [
-        ('apis', ApiContext),
-        ('models', ModelContext)
+        ('apis', ContainerType.list_, ApiContext),
+        ('models', ContainerType.dict_, ModelContext)
     ]
 
 
@@ -153,8 +153,8 @@ class ResourceListContext(Context):
     """
     __swagger_ref_object__ = ResourceList
     __swagger_child__ = [
-        ('info', InfoContext),
-        ('authorizations', AuthorizationContext)]
+        ('info', None, InfoContext),
+        ('authorizations', ContainerType.dict_, AuthorizationContext)]
 
     def __init__(self, parent, backref, getter):
         super(ResourceListContext, self).__init__(parent, backref)

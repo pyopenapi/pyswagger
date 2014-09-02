@@ -3,6 +3,14 @@ import six
 import weakref
 
 
+class ContainerType:
+    """ Enum of Container-Types
+    """
+    list_ = 1
+    dict_ = 2
+    dict_of_list_ = 3 # {'xx': [], 'xx': [], ...}
+
+
 class Context(list):
     """ Base of all Contexts
 
@@ -55,21 +63,37 @@ class Context(list):
 
         if hasattr(self, '__swagger_child__'):
             # to nested objects
-            for key, ctx_kls in self.__swagger_child__:
+            for key, ct, ctx_kls in self.__swagger_child__:
                 items = obj.get(key, None)
+
+                # make all containers to something not None
+                if ct == ContainerType.list_:
+                    self._obj[key] = []
+                elif ct:
+                    self._obj[key] = {}
+
                 if items == None:
                     continue
 
-                if isinstance(items, list):
-                    # for objects grouped in list
-                    self._obj[key] = []
-                    for item in items:
-                        with ctx_kls(self._obj, key) as ctx:
-                            ctx.parse(obj=item)
-                else:
+                if ct == None:
                     self._obj[key] = {}
                     with ctx_kls(self._obj, key) as ctx:
                         ctx.parse(obj=items)
+                elif ct == ContainerType.list_:
+                    for item in items:
+                        with ctx_kls(self._obj, key) as ctx:
+                            ctx.parse(obj=item)
+                elif ct == ContainerType.dict_:
+                    for k, v in six.iteritems(items):
+                        self._obj[key][k] = {}
+                        with ctx_kls(self._obj[key], k) as ctx:
+                            ctx.parse(obj=v)
+                elif ct == ContainerType.dict_of_list_:
+                    for k, v in six.iteritems(items):
+                        self._obj[key][k] = []
+                        for vv in v:
+                            with ctx_kls(self._obj[key], k) as ctx:
+                                ctx.parse(obj=vv)
 
         # update _obj with obj
         if self._obj != None:
@@ -77,34 +101,6 @@ class Context(list):
                 self._obj[key] = obj[key]
         else:
             self._obj = obj
-
-
-class NamedContext(Context):
-    """ for named object
-    """
-    def parse(self, obj=None):
-        """ parse named object
-        """
-        if obj == None:
-            return
-
-        if not isinstance(obj, dict):
-            raise ValueError('invalid obj passed: ' + str(type(obj)))
-
-        for k, v in six.iteritems(obj):
-            if isinstance(v, list):
-                self._parent_obj[self._backref][k] = []
-                for item in v:
-                    super(NamedContext, self).parse(item)
-                    self.back2parent(self._parent_obj[self._backref], k)
-            elif isinstance(v, dict):
-                super(NamedContext, self).parse(v)
-                self._parent_obj[self._backref][k] = None
-                self.back2parent(self._parent_obj[self._backref], k)
-            else:
-                raise ValueError('Unknown item type: ' + str(type(v)))
-
-        self._obj = None
 
 
 class BaseObj(object):
@@ -133,7 +129,7 @@ class BaseObj(object):
             self.update_field(field, ctx._obj.get(field, None))
 
         # set self as childrent's parent
-        for name, cls in ctx.__swagger_child__:
+        for name, _, cls in ctx.__swagger_child__:
             obj = getattr(self, name)
 
             def assign_parent(obj, cls, parent):
