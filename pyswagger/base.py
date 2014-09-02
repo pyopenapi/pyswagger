@@ -17,7 +17,7 @@ class ContainerType:
     dict_of_list_ = 3
 
 
-class Context(list):
+class Context(object):
     """ Base of all parsing contexts """
 
     # required fields, a list of strings
