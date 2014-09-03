@@ -295,6 +295,8 @@ class SwaggerResponse(object):
         :param int status: status code
         :param str raw: body content
         :param dict header: header section
+        :return: return self for chaining
+        :rtype: SwaggerResponse
         """
         def _find_rm():
             """ helper function to find
@@ -338,6 +340,8 @@ class SwaggerResponse(object):
                     self.__header[k].extend(v)
                 else:
                     self.__header[k] = v
+
+        return self
 
     @property
     def status(self):

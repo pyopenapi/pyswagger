@@ -6,7 +6,7 @@ setup(
     name = 'pyswagger',
     packages = find_packages(exclude=['*.tests.*']),
     version = version,
-    description = 'A type safe Swagger Client',
+    description = 'A type-safe, dynamic, spec-compliant swagger client for python',
     author = 'Mission Liao',
     author_email = 'missionaryliao@gmail.com',
     url = 'https://github.com/AntXlab/pyswagger', # use the URL to the github repo

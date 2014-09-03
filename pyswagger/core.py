@@ -140,7 +140,8 @@ class SwaggerAuth(object):
 
         :param str name: name of the authorization to be updated
         :param auth_info: the real authorization data, token, ...etc.
-        :type auth_info: (username, password) for basicAuth, token for oauth2, apiKey
+        :type auth_info: **(username, password)** for *basicAuth*, **token** in str for *oauth2*, *apiKey*.
+
         :raises ValueError: unsupported types of authorizations
         """
         auth = self.__app.schema.authorizations.get(name, None)
@@ -187,7 +188,23 @@ class SwaggerAuth(object):
 
 
 class BaseClient(object):
-    """ base implementation of SwaggerClient """
+    """ base implementation of SwaggerClient, below is an minimum example
+    to extend this class
+
+    .. code-block:: python
+
+        class MyClient(BaseClient):
+            def request(self, req_and_resp, opt):
+                # passing to parent for default patching behavior,
+                # applying authorizations, ...etc.
+                req, resp = super(MyClient, self).request(req_and_resp, opt)
+
+                # perform request by req
+                ...
+                # apply result to resp
+                resp.apply(header=header, raw=data_received, status=code)
+                return resp
+    """
 
     def __init__(self, auth=None):
         """ constructor
