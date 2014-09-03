@@ -6,37 +6,58 @@ import weakref
 class ContainerType:
     """ Enum of Container-Types
     """
+
+    # list container
     list_ = 1
+
+    # dict container
     dict_ = 2
-    dict_of_list_ = 3 # {'xx': [], 'xx': [], ...}
+
+    # dict of list container, like: {'xx': [], 'xx': [], ...}
+    dict_of_list_ = 3
 
 
-class Context(list):
-    """ Base of all Contexts
+class Context(object):
+    """ Base of all parsing contexts """
 
-    __swagger_child__: list of tuples about nested context
-    __swagger_ref_obj__: class of reference object, would be used when
-    performing request.
-    """
-
+    # required fields, a list of strings
+    __swagger_required__ = []
+    
+    # parsing context of children fields,
+    # a list of tuple (field-name, container-type, parsing-context)
     __swagger_child__ = []
 
+    # factory of object to be created according to
+    # this parsing context.
+    __swagger_ref_obj__ = None
+
     def __init__(self, parent_obj, backref):
+        """
+        constructor
+
+        :param dict parent_obj: parent object placeholder
+        :param str backref: the key to parent object placeholder
+        """
+
+        # object placeholder of parent object
         self._parent_obj = parent_obj
+
+        # key used to indicate the location in
+        # parent object when parsing finished.
         self._backref = backref
+
         self.__reset_obj()
 
     def __enter__(self):
         return self
 
     def __reset_obj(self):
-        """
-        """
         self._obj = {}
 
-    def back2parent(self, parent_obj, backref):
-        """ update what we get as a reference object,
-        and put it back to parent context.
+    def __exit__(self, exc_type, exc_value, traceback):
+        """ When exiting parsing context, doing two things
+        - create the object corresponding to this parsing context.
+        - populate the created object to parent context.
         """
         if self._obj == None:
             return
@@ -44,16 +65,16 @@ class Context(list):
         obj = self.__class__.__swagger_ref_object__(self)
         self.__reset_obj()
 
-        if isinstance(parent_obj[backref], list):
-            parent_obj[backref].append(obj)
+        if isinstance(self._parent_obj[self._backref], list):
+            self._parent_obj[self._backref].append(obj)
         else:
-            parent_obj[backref] = obj
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        return self.back2parent(self._parent_obj, self._backref)
+            self._parent_obj[self._backref] = obj
 
     def parse(self, obj=None):
-        """ go deeper into objects
+        """ major part do parsing.
+
+        :param dict obj: json object to be parsed.
+        :raises ValueError: if obj is not a dict type.
         """
         if obj == None:
             return
@@ -75,6 +96,7 @@ class Context(list):
                 if items == None:
                     continue
 
+                # deep into children
                 if ct == None:
                     self._obj[key] = {}
                     with ctx_kls(self._obj, key) as ctx:
@@ -105,17 +127,20 @@ class Context(list):
 
 class BaseObj(object):
     """ Base implementation of all referencial objects,
-    make all properties readonly.
-
-    __swagger_fields__: list of names of fields, we will skip fields not
-    in this list.
-    __swagger_rename__: fields that need re-named.
     """
 
+    # fields that need re-named.
     __swagger_rename__ = {}
+
+    # list of names of fields, we will skip fields not in this list.
     __swagger_fields__ = []
 
     def __init__(self, ctx):
+        """ constructor
+
+        :param Context ctx: parsing context used to create this object
+        :raises TypeError: if ctx is not a subclass of Context.
+        """
         super(BaseObj, self).__init__()
 
         # init parent reference
@@ -137,7 +162,7 @@ class BaseObj(object):
                     for v in obj:
                         assign_parent(v, cls, parent)
                 elif isinstance(obj, cls.__swagger_ref_object__):
-                        obj._parent__ = parent
+                    obj._parent__ = parent
 
             if isinstance(obj, dict):
                 # Objects from NamedContext
@@ -148,23 +173,37 @@ class BaseObj(object):
 
 
     def get_private_name(self, f):
+        """ get private protected name of an attribute
+
+        :param str f: name of the private attribute to be accessed.
+        """
         f = self.__swagger_rename__[f] if f in self.__swagger_rename__.keys() else f
         return '_' + self.__class__.__name__ + '__' + f
  
     def update_field(self, f, obj):
         """ update a field
+
+        :param str f: name of field to be updated.
+        :param obj: value of field to be updated.
         """
         setattr(self, self.get_private_name(f), obj)
 
     @property
     def _parent_(self):
         """ get parent object
+
+        :return: the parent object.
+        :rtype: a subclass of BaseObj.
         """
         return self._parent__
 
     @property
     def _field_names_(self):
-        """ get list of field names
+        """ get list of field names, will go through MRO
+        to merge all fields in parent classes.
+
+        :return: a list of field names
+        :rtype: a list of str
         """
         ret = []
 
@@ -189,7 +228,9 @@ class BaseObj(object):
 
     @property
     def _children_(self):
-        """ get list of children
+        """ get children objects
+
+        :rtype: a list of tuples(name, child_object)
         """
         ret = []
         names = self._field_names_
@@ -222,6 +263,9 @@ class FieldMeta(type):
     """ metaclass to init fields
     """
     def __new__(metacls, name, bases, spc):
+        """ scan through MRO to get a merged list of fields,
+        and create those fields.
+        """
         def init_fields(fields, rename):
             for f in fields:
                 f = rename[f] if f in rename.keys() else f

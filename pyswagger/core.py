@@ -10,26 +10,51 @@ import six
 
 
 class SwaggerApp(object):
-    """ Resource Listing
+    """ Major component of pyswagger
+
+    This object is tended to be used in read-only manner. Therefore,
+    all accessible attributes are almost read-only properties.
     """
+
     @property
     def schema(self):
+        """ schema representation of Swagger API, its structure may
+        be different from different version of Swagger.
+
+        :type: ResourceList
+        """
         return self.__schema
 
     @property
     def rs(self):
+        """ list of Resources, a shortcut of app.schema.apis
+
+        :type: list of Resource
+        """
         return self.__resrc
 
     @property
     def op(self):
+        """ list of Operations, organized by ScopeDict
+
+        :type: ScopeDict of Operations
+        """
         return self.__op
 
     @property
     def m(self):
+        """ list of Models, organized by ScopeDict
+
+        :type: ScopeDict of Models
+        """
         return self.__m
 
     def validate(self, strict=True):
-        """
+        """ check if this Swagger API valid or not.
+
+        :param bool strict: when in strict mode, exception would be raised if not valid.
+        :return: validation errors
+        :rtype: list of tuple(where, type, msg).
         """
         s = Scanner(self)
         v = Validate()
@@ -43,7 +68,14 @@ class SwaggerApp(object):
 
     @classmethod
     def _create_(kls, url, getter=None):
-        """
+        """ factory of SwaggerApp
+
+        :param str url: url of path of Swagger API definition
+        :param getter: customized Getter
+        :type getter: sub class/instance of Getter
+        :return: the created SwaggerApp object
+        :rtype: SwaggerApp
+        :raises ValueError: if url is wrong
         """
 
         local_getter = getter or HttpGetter
@@ -90,14 +122,27 @@ class SwaggerApp(object):
 
 
 class SwaggerAuth(object):
-    """ authorization handler """
+    """ authorization handler
+    """
 
     def __init__(self, app):
+        """ constructor
+
+        :param SwaggerApp app: SwaggerApp
+        """
         self.__app = app
+
+        # placeholder of authorizations
         self.__auths = {}
 
     def update_with(self, name, auth_info):
-        """
+        """ insert/clear authorizations
+
+        :param str name: name of the authorization to be updated
+        :param auth_info: the real authorization data, token, ...etc.
+        :type auth_info: **(username, password)** for *basicAuth*, **token** in str for *oauth2*, *apiKey*.
+
+        :raises ValueError: unsupported types of authorizations
         """
         auth = self.__app.schema.authorizations.get(name, None)
         if auth == None:
@@ -123,7 +168,11 @@ class SwaggerAuth(object):
         self.__auths.update({name: (header, {key: cred})})
 
     def __call__(self, req):
-        """
+        """ apply authorization for a request.
+
+        :param SwaggerRequest req: the request to be authorized.
+        :return: the updated request
+        :rtype: SwaggerRequest
         """
         if not req._auths:
             return req
@@ -139,13 +188,41 @@ class SwaggerAuth(object):
 
 
 class BaseClient(object):
-    """ base implementation of SwaggerClient """
+    """ base implementation of SwaggerClient, below is an minimum example
+    to extend this class
+
+    .. code-block:: python
+
+        class MyClient(BaseClient):
+            def request(self, req_and_resp, opt):
+                # passing to parent for default patching behavior,
+                # applying authorizations, ...etc.
+                req, resp = super(MyClient, self).request(req_and_resp, opt)
+
+                # perform request by req
+                ...
+                # apply result to resp
+                resp.apply(header=header, raw=data_received, status=code)
+                return resp
+    """
 
     def __init__(self, auth=None):
+        """ constructor
+
+        :param SwaggerAuth auth: the authorization holder
+        """
+
+        # placeholder of SwaggerAuth
         self.__auth = auth
 
     def request(self, req_and_resp, opt={}):
-        """
+        """ preprocess before performing a request, usually some patching.
+        authorization also applied here.
+
+        :param req_and_resp: tuple of SwaggerRequest and SwaggerResponse
+        :type req_and_resp: (SwaggerRequest, SwaggerResponse)
+        :return: patched request and response
+        :rtype: SwaggerRequest, SwaggerResponse
         """
         req, resp = req_and_resp
 
