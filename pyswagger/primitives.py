@@ -222,8 +222,11 @@ class File(object):
 
         example val:
         {
+            # header values used in multipart/form-data according to RFC2388
             'header': {
                 'Content-Type': 'text/plain',
+                
+                # according to RFC2388, available values are '7bit', '8bit', 'binary'
                 'Content-Transfer-Encoding': 'binary'
             },
             filename: 'a.txt',
