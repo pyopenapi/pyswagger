@@ -23,8 +23,9 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 ---------
 
 ##Features
-- support Swagger **1.2** on python **2.6**, **2.7**, **3.3**, **3.4**
-- type safe, input/output are converted to python types according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in swagger. You don't need to touch any json schema when using pyswagger. Limitations like **minimum/maximum** or **enum** are also checked. **Model inheritance** also supported.
+- support Swagger **1.2** on python **2.6**, **2.7**, **3.3**, **3.4**, supporting on Swagger **2.0** is promised.
+- type safe, input/output are converted to python types according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in Swagger. You don't need to touch any json schema when using pyswagger. Limitations like **minimum/maximum** or **enum** are also checked. **Model inheritance** also supported.
+- provide function **SwaggerApp.validate** to check validity of the loaded API definition according to spec.
 - builtin client implementation based on various http clients in python.
   - [requests](https://github.com/kennethreitz/requests)
   - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)
@@ -99,7 +100,21 @@ client.request(app.op['addPet'](body=dict(id=1, name='Tom')))
 To make a request, you need to create a pair of request/response from **SwaggerApp.op** by providing essential parameters. Then passing the tuple of (request, response) to **SwaggerClient.request(req_and_resp, opt={})** likes the code segment above. Below is a reference mapping between python objects and Swagger primitives. Check this mapping when you need to construct a parameter set:
 - **dict** corresponds to _Model_
 - **list** corresponds to _Array_
-- **datetime.datetime**, timestamp, or ISO8601-string for _date-time_ and _date_
+- **datetime.datetime**, timestamp(float or int), or ISO8601-string for _date-time_ and _date_
+- _File_ type is a little bit complex, but just similar to [request](https://github.com/kennethreitz/requests), which uses a dict containing file info.
+```python
+YouFile = {
+  # header values used in multipart/form-data according to RFC2388
+  'header': {
+    'Content-Type': 'text/plain',
+    
+    # according to RFC2388, available values are '7bit', '8bit', 'binary'
+    'Content-Transfer-Encoding': 'binary'
+  },
+  'filename': 'a.txt',
+  'data': None (or any file-like object)
+}
+```
 - other primitives are similar to python's primitives
 
 The return value is a **SwaggerResponse** object, with these attributes:
@@ -135,3 +150,5 @@ python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc --cov-report=htm
   - The way to encode/decode byte is [base64](https://github.com/wordnik/swagger-spec/issues/50).
 - Format of datetime on the wire?
   - should be an ISO8601 string, according to this [issue](https://github.com/wordnik/swagger-spec/issues/95).
+- How **allowMultiple** is handled?
+  - Take type integer as example, you can pass an integer or an array/tuple of integer for this parameter.
