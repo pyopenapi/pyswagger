@@ -9,8 +9,8 @@ setup(
     description = 'A type-safe, dynamic, spec-compliant swagger client for python',
     author = 'Mission Liao',
     author_email = 'missionaryliao@gmail.com',
-    url = 'https://github.com/AntXlab/pyswagger', # use the URL to the github repo
-    download_url = 'https://github.com/AntXlab/pyswagger/tarball/{0}'.format(version),
+    url = 'https://github.com/mission-liao/pyswagger', # use the URL to the github repo
+    download_url = 'https://github.com/mission-liao/pyswagger/tarball/{0}'.format(version),
     keywords = ['swagger', 'REST'], # arbitrary keywords
     classifiers = [
         'Development Status :: 4 - Beta',

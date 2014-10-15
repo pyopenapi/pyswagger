@@ -66,6 +66,6 @@ Getting Started
         client.request(app.op['getPetsByStatus'](status=['available', 'sold'])) # multiple value, wrapped by list.
 
 
-`Source code <https://github.com/AntXlab/pyswagger>`_
-`Report issues <https://github.com/AntXlab/pyswagger/issues>`_
+`Source code <https://github.com/mission-liao/pyswagger>`_
+`Report issues <https://github.com/mission-liao/pyswagger/issues>`_
 
