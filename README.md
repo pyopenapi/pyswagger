@@ -1,8 +1,8 @@
 pyswagger
 =========
 
-[![Build Status](https://travis-ci.org/AntXlab/pyswagger.svg?branch=master)](https://travis-ci.org/AntXlab/pyswagger)
-[![Coverage Status](https://coveralls.io/repos/AntXlab/pyswagger/badge.png?branch=master)](https://coveralls.io/r/AntXlab/pyswagger?branch=master)
+[![Build Status](https://travis-ci.org/mission-liao/pyswagger.svg?branch=master)](https://travis-ci.org/mission-liao/pyswagger)
+[![Coverage Status](https://coveralls.io/repos/mission-liao/pyswagger/badge.png?branch=master)](https://coveralls.io/r/mission-liao/pyswagger?branch=master)
 
 A python client for [Swagger](https://helloreverb.com/developers/swagger) enabled REST API. It wouldn't be easier to
 try Swagger REST API by [Swagger-UI](https://github.com/wordnik/swagger-ui). However, when it's time to **unittest**
@@ -13,12 +13,12 @@ your API, the first option you find would be [Swagger-codegen](https://github.co
 
 Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go through this README.
 
-- [Features](https://github.com/AntXlab/pyswagger/blob/master/README.md#features)
-- [Quick Start](https://github.com/AntXlab/pyswagger/blob/master/README.md#quick-start)
-- [Installation](https://github.com/AntXlab/pyswagger/blob/master/README.md#installation)
-- [Reference](https://github.com/AntXlab/pyswagger/blob/master/README.md#reference)
-- [Development](https://github.com/AntXlab/pyswagger/blob/master/README.md#development)
-- [FAQ](https://github.com/AntXlab/pyswagger/blob/master/README.md#faq)
+- [Features](https://github.com/mission-liao/pyswagger/blob/master/README.md#features)
+- [Quick Start](https://github.com/mission-liao/pyswagger/blob/master/README.md#quick-start)
+- [Installation](https://github.com/mission-liao/pyswagger/blob/master/README.md#installation)
+- [Reference](https://github.com/mission-liao/pyswagger/blob/master/README.md#reference)
+- [Development](https://github.com/mission-liao/pyswagger/blob/master/README.md#development)
+- [FAQ](https://github.com/mission-liao/pyswagger/blob/master/README.md#faq)
 
 ---------
 
