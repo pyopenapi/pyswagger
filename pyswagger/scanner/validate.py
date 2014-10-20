@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
 from ..utils import scope_compose
-from ..obj import (
+from ..spec.v1_2.obj import (
     DataTypeObj,
     Parameter,
     Property,

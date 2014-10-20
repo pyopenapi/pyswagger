@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
-from ..obj import DataTypeObj, Items, Model, ResponseMessage
+from ..spec.v1_2.obj import DataTypeObj, Items, Model, ResponseMessage
 from ..utils import scope_split, scope_compose
 from ..primitives import is_primitive
 import weakref

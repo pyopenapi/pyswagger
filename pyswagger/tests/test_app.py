@@ -1,6 +1,6 @@
 from pyswagger import SwaggerApp
 from .utils import get_test_data_folder
-from pyswagger.obj import (
+from pyswagger.spec.v1_2.obj import (
     Resource
 )
 import unittest

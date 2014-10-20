@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
-from ..obj import Operation, Model
+from ..spec.v1_2.obj import Operation, Model
 from ..utils import scope_compose
 
 
