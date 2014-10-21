@@ -48,14 +48,11 @@
                   "description":"Invalid input"
                }
             },
-            "security":{
-               "petstore_auth":{
-                  "scopes":[
-                     "write:pets",
-                     "read:pets"
-                  ]
-               }
-            }
+            "security":[
+                {
+                    "petstore_auth": ["write:pets", "read:pets"]
+                }
+            ]
          },
          "put":{
             "tags":[
@@ -94,14 +91,11 @@
                   "description":"Invalid ID supplied"
                }
             },
-            "security":{
-               "petstore_auth":{
-                  "scopes":[
-                     "write:pets",
-                     "read:pets"
-                  ]
-               }
-            }
+            "security":[
+                {
+                    "petstore_auth": ["write:pets", "read:pets"]
+                }
+            ]
          }
       },
       "/pet/findByStatus":{
@@ -143,14 +137,11 @@
                   "description":"Invalid status value"
                }
             },
-            "security":{
-               "petstore_auth":{
-                  "scopes":[
-                     "write:pets",
-                     "read:pets"
-                  ]
-               }
-            }
+            "security":[
+                {
+                    "petstore_auth": ["write:pets", "read:pets"] 
+                }
+            ]
          }
       },
       "/pet/findByTags":{
@@ -192,14 +183,11 @@
                   "description":"Invalid tag value"
                }
             },
-            "security":{
-               "petstore_auth":{
-                  "scopes":[
-                     "write:pets",
-                     "read:pets"
-                  ]
-               }
-            }
+            "security":[
+                {
+                    "petstore_auth": ["write:pets", "read:pets"]
+                }
+            ]
          }
       },
       "/pet/{petId}":{
@@ -238,17 +226,14 @@
                   "description":"Invalid ID supplied"
                }
             },
-            "security":{
-               "api_key":{
-
-               },
-               "petstore_auth":{
-                  "scopes":[
-                     "write:pets",
-                     "read:pets"
-                  ]
-               }
-            }
+            "security":[
+                {
+                    "api_key":[]
+                },
+                {
+                    "petstore_auth":["write:pets", "read:pets"]
+                }
+            ]
          },
          "delete":{
             "tags":[
@@ -276,14 +261,11 @@
                   "description":"Invalid pet value"
                }
             },
-            "security":{
-               "petstore_auth":{
-                  "scopes":[
-                     "write:pets",
-                     "read:pets"
-                  ]
-               }
-            }
+            "security":[
+                {
+                    "petstore_auth":["write:pets", "read:pets"]
+                }
+            ]
          }
       },
       "/store/order":{
