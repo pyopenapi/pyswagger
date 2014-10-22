@@ -1,6 +1,6 @@
 from pyswagger import SwaggerApp
 from pyswagger.scan import Scanner, Dispatcher
-from .utils import get_test_data_folder
+from ..utils import get_test_data_folder
 from pyswagger.spec.v1_2.obj import (
     Resource,
     Authorization,
