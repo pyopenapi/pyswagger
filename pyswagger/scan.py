@@ -6,7 +6,7 @@ import six
 
 def default_tree_traversal(app):
     """ default tree traversal """
-    objs = [(None, None, app.schema)]
+    objs = [(None, None, app.root)]
     while len(objs) > 0:
         scope, name, obj = objs.pop()
 

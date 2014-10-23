@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ...base import Context, ContainerType
-from .obj import (
+from .objects import (
     Scope,
     LoginEndpoint,
     Implicit,

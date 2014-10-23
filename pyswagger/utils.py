@@ -4,7 +4,7 @@ import six
 import datetime
 import re
 
-
+#TODO: accept varg
 def scope_compose(scope, name):
     """ compose a new scope
 
@@ -38,10 +38,10 @@ class ScopeDict(dict):
     """
 
     def __getitem__(self, *keys):
-        """ to access an obj with key: 'n!##!m', caller can pass as key:
-        - n!##!m
-        - n, m
-        - m (if no collision is found)
+        """ to access an obj with key: 'n!##!m...!##!z', caller can pass as key:
+        - n!##!m...!##!z
+        - n, m, ..., z
+        - z
 
         :param dict keys: keys to access via scopes.
         """

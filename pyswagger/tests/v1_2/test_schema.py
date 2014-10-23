@@ -1,6 +1,6 @@
 from pyswagger import SwaggerApp
 from ..utils import get_test_data_folder
-from pyswagger.spec.v1_2.obj import (
+from pyswagger.spec.v1_2.objects import (
     Info,
     Authorization,
     Scope,
@@ -27,21 +27,21 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_resource_list(self):
         """ resource list """
-        self.assertTrue(isinstance(app.schema.info, Info))
-        self.assertEqual(app.schema.info.title, 'Swagger Sample App')
-        self.assertEqual(app.schema.swaggerVersion, '1.2')
+        self.assertTrue(isinstance(app.root.info, Info))
+        self.assertEqual(app.root.info.title, 'Swagger Sample App')
+        self.assertEqual(app.root.swaggerVersion, '1.2')
         # description is ignored 
-        self.assertRaises(AttributeError, getattr, app.schema.info, 'description')
+        self.assertRaises(AttributeError, getattr, app.root.info, 'description')
 
     def test_authorizations(self):
         """ authorizations """
-        self.assertTrue('oauth2' in app.schema.authorizations)
-        self.assertTrue(isinstance(app.schema.authorizations['oauth2'], Authorization))
-        self.assertEqual(app.schema.authorizations['oauth2'].type, 'oauth2')
+        self.assertTrue('oauth2' in app.root.authorizations)
+        self.assertTrue(isinstance(app.root.authorizations['oauth2'], Authorization))
+        self.assertEqual(app.root.authorizations['oauth2'].type, 'oauth2')
 
     def test_scope(self):
         """ scope """
-        auth = app.schema.authorizations['oauth2']
+        auth = app.root.authorizations['oauth2']
         self.assertEqual(len(auth.scopes), 2)
         self.assertTrue(isinstance(auth.scopes[0], Scope))
         self.assertTrue(isinstance(auth.scopes[0], Scope))
@@ -51,18 +51,18 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_grant_type(self):
         """ grant type """
-        auth = app.schema.authorizations['oauth2']
+        auth = app.root.authorizations['oauth2']
         self.assertTrue(isinstance(auth.grantTypes, GrantType))
 
     def test_implicit(self):
         """ implicit """
-        grant = app.schema.authorizations['oauth2'].grantTypes
+        grant = app.root.authorizations['oauth2'].grantTypes
         self.assertTrue(isinstance(grant.implicit, Implicit))
         self.assertEqual(grant.implicit.tokenName, 'access_token')
 
     def test_login_endpoint(self):
         """ login endpoint """
-        implicit = app.schema.authorizations['oauth2'].grantTypes.implicit
+        implicit = app.root.authorizations['oauth2'].grantTypes.implicit
         self.assertTrue(isinstance(implicit.loginEndpoint, LoginEndpoint))
         self.assertEqual(implicit.loginEndpoint.url,
             'http://petstore.swagger.wordnik.com/api/oauth/dialog')
@@ -70,12 +70,12 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_authorization_code(self):
         """ authorization code """
-        grant = app.schema.authorizations['oauth2'].grantTypes
+        grant = app.root.authorizations['oauth2'].grantTypes
         self.assertTrue(isinstance(grant.authorization_code, AuthorizationCode))
 
     def test_token_request_endpoint(self):
         """ token request endpoint """
-        auth = app.schema.authorizations['oauth2'].grantTypes.authorization_code
+        auth = app.root.authorizations['oauth2'].grantTypes.authorization_code
         self.assertTrue(isinstance(auth.tokenRequestEndpoint,TokenRequestEndpoint))
         self.assertEqual(auth.tokenRequestEndpoint.url,
             'http://petstore.swagger.wordnik.com/api/oauth/requestToken')
@@ -84,7 +84,7 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_token_endpoint(self):
         """ token endpoint """
-        auth = app.schema.authorizations['oauth2'].grantTypes.authorization_code
+        auth = app.root.authorizations['oauth2'].grantTypes.authorization_code
         self.assertTrue(isinstance(auth.tokenEndpoint, TokenEndpoint))
         self.assertEqual(auth.tokenEndpoint.url,
             'http://petstore.swagger.wordnik.com/api/oauth/token')
@@ -92,7 +92,7 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_resource_pet(self):
         """ resource """
-        pet = app.schema.apis['pet']
+        pet = app.root.apis['pet']
         self.assertTrue(isinstance(pet, Resource))
         self.assertEqual(pet.swaggerVersion, '1.2')
         self.assertEqual(pet.apiVersion, '1.0.0')
@@ -105,7 +105,7 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_operation(self):
         """ operation """
-        pet = app.schema.apis['pet']
+        pet = app.root.apis['pet']
         self.assertEqual(sorted(pet.apis.keys()), sorted([
             'updatePet',
             'addPet',
@@ -127,7 +127,7 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_parameter(self):
         """ parameter """
-        p = app.schema.apis['pet'].apis['updatePet'].parameters[0]
+        p = app.root.apis['pet'].apis['updatePet'].parameters[0]
         self.assertTrue(isinstance(p, Parameter))
         self.assertEqual(p.paramType, 'body')
         self.assertEqual(p.name, 'body')
@@ -137,30 +137,31 @@ class PropertyTestCase(unittest.TestCase):
 
     def test_response_message(self):
         """ response message """
-        msg = app.schema.apis['pet'].apis['updatePet'].responseMessages[0]
+        msg = app.root.apis['pet'].apis['updatePet'].responseMessages[0]
         self.assertTrue(isinstance(msg, ResponseMessage))
         self.assertEqual(msg.code, 400)
         self.assertEqual(msg.message, 'Invalid ID supplied')
 
     def test_model(self):
         """ model """
-        m = app.schema.apis['pet'].models['Pet']
+        m = app.root.apis['pet'].models['Pet']
         self.assertTrue(isinstance(m, Model))
         self.assertEqual(m.id, 'Pet');
         self.assertEqual(sorted(m.required), sorted(['id', 'name']))
 
     def test_authorization(self):
         """ authorization """
-        auth = app.schema.apis['pet'].apis['partialUpdate'].authorizations['oauth2'][0]
+        auth = app.root.apis['pet'].apis['partialUpdate'].authorizations['oauth2'][0]
         self.assertTrue(isinstance(auth, Authorizations))
         self.assertEqual(auth.scope, 'write:pets')
 
     def test_shortcut(self):
         """ a short cut to Resource, Operation, Model from SwaggerApp """
         # Resource
-        self.assertTrue(isinstance(app.rs['pet'], Resource))
-        self.assertTrue(isinstance(app.rs['user'], Resource))
-        self.assertTrue(isinstance(app.rs['store'], Resource))
+        # TODO: resource is now replaced by tags
+        #self.assertTrue(isinstance(app.rs['pet'], Resource))
+        #self.assertTrue(isinstance(app.rs['user'], Resource))
+        #self.assertTrue(isinstance(app.rs['store'], Resource))
 
         # Operation
         self.assertEqual(len(app.op.values()), 20)
@@ -189,15 +190,15 @@ class PropertyTestCase(unittest.TestCase):
         self.assertTrue(app.op['user!##!getUserByName'], Operation)
 
         # Model
-        self.assertEqual(len(app.m.values()), 5)
-        self.assertEqual(sorted(app.m.keys()), sorted([
+        self.assertEqual(len(app.d.values()), 5)
+        self.assertEqual(sorted(app.d.keys()), sorted([
             'pet!##!Category',
             'pet!##!Pet',
             'pet!##!Tag',
             'store!##!Order',
             'user!##!User'
         ]))
-        self.assertTrue(isinstance(app.m['pet!##!Category'], Model))
+        self.assertTrue(isinstance(app.d['pet!##!Category'], Model))
 
     def test_scope_dict(self):
         """ ScopeDict is a syntactic suger
@@ -209,15 +210,15 @@ class PropertyTestCase(unittest.TestCase):
         self.assertTrue(app.op['getUserByName'] is app.op['user!##!getUserByName'])
 
         # Model
-        self.assertTrue(app.m['user', 'User'], Model)
-        self.assertTrue(app.m['user', 'User'] is app.m['user!##!User'])
-        self.assertTrue(app.m['User'] is app.m['user!##!User'])
+        self.assertTrue(app.d['user', 'User'], Model)
+        self.assertTrue(app.d['user', 'User'] is app.d['user!##!User'])
+        self.assertTrue(app.d['User'] is app.d['user!##!User'])
 
     def test_parent(self):
         """ make sure parent is assigned """
-        self.assertTrue(app.schema.apis['pet'].models['Pet']._parent_ is app.schema.apis['pet'])
-        self.assertTrue(app.schema.apis['user'].apis['getUserByName']._parent_ is app.schema.apis['user'])
-        self.assertTrue(app.schema.info._parent_ is app.schema)
+        self.assertTrue(app.root.apis['pet'].models['Pet']._parent_ is app.root.apis['pet'])
+        self.assertTrue(app.root.apis['user'].apis['getUserByName']._parent_ is app.root.apis['user'])
+        self.assertTrue(app.root.info._parent_ is app.root)
 
 
 class DataTypeTestCase(unittest.TestCase):
@@ -225,13 +226,13 @@ class DataTypeTestCase(unittest.TestCase):
 
     def test_operation(self):
         """ operation """ 
-        op = app.schema.apis['pet'].apis['findPetsByStatus']
+        op = app.root.apis['pet'].apis['findPetsByStatus']
         self.assertEqual(op.type, 'array')
-        self.assertEqual(op.items.ref.id, app.m['pet', 'Pet'].id)
+        self.assertEqual(op.items.ref.id, app.d['pet', 'Pet'].id)
 
     def test_parameter(self):
         """ parameter """ 
-        p = app.schema.apis['pet'].apis['findPetsByStatus'].parameters[0]
+        p = app.root.apis['pet'].apis['findPetsByStatus'].parameters[0]
         self.assertTrue(isinstance(p, Parameter))
         self.assertEqual(p.required, True)
         self.assertEqual(p.defaultValue, 'available')
@@ -241,14 +242,14 @@ class DataTypeTestCase(unittest.TestCase):
 
     def test_property(self):
         """ property """ 
-        p = app.schema.apis['pet'].models['Pet'].properties
+        p = app.root.apis['pet'].models['Pet'].properties
         # id
         self.assertEqual(p['id'].type, 'integer')
         self.assertEqual(p['id'].format, 'int64')
         self.assertEqual(p['id'].minimum, 0.0)
         self.assertEqual(p['id'].maximum, 100.0)
         # category
-        self.assertEqual(p['category'].ref.id, app.m['pet', 'Category'].id)
+        self.assertEqual(p['category'].ref.id, app.d['pet', 'Category'].id)
         # name
         self.assertEqual(p['name'].type, 'string')
         # photoUrls
@@ -258,7 +259,7 @@ class DataTypeTestCase(unittest.TestCase):
         # tag
         self.assertEqual(p['tags'].type, 'array')
         self.assertTrue(isinstance(p['tags'].items, Items))
-        self.assertEqual(p['tags'].items.ref.id, app.m['pet', 'Tag'].id)
+        self.assertEqual(p['tags'].items.ref.id, app.d['pet', 'Tag'].id)
         # status
         self.assertEqual(p['status'].type, 'string')
         self.assertEqual(sorted(p['status'].enum), sorted(['available', 'pending', 'sold']))

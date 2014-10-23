@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
-from ..spec.v1_2.obj import DataTypeObj, Items, Model, ResponseMessage
+from ..spec.v1_2.objects import DataTypeObj, Items, Model, ResponseMessage
 from ..utils import scope_split, scope_compose
 from ..primitives import is_primitive
 import weakref
@@ -23,7 +23,7 @@ class Resolve(object):
 
         # compose the model's scope name and
         # try to load the model 
-        obj.update_field(to_resolve, weakref.proxy(app.m[scope_compose(r, getattr(obj, to_resolve))]))
+        obj.update_field(to_resolve, weakref.proxy(app.d[scope_compose(r, getattr(obj, to_resolve))]))
 
     @Disp.register([Items, DataTypeObj])
     def _resolve(self, scope, _, obj, app):
@@ -73,7 +73,7 @@ class Resolve(object):
         r = scope_split(scope)[0]
         for m in obj.subTypes:
             ns = scope_compose(r, m)
-            m_obj = app.m[ns]
+            m_obj = app.d[ns]
             if not m_obj:
                 raise ValueError('Unable to find model:{0}'.format(ns))
 

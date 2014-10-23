@@ -1,6 +1,6 @@
 from pyswagger import SwaggerApp
 from ..utils import get_test_data_folder
-from pyswagger.spec.v1_2.obj import (
+from pyswagger.spec.v1_2.objects import (
     Resource
 )
 import unittest
@@ -16,11 +16,11 @@ class SwaggerAppTestCase(unittest.TestCase):
 
     def test_field_name(self):
         """ field_name """
-        self.assertEqual(sorted(app.schema._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
+        self.assertEqual(sorted(app.root._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
 
     def test_field_rename(self):
         """ renamed field name """
-        op = app.schema.apis['pet'].apis['updatePet']
+        op = app.root.apis['pet'].apis['updatePet']
         self.assertEqual(sorted(op._field_names_), sorted([
             'authorizations',
             'consumes',
@@ -44,7 +44,7 @@ class SwaggerAppTestCase(unittest.TestCase):
 
     def test_children(self):
         """ children """
-        chd = app.schema._children_
+        chd = app.root._children_
         self.assertEqual(len(chd), 5)
         self.assertEqual(set(['user', 'pet', 'store']), set([c[0] for c in chd if isinstance(c[1], Resource)]))
 
@@ -97,9 +97,9 @@ class HTTPGetterTestCase(unittest.TestCase):
 
         local_app = SwaggerApp._create_('http://petstore.swagger.wordnik.com/api/api-docs')
 
-        self.assertEqual(sorted(local_app.schema._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
+        self.assertEqual(sorted(local_app.root._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
 
-        op = local_app.schema.apis['pet'].apis['updatePet']
+        op = local_app.root.apis['pet'].apis['updatePet']
         self.assertEqual(sorted(op._field_names_), sorted([
             'authorizations',
             'consumes',
@@ -121,7 +121,7 @@ class HTTPGetterTestCase(unittest.TestCase):
             'uniqueItems'
         ]))
 
-        chd = local_app.schema._children_
+        chd = local_app.root._children_
         self.assertEqual(len(chd), 5)
         self.assertEqual(set(['user', 'pet', 'store']), set([c[0] for c in chd if isinstance(c[1], Resource)]))
 

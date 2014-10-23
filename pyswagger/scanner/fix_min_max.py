@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
-from ..spec.v1_2.obj import DataTypeObj
+from ..spec.v1_2.objects import DataTypeObj
 import six
 
 

@@ -17,22 +17,18 @@ class SwaggerApp(object):
     """
 
     @property
-    def schema(self):
+    def root(self):
         """ schema representation of Swagger API, its structure may
         be different from different version of Swagger.
 
-        :type: ResourceList
+        There is 'schema' object in swagger 2.0, that's why I change this
+        property name from 'schema' to 'root'.
+
+        :type: pyswagger.obj.Swagger
         """
         return self.__schema
 
-    @property
-    def rs(self):
-        """ list of Resources, a shortcut of app.schema.apis
-
-        :type: list of Resource
-        """
-        return self.__resrc
-
+    # TODO: operationId is optional, we need another way to index operations.
     @property
     def op(self):
         """ list of Operations, organized by ScopeDict
@@ -41,13 +37,30 @@ class SwaggerApp(object):
         """
         return self.__op
 
+    # TODO: add member
     @property
-    def m(self):
-        """ list of Models, organized by ScopeDict
+    def d(self):
+        """ dict of Definition Object
 
-        :type: ScopeDict of Models
+        :type: dict of Definition Object
         """
         return self.__m
+
+    # TODO: add member
+    @property
+    def pd(self):
+        """ dict of Parameter Definition Object
+
+        :type: dict of Parameter Definition Object
+        """
+
+    # TODO: add member
+    @property
+    def rd(self):
+        """ dict of Response Definition Object
+
+        :type: dict of Response Definition Object
+        """
 
     def validate(self, strict=True):
         """ check if this Swagger API valid or not.
@@ -101,7 +114,7 @@ class SwaggerApp(object):
         # __schema
         setattr(app, '_' + kls.__name__ + '__schema', tmp['_tmp_'])
         # __resrc
-        setattr(app, '_' + kls.__name__ + '__resrc', app.schema.apis)
+        setattr(app, '_' + kls.__name__ + '__resrc', app.root.apis)
 
         # reducer for Operation & Model
         tr = TypeReduce()
@@ -144,7 +157,7 @@ class SwaggerAuth(object):
 
         :raises ValueError: unsupported types of authorizations
         """
-        auth = self.__app.schema.authorizations.get(name, None)
+        auth = self.__app.root.authorizations.get(name, None)
         if auth == None:
             raise ValueError('Unknown authorization name: [{0}]'.format(name))
 

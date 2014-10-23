@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
 from ..utils import scope_compose
-from ..spec.v1_2.obj import (
+from ..spec.v1_2.objects import (
     DataTypeObj,
     Parameter,
     Property,
@@ -131,10 +131,10 @@ class Validate(object):
         errs = []
 
         for k, v in six.iteritems(obj.authorizations):
-            if k not in app.schema.authorizations:
+            if k not in app.root.authorizations:
                 errs.append('auth {0} not found in resource list'.format(k))
 
-            if app.schema.authorizations[k].type in ('basicAuth', 'apiKey') and v != []:
+            if app.root.authorizations[k].type in ('basicAuth', 'apiKey') and v != []:
                 errs.append('auth {0} should be an empty list'.format(k))
 
         return '' if scope == None else scope, name, obj.__class__.__name__, errs
