@@ -59,7 +59,6 @@ class Schema(six.with_metaclass(FieldMeta, BaseObj)):
         'discriminator',
         'readOnly',
     ]
-    __swagger_rename__ = {'$ref', 'ref'}
 
 
 class Swagger(six.with_metaclass(FieldMeta, BaseObj)):
@@ -125,7 +124,6 @@ class Parameter(six.with_metaclass(FieldMeta, BaseObj)):
         'enum',
         'multipleOf',
     ]
-    __swagger_rename__ = {'$ref', 'ref'}
 
 
 class Header(six.with_metaclass(FieldMeta, BaseObj)):
@@ -164,7 +162,6 @@ class Response(six.with_metaclass(FieldMeta, BaseObj)):
         'schema',
         'headers',
     ]
-    __swagger_rename__ = {'$ref': 'ref'}
 
 
 class Operation(six.with_metaclass(FieldMeta, BaseObj)):
@@ -200,7 +197,6 @@ class PathItem(six.with_metaclass(FieldMeta, BaseObj)):
         'patch',
         'parameters',
     ]
-    __swagger_rename__ = {'$ref': 'ref'}
 
 
 class SecurityScheme(six.with_metaclass(FieldMeta, BaseObj)):

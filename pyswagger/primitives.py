@@ -328,8 +328,9 @@ def prim_factory(obj, v, multiple=False):
     if multiple and obj.type != 'array' and isinstance(v, (tuple, list)):
         return Array(obj, v, unique=False);
 
-    if obj.ref:
-        return obj.ref._prim_(v)
+    ref = getattr(obj, '$ref')
+    if ref:
+        return ref._prim_(v)
     elif isinstance(obj.type, six.string_types):
         if obj.type == 'array':
             return Array(obj.items, v, unique=obj.uniqueItems)
