@@ -19,7 +19,6 @@ from .objects import (
     Resource,
     Info,
     ResourceList)
-import six
 
 
 class ScopeContext(Context):

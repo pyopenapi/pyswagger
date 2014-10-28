@@ -9,7 +9,6 @@ class Items(six.with_metaclass(FieldMeta, BaseObj)):
     """ Items Object
     """
     __swagger_fields__ = ['type', 'format', '$ref']
-    __swagger_rename__ = {'$ref': 'ref'}
 
     def _prim_(self, v):
         return primitives.prim_factory(self, v)
@@ -35,7 +34,6 @@ class DataTypeObj(BaseObj):
         'maximum',
         'uniqueItems'
     ]
-    __swagger_rename__ = {'$ref': 'ref'}
 
     def __init__(self, ctx):
         super(DataTypeObj, self).__init__(ctx)

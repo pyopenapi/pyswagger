@@ -32,17 +32,17 @@ class Resolve(object):
         if is_primitive(obj):
             # normal type
             return
-        elif isinstance(obj.ref, six.string_types):
+        elif isinstance(getattr(obj, '$ref'), six.string_types):
             to_resolve = 'ref'
         elif isinstance(obj.type, six.string_types):
             to_resolve = 'type'
-        elif isinstance(obj.ref, Model) or isinstance(obj.type, Model):
+        elif isinstance(getattr(obj, '$ref'), Model) or isinstance(obj.type, Model):
             # already resolved.
             return
         else:
             raise ValueError(
                 'Unknown object to resolve, ref:{0},{1}, in scope:{2}, type:{3}'.format(
-                    obj.ref, obj.type, scope, obj.__class__.__name__))
+                    getattr(obj, '$ref'), obj.type, scope, obj.__class__.__name__))
 
         self._find_and_update(to_resolve, scope, obj, app)
 

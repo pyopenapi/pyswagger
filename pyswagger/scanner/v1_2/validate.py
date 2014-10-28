@@ -39,7 +39,7 @@ class Validate(object):
         """ convert string value to integer/float value """
         errs = []
 
-        if obj.type == None and obj.ref == None:
+        if obj.type == None and getattr(obj, '$ref') == None:
             errs.append('type or $ref should be existed.')
 
         # make sure there is 'item' along with 'array'
