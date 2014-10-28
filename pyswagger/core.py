@@ -1,8 +1,10 @@
 from __future__ import absolute_import
 from .getter import HttpGetter, FileGetter
 from .spec.v1_2.parser import ResourceListContext
+from .spec.v2_0.parser import SwaggerContext
 from .scan import Scanner
-from .scanner import Validate, TypeReduce, Resolve, FixMinMax
+from .scanner import TypeReduce, Resolve
+from .scanner.v1_2 import Validate, FixMinMax, Upgrade_1_2to2_0
 from .utils import ScopeDict
 import inspect
 import base64
@@ -26,7 +28,19 @@ class SwaggerApp(object):
 
         :type: pyswagger.obj.Swagger
         """
-        return self.__schema
+        return self.__root
+
+    @property
+    def raw(self):
+        """ raw objects for original version of spec, indexed by
+        version string.
+
+        ex. to access raw objects representation of swagger 1.2, pass '1.2'
+        as a key to this dict
+
+        :type: dict
+        """
+        return self.__raw
 
     # TODO: operationId is optional, we need another way to index operations.
     @property
@@ -89,6 +103,7 @@ class SwaggerApp(object):
         :return: the created SwaggerApp object
         :rtype: SwaggerApp
         :raises ValueError: if url is wrong
+        :raises NotImplementedError: the swagger version is not supported.
         """
 
         local_getter = getter or HttpGetter
@@ -106,21 +121,40 @@ class SwaggerApp(object):
             # initialized getter object.
             local_getter = local_getter(url)
 
-        tmp = {'_tmp_': {}}
-        with ResourceListContext(tmp, '_tmp_', local_getter) as ctx:
-            ctx.parse()
-
         app = kls()
-        # __schema
-        setattr(app, '_' + kls.__name__ + '__schema', tmp['_tmp_'])
-        # __resrc
-        setattr(app, '_' + kls.__name__ + '__resrc', app.root.apis)
+        s = Scanner(app)
+        tmp = {'_tmp_': {}}
 
+        # get root document to check its swagger version.
+        obj, _ = six.advance_iterator(getter)
+        if 'swaggerVersion' in obj and obj['swaggerVersion'] == '1.2':
+            with ResourceListContext(tmp, '_tmp_') as ctx:
+                ctx.parse(local_getter, obj)
+
+            setattr(app, '_' + kls.__name__ + '__raw', tmp['_tmp_'])
+
+            # convert from 1.2 to 2.0
+            converter = Upgrade_1_2to2_0()
+            s.scan(route=[converter])
+            setattr(app, '_' + kls.__name__ + '__root', xxxxxxx)
+        elif 'swagger' in obj:
+            if obj['swagger'] == '2.0':
+                with SwaggerContext(tmp, '_tmp_') as ctx:
+                    ctx.parse(obj)
+
+                setattr(app, '_' + kls.__name__ + '__raw', tmp['_tmp_'])
+                setattr(app, '_' + kls.__name__ + '__root', tmp['_tmp_'])
+            else:
+                raise NotImplementedError('Unsupported Version: {0}'.format(obj['swagger']))
+        else:
+            raise LookupError('Unable to find swagger version')
+
+        # TODO: need to change for 2.0
         # reducer for Operation & Model
         tr = TypeReduce()
 
+        # TODO: this belongs to 1.2
         # convert types
-        s = Scanner(app)
         s.scan(route=[FixMinMax(), tr])
 
         # 'm' for model
@@ -128,6 +162,7 @@ class SwaggerApp(object):
         # 'op' for operation
         setattr(app, '_' + kls.__name__ + '__op', ScopeDict(tr.op))
 
+        # TODO: need to change for 2.0
         # resolve reference
         s.scan(route=[Resolve()])
 
