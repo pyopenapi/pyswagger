@@ -282,3 +282,10 @@ class FieldMeta(type):
 
         return type.__new__(metacls, name, bases, spc)
 
+
+class NullContext(Context):
+    """ black magic to initialize BaseObj
+    """
+
+    _obj = None
+
