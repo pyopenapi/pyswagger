@@ -4,9 +4,9 @@ from .utils import scope_compose
 import six
 
 
-def default_tree_traversal(app):
+def default_tree_traversal(root):
     """ default tree traversal """
-    objs = [(None, None, app.root)]
+    objs = [(None, None, root)]
     while len(objs) > 0:
         scope, name, obj = objs.pop()
 
@@ -99,11 +99,11 @@ class Scanner(object):
 
         return ret
 
-    def scan(self, route, nexter=default_tree_traversal):
+    def scan(self, route, root, nexter=default_tree_traversal):
         """
         """
         merged_r = self.__build_route(route)
-        for scope, name, obj in nexter(self.app):
+        for scope, name, obj in nexter(root):
             for the_self, r, res in merged_r:
 
                 def handle_cls(cls):
