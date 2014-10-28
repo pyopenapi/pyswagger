@@ -1,8 +1,8 @@
 from __future__ import absolute_import
-from ..base import NullContext
-from ..scan import Dispatcher
-from ..utils import scope_compose
-from ..spec.v1_2.objects import (
+from ...base import NullContext
+from ...scan import Dispatcher
+from ...utils import scope_compose
+from ...spec.v1_2.objects import (
     ResourceList,
     Resource,
     Operation,
@@ -35,7 +35,7 @@ def convert_schema_from_datatype(obj):
     return s
 
 
-class Upgrade_1_2to2_0(object):
+class Upgrade(object):
     """ convert 1.2 object to 2.0 object
     """
     class Disp(Dispatcher): pass

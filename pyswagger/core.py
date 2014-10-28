@@ -4,7 +4,7 @@ from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
 from .scan import Scanner
 from .scanner import TypeReduce, Resolve
-from .scanner.v1_2 import Validate, FixMinMax, Upgrade_1_2to2_0
+from .scanner.v1_2 import Validate, FixMinMax, Upgrade
 from .utils import ScopeDict
 import inspect
 import base64
@@ -134,9 +134,9 @@ class SwaggerApp(object):
             setattr(app, '_' + kls.__name__ + '__raw', tmp['_tmp_'])
 
             # convert from 1.2 to 2.0
-            converter = Upgrade_1_2to2_0()
+            converter = Upgrade()
             s.scan(route=[converter])
-            setattr(app, '_' + kls.__name__ + '__root', xxxxxxx)
+            setattr(app, '_' + kls.__name__ + '__root', converter.swagger)
         elif 'swagger' in obj:
             if obj['swagger'] == '2.0':
                 with SwaggerContext(tmp, '_tmp_') as ctx:
