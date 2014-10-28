@@ -8,7 +8,7 @@ import six
 class Items(six.with_metaclass(FieldMeta, BaseObj)):
     """ Items Object
     """
-    __swagger_fields__ = ['type', '$ref']
+    __swagger_fields__ = ['type', 'format', '$ref']
     __swagger_rename__ = {'$ref': 'ref'}
 
     def _prim_(self, v):
