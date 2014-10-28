@@ -5,7 +5,7 @@ import datetime
 import re
 
 #TODO: accept varg
-def scope_compose(scope, name):
+def scope_compose(scope, name, sep=SCOPE_SEPARATOR):
     """ compose a new scope
 
     :param str scope: current scope
@@ -19,23 +19,27 @@ def scope_compose(scope, name):
         new_scope = scope if scope else name
 
     if scope and name:
-        new_scope = scope + SCOPE_SEPARATOR + name
+        new_scope = scope + sep + name
 
     return new_scope
 
-def scope_split(scope):
+def scope_split(scope, sep=SCOPE_SEPARATOR):
     """ split a scope into names
     
     :param str scope: scope to be splitted
     :return: list of str for scope names
     """
 
-    return scope.split(SCOPE_SEPARATOR) if scope else [None]
+    return scope.split(sep) if scope else [None]
 
 
 class ScopeDict(dict):
     """ ScopeDict
     """
+
+    def __init__(self, sep=SCOPE_SEPARATOR):
+        self.__sep = sep
+        super(self, ScopeDict).__init__()
 
     def __getitem__(self, *keys):
         """ to access an obj with key: 'n!##!m...!##!z', caller can pass as key:
