@@ -126,8 +126,9 @@ class SwaggerApp(object):
         tmp = {'_tmp_': {}}
 
         # get root document to check its swagger version.
-        obj, _ = six.advance_iterator(getter)
+        obj, _ = six.advance_iterator(local_getter)
         if 'swaggerVersion' in obj and obj['swaggerVersion'] == '1.2':
+            # swagger 1.2
             with ResourceListContext(tmp, '_tmp_') as ctx:
                 ctx.parse(local_getter, obj)
 
@@ -135,10 +136,11 @@ class SwaggerApp(object):
 
             # convert from 1.2 to 2.0
             converter = Upgrade()
-            s.scan(route=[converter])
+            s.scan(root=app.raw, route=[converter])
             setattr(app, '_' + kls.__name__ + '__root', converter.swagger)
         elif 'swagger' in obj:
             if obj['swagger'] == '2.0':
+                # swagger 2.0
                 with SwaggerContext(tmp, '_tmp_') as ctx:
                     ctx.parse(obj)
 
@@ -155,7 +157,7 @@ class SwaggerApp(object):
 
         # TODO: this belongs to 1.2
         # convert types
-        s.scan(route=[FixMinMax(), tr])
+        s.scan(root=app.root, route=[FixMinMax(), tr])
 
         # 'm' for model
         setattr(app, '_' + kls.__name__ + '__m', ScopeDict(tr.model))
@@ -164,7 +166,7 @@ class SwaggerApp(object):
 
         # TODO: need to change for 2.0
         # resolve reference
-        s.scan(route=[Resolve()])
+        s.scan(root=app.root, route=[Resolve()])
 
         return app
 

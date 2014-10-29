@@ -289,3 +289,5 @@ class NullContext(Context):
 
     _obj = None
 
+    def __init__(self):
+        super(NullContext, self).__init__(None, None)

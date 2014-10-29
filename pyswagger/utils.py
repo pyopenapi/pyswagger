@@ -39,7 +39,7 @@ class ScopeDict(dict):
 
     def __init__(self, sep=SCOPE_SEPARATOR):
         self.__sep = sep
-        super(self, ScopeDict).__init__()
+        super(ScopeDict, self).__init__()
 
     def __getitem__(self, *keys):
         """ to access an obj with key: 'n!##!m...!##!z', caller can pass as key:

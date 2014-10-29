@@ -24,15 +24,21 @@ def convert_schema_from_datatype(obj):
     s.update_field('maximum', obj.maximum)
     s.update_field('minimum', obj.minimum)
     s.update_field('uniqueItems', obj.uniqueItems)
-    s.update_field('required', obj.required)
     s.update_field('enum', obj.enum)
 
-    i = objects.Items(NullContext())
-    i.update_field('type', obj.items.type)
-    i.update_field('format', obj.items.format)
-    s.update_field('items', i)
+    if obj.items:
+        i = objects.Item(NullContext())
+        i.update_field('type', obj.items.type)
+        i.update_field('format', obj.items.format)
+        s.update_field('items', i)
 
     return s
+
+
+def update_ref(dst, src):
+    ref = getattr(src, '$ref')
+    if ref:
+        src.update_field('$ref', '#/definitions/' + ref)
 
 
 class Upgrade(object):
@@ -55,6 +61,7 @@ class Upgrade(object):
         o.update_field('schemes', ['http', 'https'])
 
         o.update_field('host', '')
+
         o.update_field('basePath', '')
         o.update_field('tags', [])
         o.update_field('definitions', {})
@@ -63,14 +70,19 @@ class Upgrade(object):
         o.update_field('paths', {})
         o.update_field('security', {})
 
+        o.update_field('consumes', [])
+        o.update_field('produces', [])
+
         self.__swagger = o
 
     @Disp.register([Resource])
     def _resource(self, scope, name, obj, app):
         o = objects.PathItem(NullContext())
 
-        self.__swagger.update_field('consumes', set(self.__swagger.consumes + obj.consumes))
-        self.__swagger.update_field('produces', set(self.__swagger.produces + obj.produces))
+        if obj.consumes:
+            self.__swagger.update_field('consumes', list(set(self.__swagger.consumes + obj.consumes)))
+        if obj.produces:
+            self.__swagger.update_field('produces', list(set(self.__swagger.produces + obj.produces)))
 
         self.__swagger.paths[obj.basePath + obj.resourcePath] = o
         self.__swagger.tags.append(name)
@@ -91,9 +103,9 @@ class Upgrade(object):
         # Operation return value
         resp = objects.Response(NullContext())
         resp.update_field('schema', convert_schema_from_datatype(obj))
-        o.response['default'] = resp
+        o.responses['default'] = resp
 
-        path = obj.parent.basePath + obj.parent.resourcePath 
+        path = obj._parent_.basePath + obj._parent_.resourcePath 
         method = obj.method.lower()
         self.__swagger.paths[path].update_field(method, o)
 
@@ -109,6 +121,8 @@ class Upgrade(object):
         o.update_field('in', obj.passAs)
         o.update_field('authorizationUrl', obj.grantTypes.implicit.loginEndpoint.url)
         o.update_field('tokenUrl', obj.grantTypes.authorization_code.tokenEndpoint.url)
+
+        o.update_field('scopes', {})
         for s in obj.scopes:
             o.scopes[s.scope] = ''
 
@@ -119,13 +133,13 @@ class Upgrade(object):
             elif o.tokenUrl:
                 o.update_field('flow', 'accessCode')
 
-        self.__swagger.securityDefinitions[name] = o
+        self.__swagger.security[name] = o
 
     @Disp.register([Parameter])
     def _parameter(self, scope, name, obj, app):
         o = objects.Parameter(NullContext())
 
-        o.update_field('$ref', '#/definitions/' + getattr(obj, '$ref'))
+        update_ref(o, obj)
         o.update_field('name', obj.name)
         if obj.paramType == 'form':
             o.update_field('in', 'formData')
@@ -147,15 +161,17 @@ class Upgrade(object):
             o.update_field('uniqueItems', obj.uniqueItems)
             o.update_field('enum', obj.enum)
 
-            item = objects.Items(NullContext())
-            item.update_field('$ref', '#/definitions/' + getattr(obj.items, '$ref'))
-            item.update_field('type', obj.items.type)
-            item.update_field('format', obj.items.format)
+            if obj.items:
+                item = objects.Items(NullContext())
+                update_ref(item, obj.items)
+                item.update_field('$ref', '#/definitions/' + getattr(obj.items, '$ref'))
+                item.update_field('type', obj.items.type)
+                item.update_field('format', obj.items.format)
 
-            o.update_field('items', item)
+                o.update_field('items', item)
 
-        path = obj.parent.parent.basePath + obj.parent.parent.resourcePath 
-        method = obj.parent.method.lower()
+        path = obj._parent_._parent_.basePath + obj._parent_._parent_.resourcePath 
+        method = obj._parent_.method.lower()
         op = getattr(self.__swagger.paths[path], method)
         op.parameters.append(o)
 
@@ -167,14 +183,14 @@ class Upgrade(object):
             o = objects.Schema(NullContext())
 
         props = {}
-        for name, prop in obj.properties.iteritems:
+        for name, prop in obj.properties.iteritems():
             props[name] = convert_schema_from_datatype(prop)
         o.update_field('properties', props)
         o.update_field('required', obj.required)
         o.update_field('discriminator', obj.discriminator)
         o.update_field('allOf', [])
 
-        for t in obj.subTypes:
+        for t in obj.subTypes or []:
             # here we assume those child models belongs to
             # the same resource.
             sub_s = scope_compose(scope, t)
@@ -194,6 +210,9 @@ class Upgrade(object):
         """ some preparation before returning Swagger object
         """
         # prepare Swagger.host & Swagger.basePath
+        if not self.__swagger:
+            return None
+
         common_path = os.path.commonprefix(self.__swagger.paths.keys())
         if len(common_path) > 0:
             p = six.moves.urllib.parse.urlparse(common_path)
