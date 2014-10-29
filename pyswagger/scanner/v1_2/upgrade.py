@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from ...base import NullContext
 from ...scan import Dispatcher
+from ...primitives import is_primitive
 from ...utils import scope_compose
 from ...spec.v1_2.objects import (
     ResourceList,
@@ -14,31 +15,37 @@ from pyswagger import objects
 import os
 import six
 
-def convert_schema_from_datatype(obj):
-    s = objects.Schema(NullContext())
 
-    s.update_field('$ref', getattr(obj, '$ref'))
-    s.update_field('type', obj.type)
+def update_type_and_ref(dst, src):
+    ref = getattr(src, '$ref')
+    if ref:
+        dst.update_field('$ref', '#/definitions/' + ref)
+
+    if is_primitive(src):
+        dst.update_field('type', src.type)
+    else:
+        dst.update_field('$ref', '#/definitions/' + src.type)
+
+def convert_schema_from_datatype(obj):
+    if obj == None:
+        return None
+
+    s = objects.Schema(NullContext())
+    update_type_and_ref(s, obj)
     s.update_field('format', obj.format)
     s.update_field('default', obj.defaultValue)
     s.update_field('maximum', obj.maximum)
     s.update_field('minimum', obj.minimum)
     s.update_field('uniqueItems', obj.uniqueItems)
     s.update_field('enum', obj.enum)
-
     if obj.items:
-        i = objects.Item(NullContext())
+        i = objects.Schema(NullContext())
+        update_type_and_ref(i, obj.items)
         i.update_field('type', obj.items.type)
         i.update_field('format', obj.items.format)
         s.update_field('items', i)
 
     return s
-
-
-def update_ref(dst, src):
-    ref = getattr(src, '$ref')
-    if ref:
-        src.update_field('$ref', '#/definitions/' + ref)
 
 
 class Upgrade(object):
@@ -57,7 +64,7 @@ class Upgrade(object):
         info.update_field('version', obj.apiVersion)
         o.update_field('info', info)
 
-        o.update_field('swagger', obj.swaggerVersion)
+        o.update_field('swagger', '2.0')
         o.update_field('schemes', ['http', 'https'])
 
         o.update_field('host', '')
@@ -68,7 +75,9 @@ class Upgrade(object):
         o.update_field('parameters', {})
         o.update_field('responses', {})
         o.update_field('paths', {})
-        o.update_field('security', {})
+        o.update_field('security', [])
+        o.update_field('securityDefinitions', {})
+
 
         o.update_field('consumes', [])
         o.update_field('produces', [])
@@ -77,14 +86,6 @@ class Upgrade(object):
 
     @Disp.register([Resource])
     def _resource(self, scope, name, obj, app):
-        o = objects.PathItem(NullContext())
-
-        if obj.consumes:
-            self.__swagger.update_field('consumes', list(set(self.__swagger.consumes + obj.consumes)))
-        if obj.produces:
-            self.__swagger.update_field('produces', list(set(self.__swagger.produces + obj.produces)))
-
-        self.__swagger.paths[obj.basePath + obj.resourcePath] = o
         self.__swagger.tags.append(name)
 
     @Disp.register([Operation])
@@ -93,19 +94,29 @@ class Upgrade(object):
 
         o.update_field('tags', [scope])
         o.update_field('operationId', obj.nickname)
-        o.update_field('consumes', obj.consumes)
-        o.update_field('produces', obj.produces)
+        o.update_field('deprecated', obj.deprecated == 'true')
+
+        c = obj.consumes if obj.consumes and len(obj.consumes) > 0 else obj._parent_.consumes
+        o.update_field('consumes', c)
+
+        p = obj.produces if obj.produces and len(obj.produces) > 0 else obj._parent_.produces
+        o.update_field('produces', p)
 
         o.update_field('parameters', [])
-        o.update_field('responses', {})
-        o.update_field('security', obj.authorizations)
+        o.update_field('security', {})
+        for name, scopes in obj.authorizations.iteritems():
+            o.security[name] = [v.scope for v in scopes]
 
         # Operation return value
+        o.update_field('responses', {})
         resp = objects.Response(NullContext())
         resp.update_field('schema', convert_schema_from_datatype(obj))
         o.responses['default'] = resp
 
-        path = obj._parent_.basePath + obj._parent_.resourcePath 
+        path = obj._parent_.basePath + obj.path
+        if path not in self.__swagger.paths:
+            self.__swagger.paths[path] = objects.PathItem(NullContext())
+ 
         method = obj.method.lower()
         self.__swagger.paths[path].update_field(method, o)
 
@@ -129,17 +140,17 @@ class Upgrade(object):
         o.update_field('flow', '')
         if o.type == 'oauth2':
             if o.authorizationUrl:
-                o.update_field('flow', 'implicit')
-            elif o.tokenUrl:
-                o.update_field('flow', 'accessCode')
+                if o.tokenUrl:
+                    o.update_field('flow', 'accessCode')
+                else:
+                    o.update_field('flow', 'implicit')
 
-        self.__swagger.security[name] = o
+        self.__swagger.securityDefinitions[name] = o
 
     @Disp.register([Parameter])
     def _parameter(self, scope, name, obj, app):
         o = objects.Parameter(NullContext())
 
-        update_ref(o, obj)
         o.update_field('name', obj.name)
         if obj.paramType == 'form':
             o.update_field('in', 'formData')
@@ -152,6 +163,10 @@ class Upgrade(object):
         if 'body' == getattr(o, 'in'):
             o.update_field('schema', convert_schema_from_datatype(obj))
         else:
+            if getattr(obj, '$ref'):
+                # TODO: add test case
+                raise ValueError('Can\'t have $ref in non-body Parameters')
+
             o.update_field('type', obj.type)
             o.update_field('format', obj.format)
             o.update_field('collectionFormat', 'csv')
@@ -163,14 +178,18 @@ class Upgrade(object):
 
             if obj.items:
                 item = objects.Items(NullContext())
-                update_ref(item, obj.items)
-                item.update_field('$ref', '#/definitions/' + getattr(obj.items, '$ref'))
+                if getattr(obj.items, '$ref'):
+                    # TODO: test case
+                    raise ValueError('Can\'t have $ref for Items')
+                if not is_primitive(obj.items):
+                    # TODO: test case
+                    raise ValueError('Non primitive type is not allowed for Items')
                 item.update_field('type', obj.items.type)
                 item.update_field('format', obj.items.format)
 
                 o.update_field('items', item)
 
-        path = obj._parent_._parent_.basePath + obj._parent_._parent_.resourcePath 
+        path = obj._parent_._parent_.basePath + obj._parent_.path 
         method = obj._parent_.method.lower()
         op = getattr(self.__swagger.paths[path], method)
         op.parameters.append(o)
@@ -214,9 +233,18 @@ class Upgrade(object):
             return None
 
         common_path = os.path.commonprefix(self.__swagger.paths.keys())
+        # remove tailing slash,
+        # because all paths in Paths Object would prefixed with slah.
+        common_path = common_path[:-1] if common_path[-1] == '/' else common_path
+
         if len(common_path) > 0:
             p = six.moves.urllib.parse.urlparse(common_path)
             self.__swagger.update_field('host', p.netloc)
             self.__swagger.update_field('basePath', p.path)
+
+            new_path = {}
+            for k in self.__swagger.paths.keys():
+                new_path[k[len(common_path):]] = self.__swagger.paths[k]
+            self.__swagger.update_field('paths', new_path)
 
         return self.__swagger
