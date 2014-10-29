@@ -151,7 +151,7 @@ class BaseObj(object):
 
         # handle fields
         for field in self.__swagger_fields__:
-            self.update_field(field, ctx._obj.get(field, None))
+            setattr(self, self.get_private_name(field), ctx._obj.get(field, None))
 
         # set self as childrent's parent
         for name, _, cls in ctx.__swagger_child__:
@@ -186,7 +186,11 @@ class BaseObj(object):
         :param str f: name of field to be updated.
         :param obj: value of field to be updated.
         """
-        setattr(self, self.get_private_name(f), obj)
+        n = self.get_private_name(f)
+        if not hasattr(self, n):
+            raise AttributeError('{0} is not in {1}'.format(n, self.__class__.__name__))
+
+        setattr(self, n, obj)
 
     @property
     def _parent_(self):

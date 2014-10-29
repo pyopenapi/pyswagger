@@ -45,11 +45,11 @@ class DataTypeObj(BaseObj):
             with ItemsContext(ctx._obj, 'items') as items_ctx:
                 items_ctx.parse(items_data)
         else:
-            self.update_field('items', None)
+            setattr(self, self.get_private_name('items'), None)
 
         for field in DataTypeObj.__swagger_fields__:
             # almost every data field is not required.
-            self.update_field(field, ctx._obj.get(field, None))
+            setattr(self, self.get_private_name(field), ctx._obj.get(field, None))
 
     def _prim_(self, v):
         return primitives.prim_factory(self, v)
