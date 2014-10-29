@@ -4,7 +4,7 @@ from ...objects import (
     Schema,
     Swagger,
     Info,
-    Item,
+    Items,
     Parameter,
     Header,
     Response,
@@ -15,15 +15,15 @@ from ...objects import (
 )
 
 
-class ItemContext(Context):
+class ItemsContext(Context):
     """ Context of Item Object
     """
 
-    __swagger_ref_object__ = Item
+    __swagger_ref_object__ = Items
 
 # self-reference 
-setattr(ItemContext, '_' + ItemContext.__name__ + '__' + '__swagger_child__', [
-    ('item', None, ItemContext),
+setattr(ItemsContext, '_' + ItemsContext.__name__ + '__' + '__swagger_child__', [
+    ('item', None, ItemsContext),
 ])
 
 
@@ -35,7 +35,10 @@ class SchemaContext(Context):
 
 # self-reference 
 setattr(SchemaContext, '_' + SchemaContext.__name__ + '__' + '__swagger_child__', [
-    ('item', None, ItemContext),
+    # items here should refer to an Schema Object.
+    # refer to https://github.com/swagger-api/swagger-spec/issues/165
+    # for details
+    ('items', None, SchemaContext),
     ('properties', ContainerType.dict_, SchemaContext),
     ('allOf', ContainerType.list_, SchemaContext),
 ])
@@ -49,7 +52,10 @@ class ParameterContext(Context):
 
     __swagger_child__ = [
         ('schema', None, SchemaContext),
-        ('items', None, ItemContext),
+        # items here should refer to an Items Object.
+        # refer to https://github.com/swagger-api/swagger-spec/issues/165
+        # for details
+        ('items', None, ItemsContext),
     ]
     __swagger_ref_object__ = Parameter
 
@@ -59,7 +65,7 @@ class HeaderContext(Context):
     """
 
     __swagger_child__ = [
-        ('items', None, ItemContext),
+        ('items', None, ItemsContext),
     ]
     __swagger_ref_object__ = Header
 

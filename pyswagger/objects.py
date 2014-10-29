@@ -3,8 +3,8 @@ from .base import BaseObj, FieldMeta
 import six
 
 
-class Item(six.with_metaclass(FieldMeta, BaseObj)):
-    """ Item Object
+class Items(six.with_metaclass(FieldMeta, BaseObj)):
+    """ Items Object
     """
 
     __swagger_fields__ = [
