@@ -102,6 +102,9 @@ class Scanner(object):
     def scan(self, route, root, nexter=default_tree_traversal):
         """
         """
+        if root == None:
+            raise ValueError('Can\'t scan because root==None')
+
         merged_r = self.__build_route(route)
         for scope, name, obj in nexter(root):
             for the_self, r, res in merged_r:
