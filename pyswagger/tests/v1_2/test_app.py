@@ -3,9 +3,11 @@ from ..utils import get_test_data_folder
 from pyswagger.spec.v1_2.objects import (
     Resource
 )
+from pyswagger import base
 import unittest
 import httpretty
 import os
+import six
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik'))
@@ -16,35 +18,31 @@ class SwaggerAppTestCase(unittest.TestCase):
 
     def test_field_name(self):
         """ field_name """
-        self.assertEqual(sorted(app.root._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
+        self.assertEqual(sorted(app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
 
     def test_field_rename(self):
         """ renamed field name """
-        op = app.root.apis['pet'].apis['updatePet']
-        self.assertEqual(sorted(op._field_names_), sorted([
-            'authorizations',
-            'consumes',
-            'defaultValue',
-            'deprecated',
-            'enum',
-            'format',
-            'items',
-            'maximum',
-            'method',
-            'minimum',
-            'nickname',
-            'parameters',
-            'path',
-            'produces',
-            'ref',
-            'responseMessages',
-            'type',
-            'uniqueItems'
-        ]))
+
+        class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+            __swagger_fields__ = ['a']
+            __swagger_rename__ = {'a': 'b'}
+ 
+        class TestContext(base.Context):
+            __swagger_ref_object__ = TestObj
+
+        tmp = {'t': {}}
+        obj = {'a': 1}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(obj)
+
+        # make sure there is no 'a' property
+        self.assertRaises(AttributeError, lambda x: x.a, tmp['t'])
+        # make sure property 'b' exists
+        self.assertTrue(tmp['t'].b, 1)
 
     def test_children(self):
         """ children """
-        chd = app.root._children_
+        chd = app.raw._children_
         self.assertEqual(len(chd), 5)
         self.assertEqual(set(['user', 'pet', 'store']), set([c[0] for c in chd if isinstance(c[1], Resource)]))
 
@@ -97,9 +95,9 @@ class HTTPGetterTestCase(unittest.TestCase):
 
         local_app = SwaggerApp._create_('http://petstore.swagger.wordnik.com/api/api-docs')
 
-        self.assertEqual(sorted(local_app.root._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
+        self.assertEqual(sorted(local_app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
 
-        op = local_app.root.apis['pet'].apis['updatePet']
+        op = local_app.raw.apis['pet'].apis['updatePet']
         self.assertEqual(sorted(op._field_names_), sorted([
             'authorizations',
             'consumes',
@@ -121,7 +119,7 @@ class HTTPGetterTestCase(unittest.TestCase):
             'uniqueItems'
         ]))
 
-        chd = local_app.root._children_
+        chd = local_app.raw._children_
         self.assertEqual(len(chd), 5)
         self.assertEqual(set(['user', 'pet', 'store']), set([c[0] for c in chd if isinstance(c[1], Resource)]))
 
