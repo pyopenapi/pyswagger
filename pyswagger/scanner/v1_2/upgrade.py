@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from ...base import NullContext
 from ...scan import Dispatcher
 from ...primitives import is_primitive
-from ...utils import scope_compose
+from ...utils import scope_compose, scope_split
 from ...spec.v1_2.objects import (
     ResourceList,
     Resource,
@@ -11,27 +11,27 @@ from ...spec.v1_2.objects import (
     Parameter,
     Model
 )
-from pyswagger import objects
+from ...spec.v2_0 import objects
 import os
 import six
 
 
-def update_type_and_ref(dst, src):
+def update_type_and_ref(dst, src, scope):
     ref = getattr(src, '$ref')
     if ref:
-        dst.update_field('$ref', '#/definitions/' + ref)
+        dst.update_field('$ref', '#/definitions/' + scope_compose(scope, ref))
 
     if is_primitive(src):
-        dst.update_field('type', src.type)
-    else:
-        dst.update_field('$ref', '#/definitions/' + src.type)
+        dst.update_field('type', src.type.lower())
+    elif src.type:
+        dst.update_field('$ref', '#/definitions/' + scope_compose(scope, src.type))
 
-def convert_schema_from_datatype(obj):
+def convert_schema_from_datatype(obj, scope):
     if obj == None:
         return None
 
     s = objects.Schema(NullContext())
-    update_type_and_ref(s, obj)
+    update_type_and_ref(s, obj, scope)
     s.update_field('format', obj.format)
     s.update_field('default', obj.defaultValue)
     s.update_field('maximum', obj.maximum)
@@ -40,8 +40,7 @@ def convert_schema_from_datatype(obj):
     s.update_field('enum', obj.enum)
     if obj.items:
         i = objects.Schema(NullContext())
-        update_type_and_ref(i, obj.items)
-        i.update_field('type', obj.items.type)
+        update_type_and_ref(i, obj.items, scope)
         i.update_field('format', obj.items.format)
         s.update_field('items', i)
 
@@ -110,7 +109,7 @@ class Upgrade(object):
         # Operation return value
         o.update_field('responses', {})
         resp = objects.Response(NullContext())
-        resp.update_field('schema', convert_schema_from_datatype(obj))
+        resp.update_field('schema', convert_schema_from_datatype(obj, scope))
         o.responses['default'] = resp
 
         path = obj._parent_.basePath + obj.path
@@ -128,22 +127,22 @@ class Upgrade(object):
             o.update_field('type', 'basic')
         else:
             o.update_field('type', obj.type)
-        o.update_field('name', obj.keyname)
-        o.update_field('in', obj.passAs)
-        o.update_field('authorizationUrl', obj.grantTypes.implicit.loginEndpoint.url)
-        o.update_field('tokenUrl', obj.grantTypes.authorization_code.tokenEndpoint.url)
-
         o.update_field('scopes', {})
-        for s in obj.scopes:
+        for s in obj.scopes or []:
             o.scopes[s.scope] = ''
 
         o.update_field('flow', '')
         if o.type == 'oauth2':
+            o.update_field('authorizationUrl', obj.grantTypes.implicit.loginEndpoint.url)
+            o.update_field('tokenUrl', obj.grantTypes.authorization_code.tokenEndpoint.url)
             if o.authorizationUrl:
                 if o.tokenUrl:
                     o.update_field('flow', 'accessCode')
                 else:
                     o.update_field('flow', 'implicit')
+        elif o.type == 'apiKey':
+            o.update_field('name', obj.keyname)
+            o.update_field('in', obj.passAs)
 
         self.__swagger.securityDefinitions[name] = o
 
@@ -152,22 +151,21 @@ class Upgrade(object):
         o = objects.Parameter(NullContext())
 
         o.update_field('name', obj.name)
+        o.update_field('required', obj.required)
+
         if obj.paramType == 'form':
             o.update_field('in', 'formData')
         else:
             o.update_field('in', obj.paramType)
 
-        o.update_field('in', obj.paramType)
-        o.update_field('required', obj.required)
-
         if 'body' == getattr(o, 'in'):
-            o.update_field('schema', convert_schema_from_datatype(obj))
+            o.update_field('schema', convert_schema_from_datatype(obj, scope_split(scope)[0]))
         else:
             if getattr(obj, '$ref'):
                 # TODO: add test case
                 raise ValueError('Can\'t have $ref in non-body Parameters')
 
-            o.update_field('type', obj.type)
+            o.update_field('type', obj.type.lower())
             o.update_field('format', obj.format)
             o.update_field('collectionFormat', 'csv')
             o.update_field('default', obj.defaultValue)
@@ -184,7 +182,7 @@ class Upgrade(object):
                 if not is_primitive(obj.items):
                     # TODO: test case
                     raise ValueError('Non primitive type is not allowed for Items')
-                item.update_field('type', obj.items.type)
+                item.update_field('type', obj.items.type.lower())
                 item.update_field('format', obj.items.format)
 
                 o.update_field('items', item)
@@ -203,7 +201,7 @@ class Upgrade(object):
 
         props = {}
         for name, prop in obj.properties.iteritems():
-            props[name] = convert_schema_from_datatype(prop)
+            props[name] = convert_schema_from_datatype(prop, scope)
         o.update_field('properties', props)
         o.update_field('required', obj.required)
         o.update_field('discriminator', obj.discriminator)

@@ -70,7 +70,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         r = o.responses['default']
         self.assertEqual(r.headers, None)
         self.assertEqual(r.schema.type, 'array')
-        self.assertEqual(getattr(r.schema.items, '$ref'), '#/definitions/Pet')
+        self.assertEqual(getattr(r.schema.items, '$ref'), '#/definitions/pet!##!Pet')
 
     def test_authorization(self):
         """ Authorization -> Security Scheme
@@ -90,21 +90,55 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
     def test_parameter(self):
         """ Parameter -> Parameter
         """
-
-        # TODO: body
+        # body
         o = app.root.paths['/pet/{petId}'].patch
         p = [p for p in o.parameters if getattr(p, 'in') == 'body'][0]
         self.assertEqual(getattr(p, 'in'), 'body')
-        self.assertEqual(p.name, 'body')
         self.assertEqual(p.required, True)
-        self.assertEqual(p.schema.type, 'Pet')
+        self.assertEqual(getattr(p.schema, '$ref'), '#/definitions/pet!##!Pet')
 
-        # TODO: form
-
-        # TODO: file
-
+        # form
+        o = app.root.paths['/pet/uploadImage'].post
+        p = sorted([p for p in o.parameters if getattr(p, 'in') == 'formData'])[1]
+        self.assertEqual(p.name, 'additionalMetadata')
+        self.assertEqual(p.required, False)
+        self.assertEqual(p.type, 'string')
+ 
+        # file
+        o = app.root.paths['/pet/uploadImage'].post
+        p = sorted([p for p in o.parameters if getattr(p, 'in') == 'formData'])[0]
+        self.assertEqual(p.name, 'file')
+        self.assertEqual(p.required, False)
+        self.assertEqual(p.type, 'file')
 
     def test_model(self):
         """ Model -> Definition
         """
+        d = app.root.definitions['pet!##!Pet']
+        self.assertEqual(d.required, ['id', 'name'])
+
+        ps = d.properties.keys()
+        self.assertEqual(sorted(ps), ['category', 'id', 'name', 'photoUrls', 'status', 'tags'])
+
+        p = d.properties['id']
+        self.assertEqual(p.type, 'integer')
+        self.assertEqual(p.format, 'int64')
+        # TODO: fix this, in Swagger 2.0, type won't be wrong.
+        self.assertEqual(p.minimum, 0)
+        self.assertEqual(p.maximum, 100)
+
+        p = d.properties['category']
+        self.assertEqual(getattr(p, '$ref'), '#/definitions/pet!##!Category')
+
+        p = d.properties['photoUrls']
+        self.assertEqual(p.type, 'array')
+        self.assertEqual(p.items.type, 'string')
+
+        p = d.properties['tags']
+        self.assertEqual(p.type, 'array')
+        self.assertEqual(getattr(p.items, '$ref'), '#/definitions/pet!##!Tag')
+
+        p = d.properties['status']
+        self.assertEqual(p.type, 'string')
+        self.assertEqual(p.enum, ['available', 'pending', 'sold'])
 
