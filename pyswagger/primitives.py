@@ -291,9 +291,9 @@ prim_obj_map = {
     ('boolean', ''): bool,
     ('boolean', None): bool,
 
-    # File
-    ('File', ''): File,
-    ('File', None): File,
+    # file
+    ('file', ''): File,
+    ('file', None): File,
 
     # void
     ('void', ''): Void,
@@ -307,7 +307,7 @@ prim_types = [
     'string',
     'boolean',
     'void',
-    'File',
+    'file',
     'array',
 ]
 
