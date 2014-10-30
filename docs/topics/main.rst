@@ -2,7 +2,7 @@
 Main Components
 ===============
 
-*SwaggerApp*, *SwaggerAuth*, *Client* are components you would touch first when adapting pyswagger.
+*SwaggerApp*, *SwaggerSecurity*, *Client* are components you would touch first when adapting pyswagger.
 
 SwaggerApp
 ==========
@@ -20,15 +20,15 @@ SwaggerApp carries Swagger API definition, other components would rely on it but
 
 The Operation object is callable, and can be provided by a set of :ref:`primitives`, then return a pair of :ref:`SwaggerRequest` and :ref:`SwaggerResponse`.
 
-SwaggerAuth
+SwaggerSecurity
 ===========
 
-SwaggerAuth is a placeholder of authorizations,
+SwaggerSecurity is a placeholder of authorizations,
 
 .. code-block:: python
 
     # must be initialized with SwaggerApp
-    auth = SwaggerAuth(app)
+    auth = SwaggerSecurity(app)
 
     # insert autorization information
     app.update_with('simple_basicAuth', ('user', 'password'))
@@ -54,7 +54,7 @@ Below is a code to demostrate the relation between these components.
 .. code-block:: python
 
     app = SwaggerApp._create_('http://petstore.swagger.wordnik.com/api/api-docs')
-    auth = SwaggerAuth(app)
+    auth = SwaggerSecurity(app)
     client = Client(auth)
 
     # get SwaggerRequest and SwaggerResponse from Swagger.op
@@ -75,7 +75,7 @@ Reference
     :members:
     :private-members:
 
-.. autoclass:: SwaggerAuth
+.. autoclass:: SwaggerSecurity
     :members:
 
     .. automethod:: __init__

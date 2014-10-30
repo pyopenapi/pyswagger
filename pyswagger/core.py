@@ -83,6 +83,8 @@ class SwaggerApp(object):
         :return: validation errors
         :rtype: list of tuple(where, type, msg).
         """
+
+        # TODO: validation according to version of spec.
         s = Scanner(self)
         v = Validate()
 
@@ -171,8 +173,8 @@ class SwaggerApp(object):
         return app
 
 
-class SwaggerAuth(object):
-    """ authorization handler
+class SwaggerSecurity(object):
+    """ security handler
     """
 
     def __init__(self, app):
@@ -182,43 +184,39 @@ class SwaggerAuth(object):
         """
         self.__app = app
 
-        # placeholder of authorizations
-        self.__auths = {}
+        # placeholder of Security Info 
+        self.__info = {}
 
-    def update_with(self, name, auth_info):
+    def update_with(self, name, security_info):
         """ insert/clear authorizations
 
-        :param str name: name of the authorization to be updated
-        :param auth_info: the real authorization data, token, ...etc.
-        :type auth_info: **(username, password)** for *basicAuth*, **token** in str for *oauth2*, *apiKey*.
+        :param str name: name of the security info to be updated
+        :param security_info: the real security data, token, ...etc.
+        :type security_info: **(username, password)** for *basicAuth*, **token** in str for *oauth2*, *apiKey*.
 
         :raises ValueError: unsupported types of authorizations
         """
-        auth = self.__app.root.authorizations.get(name, None)
-        if auth == None:
-            raise ValueError('Unknown authorization name: [{0}]'.format(name))
+        s = self.__app.root.securityDefinitions.get(name, None)
+        if s == None:
+            raise ValueError('Unknown security name: [{0}]'.format(name))
 
-        cred = auth_info
+        cred = security_info
         header = True
-        if auth.type == 'basicAuth':
-            cred = 'Basic ' + base64.standard_b64encode(six.b('{0}:{1}'.format(*auth_info))).decode('utf-8')
+        if s.type == 'basic':
+            cred = 'Basic ' + base64.standard_b64encode(six.b('{0}:{1}'.format(*security_info))).decode('utf-8')
             key = 'Authorization'
-        elif auth.type == 'apiKey':
-            key = auth.keyname
-            header = auth.passAs == 'header'
-        elif auth.type == 'oauth2':
-            if auth.grantTypes.implicit:
-                key = auth.grantTypes.implicit.tokenName
-            else:
-                key = auth.grantTypes.authorization_code.tokenEndpoint.tokenName
-            key = key if key else 'access_token'
+        elif s.type == 'apiKey':
+            key = s.name
+            header = getattr(s, 'in') == 'header'
+        elif s.type == 'oauth2':
+            key = 'access_token'
         else:
-            raise ValueError('Unsupported Authorization type: [{0}, {1}]'.format(name, auth.type))
+            raise ValueError('Unsupported Authorization type: [{0}, {1}]'.format(name, s.type))
 
-        self.__auths.update({name: (header, {key: cred})})
+        self.__info.update({name: (header, {key: cred})})
 
     def __call__(self, req):
-        """ apply authorization for a request.
+        """ apply security info for a request.
 
         :param SwaggerRequest req: the request to be authorized.
         :return: the updated request
@@ -228,10 +226,10 @@ class SwaggerAuth(object):
             return req
 
         for k, v in six.iteritems(req._auths):
-            if not k in self.__auths:
+            if not k in self.__info:
                 continue
 
-            header, cred = self.__auths[k]
+            header, cred = self.__info[k]
             req._p['header'].update(cred) if header else req.query.update(cred)
 
         return req
@@ -256,14 +254,14 @@ class BaseClient(object):
                 return resp
     """
 
-    def __init__(self, auth=None):
+    def __init__(self, security=None):
         """ constructor
 
-        :param SwaggerAuth auth: the authorization holder
+        :param SwaggerSecurity security: the security holder
         """
 
-        # placeholder of SwaggerAuth
-        self.__auth = auth
+        # placeholder of SwaggerSecurity
+        self.__security = security
 
     def request(self, req_and_resp, opt={}):
         """ preprocess before performing a request, usually some patching.
