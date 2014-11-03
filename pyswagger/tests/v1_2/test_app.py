@@ -10,15 +10,16 @@ import os
 import six
 
 
-app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik'))
-
-
 class SwaggerAppTestCase(unittest.TestCase):
     """ test SwaggerApp utility function """
 
+    @classmethod
+    def setUpClass(kls):
+        kls.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik'))
+
     def test_field_name(self):
         """ field_name """
-        self.assertEqual(sorted(app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
+        self.assertEqual(sorted(self.app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
 
     def test_field_rename(self):
         """ renamed field name """
@@ -42,7 +43,7 @@ class SwaggerAppTestCase(unittest.TestCase):
 
     def test_children(self):
         """ children """
-        chd = app.raw._children_
+        chd = self.app.raw._children_
         self.assertEqual(len(chd), 5)
         self.assertEqual(set(['user', 'pet', 'store']), set([c[0] for c in chd if isinstance(c[1], Resource)]))
 
@@ -128,7 +129,7 @@ class ValidationTestCase(unittest.TestCase):
     """ test case for validation """
 
     def setUp(self):
-        self.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='err'))
+        self.app = SwaggerApp.load(get_test_data_folder(version='1.2', which='err'))
 
     def test_errs(self):
         """

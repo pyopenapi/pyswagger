@@ -131,10 +131,10 @@ class Validate(object):
         errs = []
 
         for k, v in six.iteritems(obj.authorizations):
-            if k not in app.root.authorizations:
+            if k not in app.raw.authorizations:
                 errs.append('auth {0} not found in resource list'.format(k))
 
-            if app.root.authorizations[k].type in ('basicAuth', 'apiKey') and v != []:
+            if app.raw.authorizations[k].type in ('basicAuth', 'apiKey') and v != []:
                 errs.append('auth {0} should be an empty list'.format(k))
 
         return '' if scope == None else scope, name, obj.__class__.__name__, errs

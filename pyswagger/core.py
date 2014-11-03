@@ -4,8 +4,8 @@ from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
 from .scan import Scanner
 from .scanner import TypeReduce, Resolve
-from .scanner.v1_2 import Validate, FixMinMax, Upgrade
-from .utils import ScopeDict
+from .scanner.v1_2 import FixMinMax, Upgrade
+from .utils import ScopeDict, import_string
 import inspect
 import base64
 import six
@@ -17,9 +17,20 @@ class SwaggerApp(object):
     This object is tended to be used in read-only manner. Therefore,
     all accessible attributes are almost read-only properties.
     """
+    def __init__(self):
+        """ constructor
+        """
+        self.__root = None
+        self.__raw = None
+        self.__op = None
+        self.__d = None
+        self.__pd = None
+        self.__rd = None
+        self.__version = ''
 
     @property
     def root(self):
+        # TODO: fix the comment
         """ schema representation of Swagger API, its structure may
         be different from different version of Swagger.
 
@@ -32,6 +43,7 @@ class SwaggerApp(object):
 
     @property
     def raw(self):
+        # TODO: fix the comment
         """ raw objects for original version of spec, indexed by
         version string.
 
@@ -51,53 +63,49 @@ class SwaggerApp(object):
         """
         return self.__op
 
-    # TODO: add member
+    @property
+    def m(self):
+        """ backward compatible, refer to
+        SwaggerApp.d for details
+        """
+        return self.d
+
     @property
     def d(self):
         """ dict of Definition Object
 
         :type: dict of Definition Object
         """
-        return self.__m
+        # TODO: we didn't prepare d yet
+        return self.__d
 
-    # TODO: add member
     @property
     def pd(self):
         """ dict of Parameter Definition Object
 
         :type: dict of Parameter Definition Object
         """
+        # TODO: we didn't prepare pd yet
+        return self.__pd
 
-    # TODO: add member
     @property
     def rd(self):
         """ dict of Response Definition Object
 
         :type: dict of Response Definition Object
         """
+        # TODO: we didn't prepare rd yet
+        return self.__rd
 
-    def validate(self, strict=True):
-        """ check if this Swagger API valid or not.
-
-        :param bool strict: when in strict mode, exception would be raised if not valid.
-        :return: validation errors
-        :rtype: list of tuple(where, type, msg).
+    @property
+    def version(self):
         """
-
-        # TODO: validation according to version of spec.
-        s = Scanner(self)
-        v = Validate()
-
-        s.scan(route=[v])
-
-        if strict and len(v.errs) > 0:
-            raise ValueError('this Swagger App contains error: {0}.'.format(len(v.errs)))
-
-        return v.errs
+        """
+        return self.__version
 
     @classmethod
-    def _create_(kls, url, getter=None):
-        """ factory of SwaggerApp
+    def load(kls, url, getter=None):
+        """ load json as a raw SwaggerApp
 
         :param str url: url of path of Swagger API definition
         :param getter: customized Getter
@@ -124,7 +132,6 @@ class SwaggerApp(object):
             local_getter = local_getter(url)
 
         app = kls()
-        s = Scanner(app)
         tmp = {'_tmp_': {}}
 
         # get root document to check its swagger version.
@@ -134,41 +141,107 @@ class SwaggerApp(object):
             with ResourceListContext(tmp, '_tmp_') as ctx:
                 ctx.parse(local_getter, obj)
 
-            setattr(app, '_' + kls.__name__ + '__raw', tmp['_tmp_'])
-
-            # convert from 1.2 to 2.0
-            converter = Upgrade()
-            s.scan(root=app.raw, route=[converter])
-            setattr(app, '_' + kls.__name__ + '__root', converter.swagger)
+            setattr(app, '_' + kls.__name__ + '__version', '1.2')
         elif 'swagger' in obj:
             if obj['swagger'] == '2.0':
                 # swagger 2.0
                 with SwaggerContext(tmp, '_tmp_') as ctx:
                     ctx.parse(obj)
 
-                setattr(app, '_' + kls.__name__ + '__raw', tmp['_tmp_'])
-                setattr(app, '_' + kls.__name__ + '__root', tmp['_tmp_'])
+                setattr(app, '_' + kls.__name__ + '__version', '2.0')
             else:
                 raise NotImplementedError('Unsupported Version: {0}'.format(obj['swagger']))
         else:
             raise LookupError('Unable to find swagger version')
 
+        setattr(app, '_' + kls.__name__ + '__raw', tmp['_tmp_'])
+        return app
+
+    def validate(self, strict=True):
+        """ check if this Swagger API valid or not.
+
+        :param bool strict: when in strict mode, exception would be raised if not valid.
+        :return: validation errors
+        :rtype: list of tuple(where, type, msg).
+        """
+        v_mod = import_string('.'.join([
+            'pyswagger',
+            'scanner',
+            'v' + self.version.replace('.', '_'),
+            'validate'
+        ]))
+
+        if not v_mod:
+            # there is no validation module
+            # for this version of spec
+            return
+
+        s = Scanner(self)
+        v = v_mod.Validate()
+
+        s.scan(route=[v], root=self.__raw)
+
+        if strict and len(v.errs) > 0:
+            raise ValueError('this Swagger App contains error: {0}.'.format(len(v.errs)))
+
+        return v.errs
+
+    def prepare(self):
+        """ preparation for loaded json
+        """
+
+        self.validate()
+
+        s = Scanner(self)
+
+        if self.version == '1.2':
+            converter = Upgrade()
+            s.scan(root=self.__raw, route=[converter])
+            self.__root = converter.swagger
+        elif self.version == '2.0':
+            self.__root = self.__raw
+        else:
+            raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
+       
         # TODO: need to change for 2.0
         # reducer for Operation & Model
         tr = TypeReduce()
 
         # TODO: this belongs to 1.2
         # convert types
-        s.scan(root=app.root, route=[FixMinMax(), tr])
+        s.scan(root=self.__root, route=[FixMinMax(), tr])
 
         # 'm' for model
-        setattr(app, '_' + kls.__name__ + '__m', ScopeDict(tr.model))
+        self.__m = ScopeDict(tr.model)
         # 'op' for operation
-        setattr(app, '_' + kls.__name__ + '__op', ScopeDict(tr.op))
+        self.__op = ScopeDict(tr.op)
 
         # TODO: need to change for 2.0
         # resolve reference
-        s.scan(root=app.root, route=[Resolve()])
+        s.scan(root=self.__root, route=[Resolve()])
+
+    @classmethod
+    def _create_(kls, url, getter=None):
+        """ for backward compatible, for later version,
+        please call SwaggerApp.create instead.
+        """
+        return kls.create(url, getter)
+
+    @classmethod
+    def create(kls, url, getter=None):
+        """ factory of SwaggerApp
+
+        :param str url: url of path of Swagger API definition
+        :param getter: customized Getter
+        :type getter: sub class/instance of Getter
+        :return: the created SwaggerApp object
+        :rtype: SwaggerApp
+        :raises ValueError: if url is wrong
+        :raises NotImplementedError: the swagger version is not supported.
+        """
+
+        app = kls.load(url, getter)
+        app.prepare()
 
         return app
 

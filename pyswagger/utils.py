@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from .const import SCOPE_SEPARATOR
 import six
+import imp
+import sys
 import datetime
 import re
 
@@ -147,3 +149,27 @@ def none_count(d):
     """ count none value in dict """
     return six.moves.reduce(lambda x, y: x + 1 if y == None else x, d.values(), 0)
 
+def import_string(name):
+    """ import module
+    """
+    # TODO: unittest
+    mod = None
+
+    # code below, please refer to 
+    #   https://docs.python.org/2/library/imp.html
+    # for details
+    try:
+        return sys.modules[name]
+    except KeyError:
+        pass
+
+    fp, pathname, desc = imp.find_module(name)
+
+    try:
+        return imp.load_module(name, fp, pathname, desc)
+    finally:
+        # Since we may exit via an exception, close fp explicitly.
+        if fp:
+            fp.close()
+
+    return mod
