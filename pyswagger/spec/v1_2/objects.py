@@ -117,6 +117,9 @@ class Authorization(six.with_metaclass(FieldMeta, BaseObj)):
 
     __swagger_fields__ = ['type', 'passAs', 'keyname', 'scopes', 'grantTypes']
 
+    def get_name(self, path):
+        return path.split('/', 3)[2]
+
 
 class ResponseMessage(six.with_metaclass(FieldMeta, BaseObj)):
     """ ResponseMessage Object
@@ -160,6 +163,9 @@ class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
             authorizations=self._parent_.authorizations)
         return req, SwaggerResponse(self)
 
+    def get_name(self, path):
+        return self.nickname
+
 
 class Api(six.with_metaclass(FieldMeta, BaseObj)):
     """ Api Object
@@ -192,6 +198,9 @@ class Model(six.with_metaclass(FieldMeta, BaseObj)):
 
     def _prim_(self, v):
         return primitives.Model(self, v)
+
+    def get_name(self, path):
+        return self.id
 
 
 class Resource(six.with_metaclass(FieldMeta, BaseObj)):
@@ -232,12 +241,15 @@ class Resource(six.with_metaclass(FieldMeta, BaseObj)):
         # replace Api with Operations
         self.update_field('apis', new_api)
 
+    def get_name(self, path):
+        return path.split('/', 3)[2]
+
 
 class Info(six.with_metaclass(FieldMeta, BaseObj)):
     """ Info Object
     """
 
-    __swagger_fields__ = ['title', 'termsOfServiceUrl', 'contact', 'license', 'licenseUrl']
+    __swagger_fields__ = ['title', 'termsOfServiceUrl', 'contact', 'license', 'licenseUrl', 'description']
 
 
 class ResourceList(six.with_metaclass(FieldMeta, BaseObj)):

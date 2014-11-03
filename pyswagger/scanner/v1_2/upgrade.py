@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from ...base import NullContext
 from ...scan import Dispatcher
 from ...primitives import is_primitive
-from ...utils import scope_compose, scope_split
+from ...utils import scope_compose
 from ...spec.v1_2.objects import (
     ResourceList,
     Resource,
@@ -85,11 +85,12 @@ class Upgrade(object):
 
     @Disp.register([Resource])
     def _resource(self, path, obj, app):
-        self.__swagger.tags.append(name)
+        self.__swagger.tags.append(obj.get_name(path))
 
     @Disp.register([Operation])
     def _operation(self, path, obj, app):
         o = objects.Operation(NullContext())
+        scope = obj._parent_.get_name(path)
 
         o.update_field('tags', [scope])
         o.update_field('operationId', obj.nickname)
@@ -144,11 +145,12 @@ class Upgrade(object):
             o.update_field('name', obj.keyname)
             o.update_field('in', obj.passAs)
 
-        self.__swagger.securityDefinitions[name] = o
+        self.__swagger.securityDefinitions[obj.get_name()] = o
 
     @Disp.register([Parameter])
     def _parameter(self, path, obj, app):
         o = objects.Parameter(NullContext())
+        scope = obj._parent_.parent_.get_name(path)
 
         o.update_field('name', obj.name)
         o.update_field('required', obj.required)
@@ -159,7 +161,7 @@ class Upgrade(object):
             o.update_field('in', obj.paramType)
 
         if 'body' == getattr(o, 'in'):
-            o.update_field('schema', convert_schema_from_datatype(obj, scope_split(scope)[0]))
+            o.update_field('schema', convert_schema_from_datatype(obj, scope))
         else:
             if getattr(obj, '$ref'):
                 # TODO: add test case
@@ -194,7 +196,9 @@ class Upgrade(object):
 
     @Disp.register([Model])
     def _model(self, path, obj, app):
-        s = scope_compose(scope, name)
+        scope = obj._parent_.get_name(path)
+
+        s = scope_compose(scope, obj.get_name(path))
         o = self.__swagger.definitions.get(s, None)
         if not o:
             o = objects.Schema(NullContext())
