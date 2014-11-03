@@ -3,8 +3,8 @@ from .getter import HttpGetter, FileGetter
 from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
 from .scan import Scanner
-from .scanner import TypeReduce, Resolve
-from .scanner.v1_2 import FixMinMax, Upgrade
+from .scanner import TypeReduce
+from .scanner.v1_2 import Upgrade
 from .utils import ScopeDict, import_string
 import inspect
 import base64
@@ -23,9 +23,7 @@ class SwaggerApp(object):
         self.__root = None
         self.__raw = None
         self.__op = None
-        self.__d = None
-        self.__pd = None
-        self.__rd = None
+        self.__m = None
         self.__version = ''
 
     @property
@@ -65,37 +63,10 @@ class SwaggerApp(object):
 
     @property
     def m(self):
-        """ backward compatible, refer to
-        SwaggerApp.d for details
+        """ backward compatible, convert
+        SwaggerApp.d to ScopeDict
         """
-        return self.d
-
-    @property
-    def d(self):
-        """ dict of Definition Object
-
-        :type: dict of Definition Object
-        """
-        # TODO: we didn't prepare d yet
-        return self.__d
-
-    @property
-    def pd(self):
-        """ dict of Parameter Definition Object
-
-        :type: dict of Parameter Definition Object
-        """
-        # TODO: we didn't prepare pd yet
-        return self.__pd
-
-    @property
-    def rd(self):
-        """ dict of Response Definition Object
-
-        :type: dict of Response Definition Object
-        """
-        # TODO: we didn't prepare rd yet
-        return self.__rd
+        return self.__m
 
     @property
     def version(self):
@@ -203,22 +174,13 @@ class SwaggerApp(object):
         else:
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
        
-        # TODO: need to change for 2.0
-        # reducer for Operation & Model
+        # reducer for Operation 
         tr = TypeReduce()
 
-        # TODO: this belongs to 1.2
-        # convert types
-        s.scan(root=self.__root, route=[FixMinMax(), tr])
-
-        # 'm' for model
-        self.__m = ScopeDict(tr.model)
-        # 'op' for operation
+        # 'op' -- shortcut for Operation with tag and operaionId
         self.__op = ScopeDict(tr.op)
-
-        # TODO: need to change for 2.0
-        # resolve reference
-        s.scan(root=self.__root, route=[Resolve()])
+        # 'm' -- shortcut for model in Swagger 1.2
+        self.__m = ScopeDict(self.__root.definitions)
 
     @classmethod
     def _create_(kls, url, getter=None):
