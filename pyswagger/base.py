@@ -244,14 +244,15 @@ class BaseObj(object):
                 if not isinstance(obj, weakref.ProxyTypes):
                     ret.append((name, obj))
             elif isinstance(obj, list):
-                for v in obj:
-                    down(name, v)
+                for i, v in zip(range(len(obj)), obj):
+                    down(name + '/' + str(i), v)
+
             elif isinstance(obj, dict):
                 for k, v in six.iteritems(obj):
-                    down(k, v)
+                    down(name + '/' + k, v)
 
         for n in names:
-            down(None, getattr(self, n))
+            down(n, getattr(self, n))
 
         return ret
 

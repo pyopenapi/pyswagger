@@ -56,7 +56,7 @@ class Upgrade(object):
         self.__swagger = None
 
     @Disp.register([ResourceList])
-    def _resource_list(self, scope, name, obj, app):
+    def _resource_list(self, path, obj, app):
         o = objects.Swagger(NullContext())
 
         info = objects.Info(NullContext())
@@ -84,11 +84,11 @@ class Upgrade(object):
         self.__swagger = o
 
     @Disp.register([Resource])
-    def _resource(self, scope, name, obj, app):
+    def _resource(self, path, obj, app):
         self.__swagger.tags.append(name)
 
     @Disp.register([Operation])
-    def _operation(self, scope, name, obj, app):
+    def _operation(self, path, obj, app):
         o = objects.Operation(NullContext())
 
         o.update_field('tags', [scope])
@@ -120,7 +120,7 @@ class Upgrade(object):
         self.__swagger.paths[path].update_field(method, o)
 
     @Disp.register([Authorization])
-    def _authorization(self, scope, name, obj, app):
+    def _authorization(self, path, obj, app):
         o = objects.SecurityScheme(NullContext())
 
         if obj.type == 'basicAuth':
@@ -147,7 +147,7 @@ class Upgrade(object):
         self.__swagger.securityDefinitions[name] = o
 
     @Disp.register([Parameter])
-    def _parameter(self, scope, name, obj, app):
+    def _parameter(self, path, obj, app):
         o = objects.Parameter(NullContext())
 
         o.update_field('name', obj.name)
@@ -193,7 +193,7 @@ class Upgrade(object):
         op.parameters.append(o)
 
     @Disp.register([Model])
-    def _model(self, scope, name, obj, app):
+    def _model(self, path, obj, app):
         s = scope_compose(scope, name)
         o = self.__swagger.definitions.get(s, None)
         if not o:
