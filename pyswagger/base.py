@@ -281,7 +281,7 @@ class FieldMeta(type):
             init_fields(spc['__swagger_fields__'], rename)
 
         for b in bases:
-            fields = b.__swagger_fields__ if hasattr(b, '__swagger_fields__') else {}
+            fields = b.__swagger_fields__ if hasattr(b, '__swagger_fields__') else []
             rename = b.__swagger_rename__ if hasattr(b, '__swagger_rename__') else {}
             init_fields(fields, rename)
 
