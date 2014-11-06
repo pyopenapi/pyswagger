@@ -238,15 +238,15 @@ class BaseObj(object):
     def _children_(self):
         """ get children objects
 
-        :rtype: a list of tuples(name, child_object)
+        :rtype: a dict of children {child_name: child_object}
         """
-        ret = []
+        ret = {}
         names = self._field_names_
 
         def down(name, obj):
             if isinstance(obj, BaseObj):
                 if not isinstance(obj, weakref.ProxyTypes):
-                    ret.append((name, obj))
+                    ret[name] = obj
             elif isinstance(obj, list):
                 for i, v in zip(range(len(obj)), obj):
                     down(jp_append(str(i), name), v)

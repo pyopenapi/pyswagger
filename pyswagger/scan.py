@@ -9,8 +9,9 @@ def default_tree_traversal(root):
     while len(objs) > 0:
         path, obj = objs.pop()
 
-        # get children
-        objs.extend(map(lambda c: (path + '/' + c[0],) + (c[1],), obj._children_))
+        # name of child are json-pointer encoded, we don't have
+        # to encode it again.
+        objs.extend(map(lambda n, o: (path + '/' + n,) + (o,), obj._children_.iteritems()))
 
         # the path we expose here follows JsonPointer described here
         #   http://tools.ietf.org/html/draft-ietf-appsawg-json-pointer-07

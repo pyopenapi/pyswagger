@@ -32,9 +32,9 @@ class SwaggerBaseTestCase(unittest.TestCase):
         obj = {'a': [{}, {}, {}], 'b': {'/a': {}, '~b': {}, 'cc': {}}}
         with TestContext(tmp, 't') as ctx:
             ctx.parse(obj)
-        c = [c[0] for c in tmp['t']._children_]
+        c = tmp['t']._children_.keys()
 
-        self.assertEqual(c, ['a/0', 'a/1', 'a/2', 'b/cc', 'b/~0b', 'b/~1a'])
+        self.assertEqual(sorted(c), sorted(['a/0', 'a/1', 'a/2', 'b/cc', 'b/~0b', 'b/~1a']))
 
     def test_field_rename(self):
         """ renamed field name """
