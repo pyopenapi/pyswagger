@@ -8,22 +8,22 @@ class Items(six.with_metaclass(FieldMeta, BaseObj)):
     """
 
     __swagger_fields__ = [
-        'type',
-        'format',
-        'items',
-        'collectionFormat',
-        'default',
-        'maximum',
-        'exclusiveMaximum',
-        'minimum',
-        'exclusiveMinimum',
-        'maxLength',
-        'minLength',
-        'pattern',
-        'maxItems',
-        'minItems',
-        'uniqueItems',
-        'enum'
+        ('type', None),
+        ('format', None),
+        ('items', None),
+        ('collectionFormat', None),
+        ('default', None),
+        ('maximum', None),
+        ('exclusiveMaximum', None),
+        ('minimum', None),
+        ('exclusiveMinimum', None),
+        ('maxLength', None),
+        ('minLength', None),
+        ('pattern', None),
+        ('maxItems', None),
+        ('minItems', None),
+        ('uniqueItems', None),
+        ('enum', None),
     ]
 
 
@@ -32,32 +32,32 @@ class Schema(six.with_metaclass(FieldMeta, BaseObj)):
     """
 
     __swagger_fields__ = [
-        '$ref',
-        'format',
-        'default',
-        'multipleOf',
-        'maximum',
-        'exclusiveMaximum',
-        'minimum',
-        'exclusiveMinimum',
-        'maxLength',
-        'minLength',
-        'pattern',
-        'maxItems',
-        'minItems',
-        'uniqueItems',
-        'maxProperties',
-        'minProperties',
-        'required',
-        'enum',
-        'type',
+        ('$ref', None),
+        ('format', None),
+        ('default', None),
+        ('multipleOf', None),
+        ('maximum', None),
+        ('exclusiveMaximum', None),
+        ('minimum', None),
+        ('exclusiveMinimum', None),
+        ('maxLength', None),
+        ('minLength', None),
+        ('pattern', None),
+        ('maxItems', None),
+        ('minItems', None),
+        ('uniqueItems', None),
+        ('maxProperties', None),
+        ('minProperties', None),
+        ('required', None),
+        ('enum', None),
+        ('type', None),
 
-        'items',
-        'allOf',
-        'properties',
+        ('items', None),
+        ('allOf', []),
+        ('properties', None),
 
-        'discriminator',
-        'readOnly',
+        ('discriminator', None),
+        ('readOnly', None),
     ]
 
 
@@ -66,20 +66,20 @@ class Swagger(six.with_metaclass(FieldMeta, BaseObj)):
     """
 
     __swagger_fields__ = [
-        'swagger',
-        'info',
-        'host',
-        'basePath',
-        'schemes',
-        'consumes',
-        'produces',
-        'paths',
-        'definitions',
-        'parameters',
-        'responses',
-        'securityDefinitions',
-        'security',
-        'tags',
+        ('swagger', None),
+        ('info', None),
+        ('host', None),
+        ('basePath', None),
+        ('schemes', None),
+        ('consumes', None),
+        ('produces', None),
+        ('paths', None),
+        ('definitions', None),
+        ('parameters', None),
+        ('responses', None),
+        ('securityDefinitions', None),
+        ('security', None),
+        ('tags', None),
     ]
 
 
@@ -87,7 +87,9 @@ class Info(six.with_metaclass(FieldMeta, BaseObj)):
     """ Info Object
     """
 
-    __swagger_fields__ = ['version']
+    __swagger_fields__ = [
+        ('version', None),
+    ]
 
 
 class Parameter(six.with_metaclass(FieldMeta, BaseObj)):
@@ -96,33 +98,33 @@ class Parameter(six.with_metaclass(FieldMeta, BaseObj)):
 
     __swagger_fields__ = [
         # Reference Object
-        '$ref',
+        ('$ref', None),
 
-        'name',
-        'in',
-        'required',
+        ('name', None),
+        ('in', None),
+        ('required', None),
 
         # body parameter
-        'schema',
+        ('schema', None),
 
         # other parameter
-        'type',
-        'format',
-        'items',
-        'collectionFormat',
-        'default',
-        'maximum',
-        'exclusiveMaximum',
-        'minimum',
-        'exclusiveMinimum',
-        'maxLength',
-        'minLength',
-        'pattern',
-        'maxItems',
-        'minItems',
-        'uniqueItems',
-        'enum',
-        'multipleOf',
+        ('type', None),
+        ('format', None),
+        ('items', None),
+        ('collectionFormat', None),
+        ('default', None),
+        ('maximum', None),
+        ('exclusiveMaximum', None),
+        ('minimum', None),
+        ('exclusiveMinimum', None),
+        ('maxLength', None),
+        ('minLength', None),
+        ('pattern', None),
+        ('maxItems', None),
+        ('minItems', None),
+        ('uniqueItems', None),
+        ('enum', None),
+        ('multipleOf', None),
     ]
 
 
@@ -131,23 +133,23 @@ class Header(six.with_metaclass(FieldMeta, BaseObj)):
     """
 
     __swagger_fields__ = [
-        'type',
-        'format',
-        'items',
-        'collectionFormat',
-        'default',
-        'maximum',
-        'exclusiveMaximum',
-        'minimum',
-        'exclusiveMinimum',
-        'maxLength',
-        'minLength',
-        'pattern',
-        'maxItems',
-        'minItems',
-        'uniqueItems',
-        'enum',
-        'multipleOf',
+        ('type', None),
+        ('format', None),
+        ('items', None),
+        ('collectionFormat', None),
+        ('default', None),
+        ('maximum', None),
+        ('exclusiveMaximum', None),
+        ('minimum', None),
+        ('exclusiveMinimum', None),
+        ('maxLength', None),
+        ('minLength', None),
+        ('pattern', None),
+        ('maxItems', None),
+        ('minItems', None),
+        ('uniqueItems', None),
+        ('enum', None),
+        ('multipleOf', None),
     ]
 
 
@@ -157,10 +159,10 @@ class Response(six.with_metaclass(FieldMeta, BaseObj)):
 
     __swagger_fields__ = [
         # Reference Object
-        '$ref',
+        ('$ref', None),
 
-        'schema',
-        'headers',
+        ('schema', None),
+        ('headers', None),
     ]
 
 
@@ -169,14 +171,14 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
     """
 
     __swagger_fields__ = [
-        'tags',
-        'operationId',
-        'consumes',
-        'produces',
-        'parameters',
-        'responses',
-        'deprecated',
-        'security'
+        ('tags', None),
+        ('operationId', None),
+        ('consumes', None),
+        ('produces', None),
+        ('parameters', None),
+        ('responses', None),
+        ('deprecated', None),
+        ('security', None),
     ]
 
 
@@ -186,16 +188,16 @@ class PathItem(six.with_metaclass(FieldMeta, BaseObj)):
 
     __swagger_fields__ = [
         # Reference Object
-        '$ref',
+        ('$ref', None),
 
-        'get',
-        'put',
-        'post',
-        'delete',
-        'options',
-        'head',
-        'patch',
-        'parameters',
+        ('get', None),
+        ('put', None),
+        ('post', None),
+        ('delete', None),
+        ('options', None),
+        ('head', None),
+        ('patch', None),
+        ('parameters', None),
     ]
 
 
@@ -204,13 +206,13 @@ class SecurityScheme(six.with_metaclass(FieldMeta, BaseObj)):
     """
 
     __swagger_fields__ = [
-        'type',
-        'name',
-        'in',
-        'flow',
-        'authorizationUrl',
-        'tokenUrl',
-        'scopes',
+        ('type', None),
+        ('name', None),
+        ('in', None),
+        ('flow', None),
+        ('authorizationUrl', None),
+        ('tokenUrl', None),
+        ('scopes', None),
     ]
 
 
@@ -218,5 +220,7 @@ class Tag(six.with_metaclass(FieldMeta, BaseObj)):
     """ Tag Object
     """
 
-    __swagger_fields__ = ['name']
+    __swagger_fields__ = [
+        ('name', None),
+    ]
 
