@@ -173,3 +173,22 @@ def import_string(name):
             fp.close()
 
     return mod
+
+def jp_append(s, base=None):
+    """ append/encode a string to json-pointer
+    """
+    s = s.replace('~', '~0')
+    return s.replace('/', '~1') if base == None else ''.join([base, '/', s.replace('/', '~1')])
+
+def jp_split(s):
+    """ split/decode a string from json-pointer
+    """
+    if s == '' or s == None:
+        return []
+
+    def _decode(s):
+        s = s.replace('~1', '/')
+        return s.replace('~0', '~')
+
+    return [_decode(ss) for ss in s.split('/')]
+

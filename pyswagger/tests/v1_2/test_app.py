@@ -3,11 +3,9 @@ from ..utils import get_test_data_folder
 from pyswagger.spec.v1_2.objects import (
     Resource
 )
-from pyswagger import base
 import unittest
 import httpretty
 import os
-import six
 
 
 class SwaggerAppTestCase(unittest.TestCase):
@@ -20,26 +18,6 @@ class SwaggerAppTestCase(unittest.TestCase):
     def test_field_name(self):
         """ field_name """
         self.assertEqual(sorted(self.app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
-
-    def test_field_rename(self):
-        """ renamed field name """
-
-        class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
-            __swagger_fields__ = ['a']
-            __swagger_rename__ = {'a': 'b'}
- 
-        class TestContext(base.Context):
-            __swagger_ref_object__ = TestObj
-
-        tmp = {'t': {}}
-        obj = {'a': 1}
-        with TestContext(tmp, 't') as ctx:
-            ctx.parse(obj)
-
-        # make sure there is no 'a' property
-        self.assertRaises(AttributeError, lambda x: x.a, tmp['t'])
-        # make sure property 'b' exists
-        self.assertTrue(tmp['t'].b, 1)
 
     def test_children(self):
         """ children """

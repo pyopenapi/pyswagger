@@ -3,10 +3,10 @@ from datetime import datetime
 import unittest
 
 
-class Iso8601TestCase(unittest.TestCase):
+class SwaggerUtilsTestCase(unittest.TestCase):
     """ test iso 8601 converter """
 
-    def test_convert_from_string(self):
+    def test_iso8601_convert_from_string(self):
         """ convert string to date/datetime """
         self.assertEqual(utils.from_iso8601('2007-04-05T14:30'), datetime(2007, 4, 5, 14, 30))
         self.assertEqual(utils.from_iso8601('2007-04-05T14:30Z'), datetime(2007, 4, 5, 14, 30, tzinfo=utils.FixedTZ(0, 0)))
@@ -19,4 +19,19 @@ class Iso8601TestCase(unittest.TestCase):
         self.assertEqual(4, utils.none_count(a))
         b = dict(a=1, b=2, c=3, d=4, e=5, f=6)
         self.assertEqual(0, utils.none_count(b))
+
+    def test_json_pointer(self):
+        """ json pointer io function """
+        self.assertEqual(utils.jp_append('/test'), '~1test')
+        self.assertEqual(utils.jp_append('~test'), '~0test')
+        self.assertEqual(utils.jp_append('/~test'), '~1~0test')
+        self.assertEqual(utils.jp_append('a', 'b'), 'b/a')
+        self.assertEqual(utils.jp_append(''), '')
+
+        self.assertEqual(utils.jp_split('~1test'), ['/test'])
+        self.assertEqual(utils.jp_split('~0test'), ['~test'])
+        self.assertEqual(utils.jp_split('~1~0test'), ['/~test'])
+        self.assertEqual(utils.jp_split(''), [])
+        self.assertEqual(utils.jp_split(None), [])
+        self.assertEqual(utils.jp_split('/~1~0test/qq/~0test/~1test/'), ['', '/~test', 'qq', '~test', '/test', ''])
 
