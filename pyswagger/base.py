@@ -1,6 +1,8 @@
 from __future__ import absolute_import
+from .utils import jp_append
 import six
 import weakref
+import copy
 
 
 class ContainerType:
@@ -133,6 +135,8 @@ class BaseObj(object):
     __swagger_rename__ = {}
 
     # list of names of fields, we will skip fields not in this list.
+    # field format:
+    # - tuple(string, default-value): a field name with default value
     __swagger_fields__ = []
 
     def __init__(self, ctx):
@@ -151,7 +155,7 @@ class BaseObj(object):
 
         # handle fields
         for field in self.__swagger_fields__:
-            setattr(self, self.get_private_name(field), ctx._obj.get(field, None))
+            setattr(self, self.get_private_name(field[0]), ctx._obj.get(field[0], copy.copy(field[1])))
 
         # set self as childrent's parent
         for name, _, cls in ctx.__swagger_child__:
@@ -216,9 +220,9 @@ class BaseObj(object):
                 return
 
             if not rename:
-                ret.extend(f)
+                ret.extend([n for n, _ in f])
             else:
-                for n in f:
+                for n, _ in f:
                     new_n = rename.get(n, None)
                     ret.append(new_n) if new_n else ret.append(n)
 
@@ -245,14 +249,13 @@ class BaseObj(object):
                     ret.append((name, obj))
             elif isinstance(obj, list):
                 for i, v in zip(range(len(obj)), obj):
-                    down(name + '/' + str(i), v)
-
+                    down(jp_append(str(i), name), v)
             elif isinstance(obj, dict):
                 for k, v in six.iteritems(obj):
-                    down(name + '/' + k, v)
+                    down(jp_append(k, name), v)
 
         for n in names:
-            down(n, getattr(self, n))
+            down(jp_append(n), getattr(self, n))
 
         return ret
 
@@ -272,9 +275,9 @@ class FieldMeta(type):
         and create those fields.
         """
         def init_fields(fields, rename):
-            for f in fields:
-                f = rename[f] if f in rename.keys() else f
-                spc[f] = property(_method_(f))
+            for name, _ in fields:
+                name = rename[name] if name in rename.keys() else name
+                spc[name] = property(_method_(name))
 
         rename = spc['__swagger_rename__'] if '__swagger_rename__' in spc.keys() else {}
         if '__swagger_fields__' in spc.keys():
