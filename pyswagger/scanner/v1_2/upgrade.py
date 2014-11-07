@@ -9,7 +9,7 @@ from ...spec.v1_2.objects import (
     Operation,
     Authorization,
     Parameter,
-    Model
+    Model,
 )
 from ...spec.v2_0 import objects
 import os
@@ -85,7 +85,14 @@ class Upgrade(object):
 
     @Disp.register([Resource])
     def _resource(self, path, obj, app):
-        self.__swagger.tags.append(obj.get_name(path))
+        name = obj.get_name(path)
+        for t in self.__swagger.tags:
+            if t.name == name:
+                break
+        else:
+            tt = objects.Tag(NullContext())
+            tt.update_field('name', name)
+            self.__swagger.tags.append(tt)
 
     @Disp.register([Operation])
     def _operation(self, path, obj, app):

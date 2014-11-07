@@ -157,7 +157,12 @@ class BaseObj(object):
         for field in self.__swagger_fields__:
             setattr(self, self.get_private_name(field[0]), ctx._obj.get(field[0], copy.copy(field[1])))
 
-        def assign_parent(cls, obj):
+        self._assign_parent(ctx)
+
+    def _assign_parent(self, ctx):
+        """ parent assignment, internal usage only
+        """
+        def _assign(cls, obj):
             if obj == None:
                 return
 
@@ -169,22 +174,25 @@ class BaseObj(object):
         # set self as childrent's parent
         for name, ct, ctx in ctx.__swagger_child__:
             obj = getattr(self, name)
+            if obj == None:
+                continue
 
             # iterate through children by ContainerType
             if ct == None:
-                assign_parent(ctx, obj)
+                _assign(ctx, obj)
             elif ct == ContainerType.list_:
                 for v in obj:
-                    assign_parent(ctx, v)
+                    _assign(ctx, v)
             elif ct == ContainerType.dict_:
                 for v in obj.values():
-                    assign_parent(ctx, v)
+                    _assign(ctx, v)
             elif ct == ContainerType.dict_of_list_:
                 for v in obj.values():
                     for vv in v:
-                        assign_parent(ctx, vv)
+                        _assign(ctx, vv)
             else:
                 raise ValueError('Unknown ContainerType: {0}'.format(ct))
+
 
     def get_private_name(self, f):
         """ get private protected name of an attribute

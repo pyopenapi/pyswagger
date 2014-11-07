@@ -5,6 +5,7 @@ from .spec.v2_0.parser import SwaggerContext
 from .scan import Scanner
 from .scanner import TypeReduce
 from .scanner.v1_2 import Upgrade
+from .scanner.v2_0 import AssignParent
 from .utils import ScopeDict, import_string
 import inspect
 import base64
@@ -25,6 +26,8 @@ class SwaggerApp(object):
         self.__op = None
         self.__m = None
         self.__version = ''
+
+        # TODO: allow init App-wised SCOPE_SEPARATOR
 
     @property
     def root(self):
@@ -161,14 +164,17 @@ class SwaggerApp(object):
         """ preparation for loaded json
         """
 
-        self.validate()
-
         s = Scanner(self)
+        self.validate()
 
         if self.version == '1.2':
             converter = Upgrade()
             s.scan(root=self.__raw, route=[converter])
             self.__root = converter.swagger
+
+            # We only have to run this scanner when upgrading from 1.2.
+            # Mainly because we initial BaseObj via NullContext
+            s.scan(root=self.__root, route=[AssignParent()])
         elif self.version == '2.0':
             self.__root = self.__raw
         else:
@@ -176,6 +182,7 @@ class SwaggerApp(object):
        
         # reducer for Operation 
         tr = TypeReduce()
+        s.scan(root=self.__root, route=[tr])
 
         # 'op' -- shortcut for Operation with tag and operaionId
         self.__op = ScopeDict(tr.op)
