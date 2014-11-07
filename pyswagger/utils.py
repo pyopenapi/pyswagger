@@ -38,10 +38,19 @@ def scope_split(scope, sep=SCOPE_SEPARATOR):
 class ScopeDict(dict):
     """ ScopeDict
     """
+    def __init__(self, *a, **k):
+        self.__sep = SCOPE_SEPARATOR
+        super(ScopeDict, self).__init__(*a, **k)
 
-    def __init__(self, sep=SCOPE_SEPARATOR):
+    @property
+    def sep(self):
+        """ separator property
+        """
+        raise TypeError('sep property is write-only')
+
+    @sep.setter
+    def  sep(self, sep):
         self.__sep = sep
-        super(ScopeDict, self).__init__()
 
     def __getitem__(self, *keys):
         """ to access an obj with key: 'n!##!m...!##!z', caller can pass as key:
@@ -51,18 +60,18 @@ class ScopeDict(dict):
 
         :param dict keys: keys to access via scopes.
         """
-        k = six.moves.reduce(lambda k1, k2: scope_compose(k1, k2), keys[0]) if isinstance(keys[0], tuple) else keys[0]
+        k = six.moves.reduce(lambda k1, k2: scope_compose(k1, k2, sep=self.__sep), keys[0]) if isinstance(keys[0], tuple) else keys[0]
         try:
             return super(ScopeDict, self).__getitem__(k)
         except KeyError as e:
-            kk = keys[0]
             ret = []
-            if isinstance(kk, six.string_types) and kk.find(SCOPE_SEPARATOR) == -1:
-                for ik in self.keys():
-                    if ik.endswith(kk):
-                        ret.append(ik)
-                if len(ret) == 1:
-                    return super(ScopeDict, self).__getitem__(ret[0])
+            for ik in self.keys():
+                if ik.endswith(k):
+                    ret.append(ik)
+            if len(ret) == 1:
+                return super(ScopeDict, self).__getitem__(ret[0])
+            elif len(ret) > 1:
+                raise ValueError('Multiple occurrence of key: {0}'.format(k))
 
             raise e
 

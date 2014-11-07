@@ -35,3 +35,22 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.jp_split(None), [])
         self.assertEqual(utils.jp_split('/~1~0test/qq/~0test/~1test/'), ['', '/~test', 'qq', '~test', '/test', ''])
 
+    def test_scope_dict(self):
+        """ ScopeDict """
+        obj = {
+            'a!b': 1,
+            'c!d!ee': 2,
+            'e!f!g': 3,
+            'a!f!g': 4,
+        }
+        d = utils.ScopeDict(obj)
+        d.sep = '!'
+        self.assertEqual(d['a!b'], 1)
+        self.assertEqual(d['b'], 1)
+        self.assertEqual(d['ee'], 2)
+        self.assertEqual(d['a', 'b'], 1)
+        self.assertEqual(d['c', 'd', 'ee'], 2)
+        self.assertEqual(d['d', 'ee'], 2)
+        self.assertRaises(ValueError, d.__getitem__, ('f', 'g'))
+        self.assertRaises(TypeError, lambda x: d.sep)
+
