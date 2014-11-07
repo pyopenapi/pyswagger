@@ -157,24 +157,34 @@ class BaseObj(object):
         for field in self.__swagger_fields__:
             setattr(self, self.get_private_name(field[0]), ctx._obj.get(field[0], copy.copy(field[1])))
 
+        def assign_parent(cls, obj):
+            if obj == None:
+                return
+
+            if isinstance(obj, cls.__swagger_ref_object__):
+                obj._parent__ = self
+            else:
+                raise TypeError('Object is not instance of {0} but {1}'.format(cls.__swagger_ref_object__, type(obj)))
+
         # set self as childrent's parent
-        for name, _, cls in ctx.__swagger_child__:
+        for name, ct, ctx in ctx.__swagger_child__:
             obj = getattr(self, name)
 
-            def assign_parent(obj, cls, parent):
-                if isinstance(obj, list):
-                    for v in obj:
-                        assign_parent(v, cls, parent)
-                elif isinstance(obj, cls.__swagger_ref_object__):
-                    obj._parent__ = parent
-
-            if isinstance(obj, dict):
-                # Objects from NamedContext
+            # iterate through children by ContainerType
+            if ct == None:
+                assign_parent(ctx, obj)
+            elif ct == ContainerType.list_:
+                for v in obj:
+                    assign_parent(ctx, v)
+            elif ct == ContainerType.dict_:
                 for v in obj.values():
-                    assign_parent(v, cls, self)
+                    assign_parent(ctx, v)
+            elif ct == ContainerType.dict_of_list_:
+                for v in obj.values():
+                    for vv in v:
+                        assign_parent(ctx, vv)
             else:
-                assign_parent(obj, cls, self)
-
+                raise ValueError('Unknown ContainerType: {0}'.format(ct))
 
     def get_private_name(self, f):
         """ get private protected name of an attribute

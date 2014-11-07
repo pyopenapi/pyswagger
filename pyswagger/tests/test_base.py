@@ -4,30 +4,34 @@ import unittest
 import six
 
 
+class ChildObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+    pass
+
+class ChildContext(base.Context):
+    __swagger_ref_object__ = ChildObj
+
+class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+    __swagger_fields__ = [
+        ('a', []),
+        ('b', {}),
+        ('c', {}),
+        ('d', None),
+    ]
+
+class TestContext(base.Context):
+    __swagger_ref_object__ = TestObj
+    __swagger_child__ = [
+        ('a', base.ContainerType.list_, ChildContext),
+        ('b', base.ContainerType.dict_, ChildContext),
+        ('c', base.ContainerType.dict_of_list_, ChildContext),
+        ('d', None, ChildContext),
+    ]
+
 class SwaggerBaseTestCase(unittest.TestCase):
     """ test things in base.py """
 
     def test_baseobj_children(self):
         """ test _children_ """
-        class ChildObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
-            pass
-
-        class ChildContext(base.Context):
-            __swagger_ref_object__ = ChildObj
-
-        class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
-            __swagger_fields__ = [
-                ('a', []),
-                ('b', {}),
-            ]
-
-        class TestContext(base.Context):
-            __swagger_ref_object__ = TestObj
-            __swagger_child__ = [
-                ('a', base.ContainerType.list_, ChildContext),
-                ('b', base.ContainerType.dict_, ChildContext),
-            ]
-
         tmp = {'t': {}}
         obj = {'a': [{}, {}, {}], 'b': {'/a': {}, '~b': {}, 'cc': {}}}
         with TestContext(tmp, 't') as ctx:
@@ -36,19 +40,35 @@ class SwaggerBaseTestCase(unittest.TestCase):
 
         self.assertEqual(sorted(c), sorted(['a/0', 'a/1', 'a/2', 'b/cc', 'b/~0b', 'b/~1a']))
 
+    def test_baseobj_parent(self):
+        """ test _parent_ """
+        tmp = {'t': {}}
+        obj = {'a': [{}], 'b': {'bb': {}}, 'c': {'cc': [{}]}, 'd': {}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(obj)
+
+        def _check(o):
+            self.assertTrue(isinstance(o, ChildObj))
+            self.assertEqual(id(tmp['t']), id(o._parent_))
+
+        _check(tmp['t'].a[0])
+        _check(tmp['t'].b['bb'])
+        _check(tmp['t'].c['cc'][0])
+        _check(tmp['t'].d)
+
     def test_field_rename(self):
         """ renamed field name """
 
-        class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+        class TestRenameObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
             __swagger_fields__ = [('a', None)]
             __swagger_rename__ = {'a': 'b'}
  
-        class TestContext(base.Context):
-            __swagger_ref_object__ = TestObj
+        class TestRenameContext(base.Context):
+            __swagger_ref_object__ = TestRenameObj
 
         tmp = {'t': {}}
         obj = {'a': 1}
-        with TestContext(tmp, 't') as ctx:
+        with TestRenameContext(tmp, 't') as ctx:
             ctx.parse(obj)
 
         # make sure there is no 'a' property
@@ -57,12 +77,8 @@ class SwaggerBaseTestCase(unittest.TestCase):
         self.assertTrue(tmp['t'].b, 1)
 
     def test_field_default_value(self):
-        """ field default value """
-
-        class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
-            __swagger_fields__ = [('a', [])]
- 
-        # make sure we won't reference to a global declared list
+        """ field default value, make sure we won't reference to a global declared list_
+        """
         o1 = TestObj(base.NullContext())
         o2 = TestObj(base.NullContext())
         self.assertTrue(id(o1.a) != id(o2.a))
