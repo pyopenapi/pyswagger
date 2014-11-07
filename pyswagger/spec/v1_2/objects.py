@@ -1,7 +1,5 @@
 from __future__ import absolute_import
 from ...base import BaseObj, FieldMeta, Context
-from ...io import SwaggerRequest, SwaggerResponse
-from pyswagger import primitives
 import six
 
 
@@ -13,9 +11,6 @@ class Items(six.with_metaclass(FieldMeta, BaseObj)):
         ('type', None),
         ('format', None),
     ]
-
-    def _prim_(self, v):
-        return primitives.prim_factory(self, v)
 
 
 class ItemsContext(Context):
@@ -54,9 +49,6 @@ class DataTypeObj(BaseObj):
         for name, default in DataTypeObj.__swagger_fields__:
             # almost every data field is not required.
             setattr(self, self.get_private_name(name), ctx._obj.get(name, default))
-
-    def _prim_(self, v):
-        return primitives.prim_factory(self, v)
 
 
 class Scope(six.with_metaclass(FieldMeta, BaseObj)):
@@ -175,9 +167,6 @@ class Parameter(six.with_metaclass(FieldMeta, DataTypeObj)):
         ('allowMultiple', None),
     ]
 
-    def _prim_(self, v):
-        return primitives.prim_factory(self, v, self.allowMultiple)
-
 
 class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
     """ Operation Object
@@ -196,13 +185,6 @@ class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
         # path from Api object, concated with Resource object
         ('path', None),
     ]
-
-    def __call__(self, **kwargs):
-        req = SwaggerRequest(self, params=kwargs,
-            produces=self._parent_.produces,
-            consumes=self._parent_.consumes,
-            authorizations=self._parent_.authorizations)
-        return req, SwaggerResponse(self)
 
     def get_name(self, path):
         return self.nickname
@@ -239,9 +221,6 @@ class Model(six.with_metaclass(FieldMeta, BaseObj)):
         # for model inheritance
         ('_extends_', None),
         ]
-
-    def _prim_(self, v):
-        return primitives.Model(self, v)
 
     def get_name(self, path):
         return self.id

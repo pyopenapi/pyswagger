@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from ...base import BaseObj, FieldMeta
+from pyswagger import primitives, io
 import six
 
 
@@ -25,6 +26,9 @@ class Items(six.with_metaclass(FieldMeta, BaseObj)):
         ('uniqueItems', None),
         ('enum', None),
     ]
+
+    def _prim_(self, v):
+        return primitives.prim_factory(self, v)
 
 
 class Schema(six.with_metaclass(FieldMeta, BaseObj)):
@@ -59,6 +63,9 @@ class Schema(six.with_metaclass(FieldMeta, BaseObj)):
         ('discriminator', None),
         ('readOnly', None),
     ]
+
+    def _prim_(self, v):
+        return primitives.prim_factory(self, v)
 
 
 class Swagger(six.with_metaclass(FieldMeta, BaseObj)):
@@ -127,6 +134,9 @@ class Parameter(six.with_metaclass(FieldMeta, BaseObj)):
         ('multipleOf', None),
     ]
 
+    def _prim_(self, v):
+        return primitives.prim_factory(self, v)
+
 
 class Header(six.with_metaclass(FieldMeta, BaseObj)):
     """ Header Object
@@ -180,6 +190,13 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
         ('deprecated', None),
         ('security', None),
     ]
+
+    def __call__(self, **kwargs):
+        req = io.SwaggerRequest(self, params=kwargs,
+            produces=self._parent_.produces,
+            consumes=self._parent_.consumes,
+            authorizations=self._parent_.authorizations)
+        return req, io.SwaggerResponse(self)
 
 
 class PathItem(six.with_metaclass(FieldMeta, BaseObj)):
