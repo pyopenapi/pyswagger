@@ -145,12 +145,12 @@ class Upgrade(object):
             o.update_field('name', obj.keyname)
             o.update_field('in', obj.passAs)
 
-        self.__swagger.securityDefinitions[obj.get_name()] = o
+        self.__swagger.securityDefinitions[obj.get_name(path)] = o
 
     @Disp.register([Parameter])
     def _parameter(self, path, obj, app):
         o = objects.Parameter(NullContext())
-        scope = obj._parent_.parent_.get_name(path)
+        scope = obj._parent_._parent_.get_name(path)
 
         o.update_field('name', obj.name)
         o.update_field('required', obj.required)
@@ -202,6 +202,7 @@ class Upgrade(object):
         o = self.__swagger.definitions.get(s, None)
         if not o:
             o = objects.Schema(NullContext())
+            self.__swagger.definitions[s] = o
 
         props = {}
         for name, prop in obj.properties.iteritems():
@@ -209,22 +210,19 @@ class Upgrade(object):
         o.update_field('properties', props)
         o.update_field('required', obj.required)
         o.update_field('discriminator', obj.discriminator)
-        o.update_field('allOf', [])
 
         for t in obj.subTypes or []:
             # here we assume those child models belongs to
             # the same resource.
             sub_s = scope_compose(scope, t)
-
             sub_o = self.__swagger.definitions.get(sub_s, None)
             if not sub_o:
                 sub_o = objects.Schema(NullContext())
+                self.__swagger.definitions[sub_s] = sub_o
 
             new_ref = objects.Schema(NullContext())
             new_ref.update_field('$ref', '#/definitions/' + s)
             sub_o.allOf.append(new_ref)
-
-        self.__swagger.definitions[s] = o
 
     @property
     def swagger(self):

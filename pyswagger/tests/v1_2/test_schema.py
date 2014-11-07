@@ -228,7 +228,7 @@ class DataTypeTestCase(unittest.TestCase):
         """ operation """ 
         op = app.raw.apis['pet'].apis['findPetsByStatus']
         self.assertEqual(op.type, 'array')
-        self.assertEqual(op.items.ref.id, app.d['pet', 'Pet'].id)
+        self.assertEqual(getattr(op.items, '$ref'), 'Pet')
 
     def test_parameter(self):
         """ parameter """ 

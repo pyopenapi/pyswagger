@@ -28,7 +28,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         to tags is correct.
         """
         s = app.root
-        self.assertEqual(s.tags, ['store', 'user', 'pet'])
+        self.assertEqual(sorted(s.tags), sorted(['store', 'user', 'pet']))
 
         p = app.root.paths
         self.assertEqual(sorted(p.keys()), sorted([
@@ -71,6 +71,11 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         self.assertEqual(r.headers, None)
         self.assertEqual(r.schema.type, 'array')
         self.assertEqual(getattr(r.schema.items, '$ref'), '#/definitions/pet!##!Pet')
+
+        # createUser
+        o = app.root.paths['/user'].post
+        self.assertEqual(o.tags, ['user'])
+        self.assertEqual(o.operationId, 'createUser')
 
     def test_authorization(self):
         """ Authorization -> Security Scheme

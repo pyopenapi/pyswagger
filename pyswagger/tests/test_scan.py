@@ -90,14 +90,14 @@ class ScannerTestCase(unittest.TestCase):
         p = PathRecord()
         s.scan(route=[p], root=app.raw)
 
-        self.assertEqual(p.resource, ['#/apis/store', '#/apis/user', '#/apis/pet'])
+        self.assertEqual(sorted(p.resource), sorted(['#/apis/store', '#/apis/user', '#/apis/pet']))
         self.assertEqual(p.authorization, ['#/authorizations/oauth2'])
-        self.assertEqual(p.response_message, [
+        self.assertEqual(sorted(p.response_message), sorted([
             '#/apis/store/apis/placeOrder/responseMessages/0',
             '#/apis/store/apis/deleteOrder/responseMessages/1',
             '#/apis/store/apis/deleteOrder/responseMessages/0',
             '#/apis/store/apis/getOrderById/responseMessages/1',
             '#/apis/store/apis/getOrderById/responseMessages/0'
-        ])
+        ]))
         self.assertEqual(len(p.parameter), 3)
 
