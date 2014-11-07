@@ -1,7 +1,7 @@
 from pyswagger import SwaggerApp
 from pyswagger.contrib.client.requests import Client
 from pyswagger.primitives import Model
-from ..utils import get_test_data_folder
+from .utils import get_test_data_folder
 import unittest
 import httpretty
 import json

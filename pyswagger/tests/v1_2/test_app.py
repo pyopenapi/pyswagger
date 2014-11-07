@@ -23,7 +23,7 @@ class SwaggerAppTestCase(unittest.TestCase):
         """ children """
         chd = self.app.raw._children_
         self.assertEqual(len(chd), 5)
-        self.assertEqual(set(['user', 'pet', 'store']), set([k for k, v in chd.iteritems() if isinstance(v, Resource)]))
+        self.assertEqual(set(['api/user', 'api/pet', 'api/store']), set([k for k, v in chd.iteritems() if isinstance(v, Resource)]))
 
 
 class HTTPGetterTestCase(unittest.TestCase):
