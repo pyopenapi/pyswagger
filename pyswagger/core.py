@@ -6,10 +6,11 @@ from .scan import Scanner
 from .scanner import TypeReduce
 from .scanner.v1_2 import Upgrade
 from .scanner.v2_0 import AssignParent
-from .utils import ScopeDict, import_string
+from .utils import ScopeDict, import_string, jp_split
 import inspect
 import base64
 import six
+import weakref
 
 
 class SwaggerApp(object):
@@ -213,6 +214,32 @@ class SwaggerApp(object):
         app.prepare()
 
         return app
+
+    def ref(self, path):
+        """ reference resolver
+
+        :param str path: json-pointer path of object to be referenced
+        :return: the referenced object, wrapped by weakref.ProxyType
+        :rtype: weakref.ProxyType
+        :raises ValueError: if path is not valid
+        """
+        if path == None or len(path) == 0:
+            raise ValueError('Empty Path is not allowed')
+
+        if not path.startswith('#'):
+            raise ValueError('Invalid Path, root element should be \'#\', but [{0}]'.format(path))
+
+        if path.endswith('/'):
+            path = path[:-1]
+
+        obj = self.root.resolve(jp_split(path)[1:]) # heading element is #, mapping to self.root
+
+        if obj == None:
+            raise ValueError('Unable to resolve path, remain path: [{0}]'.format(ts))
+
+        if isinstance(obj, (six.string_types, int, list, dict)):
+            return obj
+        return weakref.proxy(obj)
 
 
 class SwaggerSecurity(object):

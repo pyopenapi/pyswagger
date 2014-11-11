@@ -214,6 +214,22 @@ class BaseObj(object):
 
         setattr(self, n, obj)
 
+    def resolve(self, ts):
+        """ resolve a list of tokens to an child object
+        """
+        obj = self
+        while len(ts) > 0:
+            t = ts.pop(0)
+
+            if issubclass(obj.__class__, BaseObj):
+                obj = getattr(obj, t)
+            elif isinstance(obj, list):
+                obj = obj[int(t)]
+            elif isinstance(obj, dict):
+                obj = obj[t]
+
+        return obj
+
     @property
     def _parent_(self):
         """ get parent object

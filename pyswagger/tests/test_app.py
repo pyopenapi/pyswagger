@@ -1,29 +1,12 @@
 from pyswagger import SwaggerApp
-from ..utils import get_test_data_folder
-from pyswagger.spec.v1_2.objects import (
-    Resource
+from .utils import get_test_data_folder
+from pyswagger.spec.v2_0.objects import (
+    Schema,
+    Operation,
 )
 import unittest
 import httpretty
 import os
-
-
-class SwaggerAppTestCase(unittest.TestCase):
-    """ test SwaggerApp utility function """
-
-    @classmethod
-    def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik'))
-
-    def test_field_name(self):
-        """ field_name """
-        self.assertEqual(sorted(self.app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
-
-    def test_children(self):
-        """ children """
-        chd = self.app.raw._children_
-        self.assertEqual(len(chd), 5)
-        self.assertEqual(set(['api/user', 'api/pet', 'api/store']), set([k for k, v in chd.iteritems() if isinstance(v, Resource)]))
 
 
 class HTTPGetterTestCase(unittest.TestCase):
@@ -98,10 +81,6 @@ class HTTPGetterTestCase(unittest.TestCase):
             'uniqueItems'
         ]))
 
-        chd = local_app.raw._children_
-        self.assertEqual(len(chd), 5)
-        self.assertEqual(set(['user', 'pet', 'store']), set([k for k, v in chd.iteritems() if isinstance(v, Resource)]))
-
 
 class ValidationTestCase(unittest.TestCase):
     """ test case for validation """
@@ -134,4 +113,22 @@ class ValidationTestCase(unittest.TestCase):
     def test_raise_exception(self):
         """ raise exceptions in strict mode """
         self.assertRaises(ValueError, self.app.validate)
+
+
+class SwaggerAppTestCase(unittest.TestCase):
+    """ test case for SwaggerApp """
+
+    def setUp(self):
+        self.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik'))
+
+    def test_ref(self):
+        """ test ref function """
+        self.assertRaises(ValueError, self.app.ref, None)
+        self.assertRaises(ValueError, self.app.ref, '')
+        self.assertRaises(ValueError, self.app.ref, '//')
+
+        self.assertTrue(isinstance(self.app.ref('#/definitions/user!##!User'), Schema))
+        self.assertTrue(isinstance(self.app.ref('#/paths/~1user~1{username}/put'), Operation))
+        self.assertEqual(self.app.ref('#/paths/~1store~1order/post/produces'), ['application/json'])
+        self.assertEqual(self.app.ref('#/host'), 'petstore.swagger.wordnik.com')
 

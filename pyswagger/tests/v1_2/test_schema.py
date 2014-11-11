@@ -264,3 +264,13 @@ class DataTypeTestCase(unittest.TestCase):
         self.assertEqual(p['status'].type, 'string')
         self.assertEqual(sorted(p['status'].enum), sorted(['available', 'pending', 'sold']))
 
+    def test_field_name(self):
+        """ field_name """
+        self.assertEqual(sorted(self.app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
+
+    def test_children(self):
+        """ children """
+        chd = self.app.raw._children_
+        self.assertEqual(len(chd), 5)
+        self.assertEqual(set(['api/user', 'api/pet', 'api/store']), set([k for k, v in chd.iteritems() if isinstance(v, Resource)]))
+
