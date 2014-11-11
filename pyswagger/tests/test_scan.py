@@ -9,6 +9,7 @@ from pyswagger.spec.v1_2.objects import (
     Parameter
 )
 import unittest
+import weakref
 
 
 class CountObject(object):
@@ -100,4 +101,18 @@ class ScannerTestCase(unittest.TestCase):
             '#/apis/store/apis/getOrderById/responseMessages/0'
         ]))
         self.assertEqual(len(p.parameter), 3)
+
+
+class ResolveTestCase(unittest.TestCase):
+    """ test for scanner: Resolve """
+
+    @classmethod
+    def setUpClass(kls):
+        kls.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='model_subtypes')) 
+        
+    def test_ref_resolve(self):
+        """ make sure pre resolve works """
+        ref = getattr(self.app.ref('#/definitions/user!##!UserWithInfo').allOf[0], '$ref')
+        self.assertTrue(isinstance(ref, weakref.ProxyTypes))
+        self.assertEqual(ref, self.app.ref('#/definitions/user!##!User'))
 

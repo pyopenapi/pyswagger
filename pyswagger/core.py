@@ -5,7 +5,7 @@ from .spec.v2_0.parser import SwaggerContext
 from .scan import Scanner
 from .scanner import TypeReduce
 from .scanner.v1_2 import Upgrade
-from .scanner.v2_0 import AssignParent
+from .scanner.v2_0 import AssignParent, Resolve
 from .utils import ScopeDict, import_string, jp_split
 import inspect
 import base64
@@ -183,7 +183,7 @@ class SwaggerApp(object):
        
         # reducer for Operation 
         tr = TypeReduce()
-        s.scan(root=self.__root, route=[tr])
+        s.scan(root=self.__root, route=[tr, Resolve()])
 
         # 'op' -- shortcut for Operation with tag and operaionId
         self.__op = ScopeDict(tr.op)
