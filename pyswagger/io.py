@@ -15,7 +15,7 @@ class SwaggerRequest(object):
     # when testing a set of Swagger APIs locally.
     opt_url_netloc = 'url_netloc'
 
-    def __init__(self, op, params={}, produces=None, consumes=None, authorizations=None):
+    def __init__(self, op, params):
         """ constrcutor
 
         :param Operation op: the related Operation object
@@ -25,48 +25,16 @@ class SwaggerRequest(object):
         :param authorizations: list of required authorizations from parent object
         """
 
-        self.__method = op.method
-        self.__p = dict(header={}, query={}, path={}, body={}, form={}, File={})
-        self.__url = op._parent_.basePath + op.path
-
-        # a flag to indicate if prepared
-        self.__is_prepared = False
-
+        self.__op = op
+        self.__p = params
+        self.__url = op.url
         self.__header = {}
-
-        # TODO: this part can be resolved once by using scanner.
-        # let produces/consumes/authorizations in Operation override global ones.
-        self.__produces = op.produces if op.produces else produces
-        self.__consumes = op.consumes if op.consumes else consumes
-        self.__authorizations = op.authorizations if op.authorizations else authorizations
-
-        # check for unknown parameters
-        unknown = set(params.keys()) - set([p.name for p in op.parameters])
-        if len(unknown):
-            raise ValueError('Unknown parameters: ' + str(unknown))
-
-        # convert params into internal types
-        for p in op.parameters:
-            val = params.get(p.name, None)
-
-            # check required parameter
-            val = p.defaultValue if val == None else val
-            if val == None and p.required:
-                raise ValueError('requires parameter: ' + p.name)
-
-            converted = p._prim_(val)
-            # we could only have string for those parameter types
-            if p.paramType in ('path', 'query'):
-                converted = six.moves.urllib.parse.quote(str(converted))
-            elif p.paramType == 'header':
-                converted = str(converted)
-
-            self.__p[p.paramType if p.type != 'File' else 'File'][p.name] = converted
+        self.__is_prepared = False # a flag to indicate if prepared
 
         # update 'accept' header section
         accepts = 'application/json'
-        if accepts and self.__produces and accepts not in self.__produces:
-            accepts = self.__produces[0]
+        if accepts and self.__op.__produces and accepts not in self.__op.__produces:
+            accepts = self.__op.__produces[0]
 
         if accepts:
             self.__header.update({'Accept': accepts})
@@ -75,7 +43,7 @@ class SwaggerRequest(object):
         """ private function to prepare content for paramType=form
         """
         content_type = 'application/x-www-form-urlencoded'
-        if self.__consumes and content_type not in self.__consumes:
+        if self.__op.__consumes and content_type not in self.__op.__consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
         return content_type, six.moves.urllib.parse.urlencode(self.__p['form'])
@@ -84,7 +52,7 @@ class SwaggerRequest(object):
         """ private function to prepare content for paramType=body
         """
         content_type = 'application/json'
-        if self.__consumes and content_type not in self.__consumes:
+        if self.__op.__consumes and content_type not in self.__op.__consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
         return content_type, json.dumps(
@@ -94,7 +62,7 @@ class SwaggerRequest(object):
         """ private function to prepare content for paramType=form with File
         """
         content_type = 'multipart/form-data'
-        if self.__consumes and content_type not in self.__consumes:
+        if self.__op.__consumes and content_type not in self.__op.__consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
         boundary = uuid4().hex
@@ -157,7 +125,7 @@ class SwaggerRequest(object):
         """
         opt_netloc = opt.pop(SwaggerRequest.opt_url_netloc, None)
         if opt_netloc:
-            scheme, netloc, path, params, query, fragment = six.moves.urllib.parse.urlparse(self.__url)    
+            scheme, netloc, path, params, query, fragment = six.moves.urllib.parse.urlparse(self.__url)
             self.__url = six.moves.urllib.parse.urlunparse(
                 (scheme, opt_netloc, path, params, query, fragment)
                 )
@@ -231,7 +199,7 @@ class SwaggerRequest(object):
 
         :type: str
         """
-        return self.__method
+        return self.__op.__method
 
     @property
     def header(self):
@@ -265,12 +233,12 @@ class SwaggerRequest(object):
         return self.__p
 
     @property
-    def _auths(self):
+    def _security(self):
         """ list of authorizations required
         
         :type: dict of list of Authorizations object.
         """
-        return self.__authorizations
+        return self.__op.security
 
 
 class SwaggerResponse(object):

@@ -189,14 +189,46 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
         ('responses', None),
         ('deprecated', None),
         ('security', None),
+
+        # for pyswagger
+        ('method', None),
+        ('url', None),
     ]
 
-    def __call__(self, **kwargs):
-        req = io.SwaggerRequest(self, params=kwargs,
-            produces=self._parent_.produces,
-            consumes=self._parent_.consumes,
-            authorizations=self._parent_.authorizations)
-        return req, io.SwaggerResponse(self)
+    def __call__(self, **k):
+        # prepare parameter set
+        params = dict(header={}, query={}, path={}, body={}, formData={}, file={})
+        def _convert_parameter(p):
+            ref = getattr(p, '$ref')
+            p = ref if ref else p
+
+            v = k.get(p.name, p.default)
+            if v == None and p.required:
+                raise ValueError('requires parameter: ' + p.name)
+
+            c = p._prim_(v)
+            i = getattr(p, 'in')
+            if i in ('path', 'query'):
+                c = six.moves.urllib.parse.quote(str(c))
+            elif i == 'header':
+                c = str(c)
+
+            params[i if p.type != 'file' else 'file'][p.name] = c
+
+        # TODO: check for unknown parameter
+        for p in self.parameters:
+            _convert_parameter(p)
+
+        return \
+        io.SwaggerRequest(
+            params=params,
+            produces=self.produces,
+            consumes=self.consumes,
+            method=self.method,
+            url=self.url,
+            security=self.security,
+            ),
+        io.SwaggerResponse(self)
 
 
 class PathItem(six.with_metaclass(FieldMeta, BaseObj)):
