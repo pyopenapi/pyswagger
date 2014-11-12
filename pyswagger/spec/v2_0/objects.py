@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from ...base import BaseObj, FieldMeta
+from ...utils import deref
 from pyswagger import primitives, io
 import six
 
@@ -199,9 +200,6 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
         # prepare parameter set
         params = dict(header={}, query={}, path={}, body={}, formData={}, file={})
         def _convert_parameter(p):
-            ref = getattr(p, '$ref')
-            p = ref if ref else p
-
             v = k.get(p.name, p.default)
             if v == None and p.required:
                 raise ValueError('requires parameter: ' + p.name)
@@ -217,7 +215,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
 
         # TODO: check for unknown parameter
         for p in self.parameters:
-            _convert_parameter(p)
+            _convert_parameter(deref(p))
 
         return \
         io.SwaggerRequest(

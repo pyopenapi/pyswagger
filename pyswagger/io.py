@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from .base import BaseObj
 from .primitives import PrimJSONEncoder
+from .utils import deref
 from uuid import uuid4
 import six
 import json
@@ -254,7 +255,7 @@ class SwaggerResponse(object):
         self.__raw = self.__data = None
 
         # init properties
-        self.__status = 0
+        self.__status = ''
         self.__header = {}
 
     def apply_with(self, status=None, raw=None, header=None):
@@ -266,24 +267,11 @@ class SwaggerResponse(object):
         :return: return self for chaining
         :rtype: SwaggerResponse
         """
-        def _find_rm():
-            """ helper function to find
-            ResponseMessage object.
-            """
-            for rm in self.__op.responseMessages:
-                if rm.code == self.status:
-                    return rm
-            return None
-
-        rm = None
 
         if status != None:
             self.__status = status
 
-            # looking for responseMessages in Operation object
-            rm = _find_rm()
-            self.__message = '' if not rm else rm.message
-
+        r = deref(self.__op.response.get(self.status, None))
         if raw != None:
             if self.status == 0:
                 raise Exception('Update status code before assigning raw data')
@@ -291,23 +279,13 @@ class SwaggerResponse(object):
             self.__raw = raw
 
             # update data from Opeartion if succeed else from responseMessage.responseModel
-            rm = _find_rm() if not rm else rm
-            if rm and isinstance(rm.responseModel, BaseObj):
-                self.__data = rm.responseModel._prim_(self.raw)
-
-            if not self.__data:
-                # when nothing works, convert raw with Operation's return type.
-                self.__data = self.__op._prim_(self.__raw)
+            self.__data = r.schema._prim_(self.raw)
 
         if header != None:
             for k, v in six.iteritems(header):
-                # split v into comma separated list
-                v = str(v).split(',')
-
-                if k in self.__header:
-                    self.__header[k].extend(v)
-                else:
-                    self.__header[k] = v
+                if k in r.headers:
+                    v = r.headers[k]._prim_(v)
+                self.__header[k] = v
 
         return self
 
@@ -318,14 +296,6 @@ class SwaggerResponse(object):
         :type: int
         """
         return self.__status
-
-    @property
-    def message(self):
-        """ response message
-
-        :type: str
-        """
-        return self.__message
 
     @property
     def data(self):
