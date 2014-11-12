@@ -18,8 +18,8 @@ class PatchOperation(object):
     def _operation(self, path, obj, app):
         # TODO: test case
         # produces/consumes
-        obj.produces = app.root.produces if not len(obj.produces) else obj.produces
-        obj.consumes = app.root.consumes if not len(obj.consumes) else obj.consumes
+        obj.update_field('produces', app.root.produces if len(obj.produces) == 0 else obj.produces)
+        obj.update_field('consumes', app.root.consumes if len(obj.consumes) == 0 else obj.consumes)
 
         # combine parameters from PathItem
         for p in obj._parent_.parameters:
@@ -32,7 +32,7 @@ class PatchOperation(object):
     @Disp.register([PathItem])
     def _path_item(self, path, obj, app):
         # TODO: test case
-        url = app.host + app.basePath + jp_split(path)[-1]
+        url = app.root.host + app.root.basePath + jp_split(path)[-1]
         for c in PathItemContext.__swagger_child__:
             o = getattr(obj, c[0])
             if isinstance(o, Operation):

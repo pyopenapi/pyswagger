@@ -79,8 +79,8 @@ class Swagger(six.with_metaclass(FieldMeta, BaseObj)):
         ('host', None),
         ('basePath', None),
         ('schemes', None),
-        ('consumes', None),
-        ('produces', None),
+        ('consumes', []),
+        ('produces', []),
         ('paths', None),
         ('definitions', None),
         ('parameters', None),
@@ -184,8 +184,8 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
     __swagger_fields__ = [
         ('tags', None),
         ('operationId', None),
-        ('consumes', None),
-        ('produces', None),
+        ('consumes', []),
+        ('produces', []),
         ('parameters', None),
         ('responses', None),
         ('deprecated', None),
@@ -244,7 +244,7 @@ class PathItem(six.with_metaclass(FieldMeta, BaseObj)):
         ('options', None),
         ('head', None),
         ('patch', None),
-        ('parameters', None),
+        ('parameters', []),
     ]
 
 

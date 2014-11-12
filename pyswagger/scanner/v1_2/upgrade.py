@@ -117,10 +117,10 @@ class Upgrade(object):
         o.update_field('deprecated', obj.deprecated == 'true')
 
         c = obj.consumes if obj.consumes and len(obj.consumes) > 0 else obj._parent_.consumes
-        o.update_field('consumes', c)
+        o.update_field('consumes', c if c else [])
 
         p = obj.produces if obj.produces and len(obj.produces) > 0 else obj._parent_.produces
-        o.update_field('produces', p)
+        o.update_field('produces', p if p else [])
 
         o.update_field('parameters', [])
         o.update_field('security', {})
