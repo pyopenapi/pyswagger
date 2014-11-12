@@ -57,7 +57,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         self.assertEqual(o.tags, ['pet'])
         self.assertEqual(o.operationId, 'getPetById')
         self.assertEqual(o.produces, ['application/json', 'application/xml', 'text/plain', 'text/html'])
-        self.assertEqual(o.consumes, None)
+        self.assertEqual(o.consumes, [])
         self.assertEqual(o.deprecated, False)
 
         # partialUpdate
@@ -104,14 +104,14 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
 
         # form
         o = app.root.paths['/pet/uploadImage'].post
-        p = sorted([p for p in o.parameters if getattr(p, 'in') == 'formData'])[1]
+        p = sorted([p for p in o.parameters if getattr(p, 'in') == 'formData'])[0]
         self.assertEqual(p.name, 'additionalMetadata')
         self.assertEqual(p.required, False)
         self.assertEqual(p.type, 'string')
  
         # file
         o = app.root.paths['/pet/uploadImage'].post
-        p = sorted([p for p in o.parameters if getattr(p, 'in') == 'formData'])[0]
+        p = sorted([p for p in o.parameters if getattr(p, 'in') == 'formData'])[1]
         self.assertEqual(p.name, 'file')
         self.assertEqual(p.required, False)
         self.assertEqual(p.type, 'file')

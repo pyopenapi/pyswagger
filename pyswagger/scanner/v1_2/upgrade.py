@@ -26,6 +26,25 @@ def update_type_and_ref(dst, src, scope):
     elif src.type:
         dst.update_field('$ref', '#/definitions/' + scope_compose(scope, src.type))
 
+def convert_min_max(dst, src):
+    def _from_str(name):
+        v = getattr(src, name, None)
+        if v:
+            if src.type == 'integer':
+                # we need to handle 1.0 when converting to int
+                # that's why we need to convert to float first
+                dst.update_field(name, int(float(v)))
+            elif src.type == 'number':
+                dst.update_field(name, float(v))
+            else:
+                raise ValueError('minimum/maximum is only allowed on integer/number, not {0}'.format(src.type))
+        else:
+            dst.update_field(name, None)
+
+    _from_str('minimum')
+    _from_str('maximum')
+
+
 def convert_schema_from_datatype(obj, scope):
     if obj == None:
         return None
@@ -34,8 +53,7 @@ def convert_schema_from_datatype(obj, scope):
     update_type_and_ref(s, obj, scope)
     s.update_field('format', obj.format)
     s.update_field('default', obj.defaultValue)
-    s.update_field('maximum', obj.maximum)
-    s.update_field('minimum', obj.minimum)
+    convert_min_max(s, obj)
     s.update_field('uniqueItems', obj.uniqueItems)
     s.update_field('enum', obj.enum)
     if obj.items:
@@ -196,8 +214,7 @@ class Upgrade(object):
                 o.update_field('type', obj.type.lower())
                 o.update_field('format', obj.format)
                 o.update_field('default', obj.defaultValue)
-                o.update_field('maximum', obj.maximum)
-                o.update_field('minimum', obj.minimum)
+                convert_min_max(o, obj)
                 o.update_field('enum', obj.enum)
 
             if obj.items:

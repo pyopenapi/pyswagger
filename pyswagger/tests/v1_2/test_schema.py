@@ -30,8 +30,6 @@ class PropertyTestCase(unittest.TestCase):
         self.assertTrue(isinstance(app.raw.info, Info))
         self.assertEqual(app.raw.info.title, 'Swagger Sample App')
         self.assertEqual(app.raw.swaggerVersion, '1.2')
-        # description is ignored 
-        self.assertRaises(AttributeError, getattr, app.raw.info, 'description')
 
     def test_authorizations(self):
         """ authorizations """
@@ -246,10 +244,12 @@ class DataTypeTestCase(unittest.TestCase):
         # id
         self.assertEqual(p['id'].type, 'integer')
         self.assertEqual(p['id'].format, 'int64')
-        self.assertEqual(p['id'].minimum, 0.0)
-        self.assertEqual(p['id'].maximum, 100.0)
+        # we are not convert to real type here,
+        # this case is handled by Upgrading from 1.2 to 2.0
+        self.assertEqual(p['id'].minimum, '0.0')
+        self.assertEqual(p['id'].maximum, '100.0')
         # category
-        self.assertEqual(p['category'].ref.id, app.d['pet', 'Category'].id)
+        self.assertEqual(getattr(p['category'], '$ref'), 'Category')
         # name
         self.assertEqual(p['name'].type, 'string')
         # photoUrls
@@ -259,18 +259,18 @@ class DataTypeTestCase(unittest.TestCase):
         # tag
         self.assertEqual(p['tags'].type, 'array')
         self.assertTrue(isinstance(p['tags'].items, Items))
-        self.assertEqual(p['tags'].items.ref.id, app.d['pet', 'Tag'].id)
+        self.assertEqual(getattr(p['tags'].items, '$ref'), 'Tag')
         # status
         self.assertEqual(p['status'].type, 'string')
         self.assertEqual(sorted(p['status'].enum), sorted(['available', 'pending', 'sold']))
 
     def test_field_name(self):
         """ field_name """
-        self.assertEqual(sorted(self.app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
+        self.assertEqual(sorted(app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
 
     def test_children(self):
         """ children """
-        chd = self.app.raw._children_
+        chd = app.raw._children_
         self.assertEqual(len(chd), 5)
-        self.assertEqual(set(['api/user', 'api/pet', 'api/store']), set([k for k, v in chd.iteritems() if isinstance(v, Resource)]))
+        self.assertEqual(set(['apis/user', 'apis/pet', 'apis/store']), set([k for k, v in chd.iteritems() if isinstance(v, Resource)]))
 
