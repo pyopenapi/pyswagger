@@ -186,6 +186,9 @@ def import_string(name):
 def jp_append(s, base=None):
     """ append/encode a string to json-pointer
     """
+    if s == None:
+        return base
+
     s = s.replace('~', '~0')
     return s.replace('/', '~1') if base == None else ''.join([base, '/', s.replace('/', '~1')])
 

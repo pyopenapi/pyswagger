@@ -27,6 +27,7 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.jp_append('/~test'), '~1~0test')
         self.assertEqual(utils.jp_append('a', 'b'), 'b/a')
         self.assertEqual(utils.jp_append(''), '')
+        self.assertEqual(utils.jp_append(None, 'base'), 'base')
 
         self.assertEqual(utils.jp_split('~1test'), ['/test'])
         self.assertEqual(utils.jp_split('~0test'), ['~test'])
