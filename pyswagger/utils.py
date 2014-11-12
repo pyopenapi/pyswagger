@@ -202,6 +202,6 @@ def jp_split(s):
     return [_decode(ss) for ss in s.split('/')]
 
 def deref(obj):
-    o = getattr(obj, '$ref', None) if obj else None
+    o = getattr(obj, 'ref_obj', None) if obj else None
     return o if o else obj
 

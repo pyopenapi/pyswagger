@@ -28,7 +28,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         to tags is correct.
         """
         s = app.root
-        self.assertEqual(sorted(s.tags), sorted(['store', 'user', 'pet']))
+        self.assertEqual(sorted([t.name for t in s.tags]), sorted(['store', 'user', 'pet']))
 
         p = app.root.paths
         self.assertEqual(sorted(p.keys()), sorted([

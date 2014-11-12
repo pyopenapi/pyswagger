@@ -63,6 +63,9 @@ class Schema(six.with_metaclass(FieldMeta, BaseObj)):
 
         ('discriminator', None),
         ('readOnly', None),
+
+        # pyswagger only
+        ('ref_obj', None),
     ]
 
     def _prim_(self, v):
@@ -133,6 +136,9 @@ class Parameter(six.with_metaclass(FieldMeta, BaseObj)):
         ('uniqueItems', None),
         ('enum', None),
         ('multipleOf', None),
+
+        # pyswagger only
+        ('ref_obj', None),
     ]
 
     def _prim_(self, v):
@@ -174,6 +180,9 @@ class Response(six.with_metaclass(FieldMeta, BaseObj)):
 
         ('schema', None),
         ('headers', None),
+
+        # pyswagger only
+        ('ref_obj', None),
     ]
 
 
@@ -245,6 +254,9 @@ class PathItem(six.with_metaclass(FieldMeta, BaseObj)):
         ('head', None),
         ('patch', None),
         ('parameters', []),
+
+        # pyswagger only
+        ('ref_obj', None),
     ]
 
 

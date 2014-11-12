@@ -25,5 +25,5 @@ class Resolve(object):
         if ro.__class__ != obj.__class__:
             raise TypeError('Referenced Type mismatch: {0}'.format(r))
 
-        obj.update_field('$ref', ro)
+        obj.update_field('ref_obj', ro)
 
