@@ -46,6 +46,19 @@ def convert_schema_from_datatype(obj, scope):
 
     return s
 
+def convert_items(o):
+    item = objects.Items(NullContext())
+    if getattr(o, '$ref'):
+        # TODO: test case
+        raise ValueError('Can\'t have $ref for Items')
+    if not is_primitive(o):
+        # TODO: test case
+        raise ValueError('Non primitive type is not allowed for Items')
+    item.update_field('type', o.type.lower())
+    item.update_field('format', o.format)
+
+    return item
+
 
 class Upgrade(object):
     """ convert 1.2 object to 2.0 object
@@ -174,27 +187,23 @@ class Upgrade(object):
                 # TODO: add test case
                 raise ValueError('Can\'t have $ref in non-body Parameters')
 
-            o.update_field('type', obj.type.lower())
-            o.update_field('format', obj.format)
-            o.update_field('collectionFormat', 'csv')
-            o.update_field('default', obj.defaultValue)
-            o.update_field('maximum', obj.maximum)
-            o.update_field('minimum', obj.minimum)
-            o.update_field('uniqueItems', obj.uniqueItems)
-            o.update_field('enum', obj.enum)
+            if obj.allowMultiple == True and obj.items == None:
+                o.update_field('type', 'array')
+                o.update_field('collectionFormat', 'csv')
+                o.update_field('uniqueItems', obj.uniqueItems)
+                o.update_field('items', convert_items(obj))
+            else:
+                o.update_field('type', obj.type.lower())
+                o.update_field('format', obj.format)
+                o.update_field('default', obj.defaultValue)
+                o.update_field('maximum', obj.maximum)
+                o.update_field('minimum', obj.minimum)
+                o.update_field('enum', obj.enum)
 
             if obj.items:
-                item = objects.Items(NullContext())
-                if getattr(obj.items, '$ref'):
-                    # TODO: test case
-                    raise ValueError('Can\'t have $ref for Items')
-                if not is_primitive(obj.items):
-                    # TODO: test case
-                    raise ValueError('Non primitive type is not allowed for Items')
-                item.update_field('type', obj.items.type.lower())
-                item.update_field('format', obj.items.format)
-
-                o.update_field('items', item)
+                o.update_field('collectionFormat', 'csv')
+                o.update_field('uniqueItems', obj.uniqueItems)
+                o.update_field('items', convert_items(obj.items))
 
         path = obj._parent_._parent_.basePath + obj._parent_.path 
         method = obj._parent_.method.lower()
