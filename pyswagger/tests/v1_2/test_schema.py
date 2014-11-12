@@ -153,65 +153,6 @@ class PropertyTestCase(unittest.TestCase):
         self.assertTrue(isinstance(auth, Authorizations))
         self.assertEqual(auth.scope, 'write:pets')
 
-    def test_shortcut(self):
-        """ a short cut to Resource, Operation, Model from SwaggerApp """
-        # Resource
-        # TODO: resource is now replaced by tags
-        #self.assertTrue(isinstance(app.rs['pet'], Resource))
-        #self.assertTrue(isinstance(app.rs['user'], Resource))
-        #self.assertTrue(isinstance(app.rs['store'], Resource))
-
-        # Operation
-        self.assertEqual(len(app.op.values()), 20)
-        self.assertEqual(sorted(app.op.keys()), sorted([
-            'pet!##!addPet',
-            'pet!##!deletePet',
-            'pet!##!findPetsByStatus',
-            'pet!##!findPetsByTags',
-            'pet!##!getPetById',
-            'pet!##!partialUpdate',
-            'pet!##!updatePet',
-            'pet!##!updatePetWithForm',
-            'pet!##!uploadFile',
-            'store!##!deleteOrder',
-            'store!##!getOrderById',
-            'store!##!placeOrder',
-            'user!##!createUser',
-            'user!##!createUsersWithArrayInput',
-            'user!##!createUsersWithListInput',
-            'user!##!deleteUser',
-            'user!##!getUserByName',
-            'user!##!loginUser',
-            'user!##!logoutUser',
-            'user!##!updateUser'
-        ]))
-        self.assertTrue(app.op['user!##!getUserByName'], Operation)
-
-        # Model
-        self.assertEqual(len(app.d.values()), 5)
-        self.assertEqual(sorted(app.d.keys()), sorted([
-            'pet!##!Category',
-            'pet!##!Pet',
-            'pet!##!Tag',
-            'store!##!Order',
-            'user!##!User'
-        ]))
-        self.assertTrue(isinstance(app.d['pet!##!Category'], Model))
-
-    def test_scope_dict(self):
-        """ ScopeDict is a syntactic suger
-        to access scoped named object, ex. Operation, Model
-        """
-        # Operation
-        self.assertTrue(app.op['user', 'getUserByName'], Operation)
-        self.assertTrue(app.op['user', 'getUserByName'] is app.op['user!##!getUserByName'])
-        self.assertTrue(app.op['getUserByName'] is app.op['user!##!getUserByName'])
-
-        # Model
-        self.assertTrue(app.d['user', 'User'], Model)
-        self.assertTrue(app.d['user', 'User'] is app.d['user!##!User'])
-        self.assertTrue(app.d['User'] is app.d['user!##!User'])
-
     def test_parent(self):
         """ make sure parent is assigned """
         self.assertTrue(app.raw.apis['pet'].models['Pet']._parent_ is app.raw.apis['pet'])

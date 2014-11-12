@@ -75,7 +75,7 @@ class HTTPGetterTestCase(unittest.TestCase):
             'parameters',
             'path',
             'produces',
-            'ref',
+            '$ref',
             'responseMessages',
             'type',
             'uniqueItems'
@@ -94,20 +94,20 @@ class ValidationTestCase(unittest.TestCase):
         errs = self.app.validate(strict=False)
         self.maxDiff = None
         self.assertEqual(sorted(errs), sorted([
-            (('', 'Info'), 'requirement description not meet.'),
-            (('', 'Info'), 'requirement title not meet.'),
-            (('oauth2', 'Authorization'), 'requirement type not meet.'),
-            (('oauth2', 'LoginEndpoint'), 'requirement url not meet.'),
-            (('oauth2', 'Scope'), 'requirement scope not meet.'),
-            (('oauth2', 'TokenRequestEndpoint'), 'requirement url not meet.'),
-            (('pet!##!getPetById', 'Operation'), 'requirement method not meet.'),
-            (('pet!##!getPetById', 'Parameter'), 'requirement name not meet.'),
-            (('pet!##!getPetById', 'ResponseMessage'), 'requirement code not meet.'),
-            (('pet', 'Operation'), 'requirement nickname not meet.'),
-            (('pet!##!Pet!##!tags', 'Property'), 'array should be existed along with items'),
-            (('pet!##!getPetById', 'Parameter'), 'allowMultiple should be applied on path, header, or query parameters'),
-            (('pet!##!partialUpdate', 'Parameter'), 'body parameter with invalid name: qqq'),
-            (('pet!##!partialUpdate', 'Parameter'), 'void is only allowed in Operation object.')
+            (('#/info', 'Info'), 'requirement description not meet.'),
+            (('#/info', 'Info'), 'requirement title not meet.'),
+            (('#/authorizations/oauth2', 'Authorization'), 'requirement type not meet.'),
+            (('#/authorizations/oauth2/grantTypes/implicit/loginEndpoint', 'LoginEndpoint'), 'requirement url not meet.'),
+            (('#/authorizations/oauth2/scopes/0', 'Scope'), 'requirement scope not meet.'),
+            (('#/authorizations/oauth2/grantTypes/authorization_code/tokenRequestEndpoint', 'TokenRequestEndpoint'), 'requirement url not meet.'),
+            (('#/apis/pet/apis/getPetById', 'Operation'), 'requirement method not meet.'),
+            (('#/apis/pet/apis/getPetById/parameters/0', 'Parameter'), 'requirement name not meet.'),
+            (('#/apis/pet/apis/getPetById/responseMessages/0', 'ResponseMessage'), 'requirement code not meet.'),
+            (('#/apis/pet/apis', 'Operation'), 'requirement nickname not meet.'),
+            (('#/apis/pet/models/Pet/properties/tags', 'Property'), 'array should be existed along with items'),
+            (('#/apis/pet/apis/getPetById/parameters/0', 'Parameter'), 'allowMultiple should be applied on path, header, or query parameters'),
+            (('#/apis/pet/apis/partialUpdate/parameters/1', 'Parameter'), 'body parameter with invalid name: qqq'),
+            (('#/apis/pet/apis/partialUpdate/parameters/0', 'Parameter'), 'void is only allowed in Operation object.')
             ]))
 
     def test_raise_exception(self):
@@ -131,4 +131,59 @@ class SwaggerAppTestCase(unittest.TestCase):
         self.assertTrue(isinstance(self.app.ref('#/paths/~1user~1{username}/put'), Operation))
         self.assertEqual(self.app.ref('#/paths/~1store~1order/post/produces'), ['application/json'])
         self.assertEqual(self.app.ref('#/host'), 'petstore.swagger.wordnik.com')
+
+    def test_scope_dict(self):
+        """ ScopeDict is a syntactic suger
+        to access scoped named object, ex. Operation, Model
+        """
+        # Operation
+        self.assertTrue(self.app.op['user', 'getUserByName'], Operation)
+        self.assertTrue(self.app.op['user', 'getUserByName'] is self.app.op['user!##!getUserByName'])
+        self.assertTrue(self.app.op['getUserByName'] is self.app.op['user!##!getUserByName'])
+
+    def test_shortcut(self):
+        """ a short cut to Resource, Operation, Model from SwaggerApp """
+        # Resource
+        # TODO: resource is now replaced by tags
+        #self.assertTrue(isinstance(app.rs['pet'], Resource))
+        #self.assertTrue(isinstance(app.rs['user'], Resource))
+        #self.assertTrue(isinstance(app.rs['store'], Resource))
+
+        # Operation
+        self.assertEqual(len(self.app.op.values()), 20)
+        self.assertEqual(sorted(self.app.op.keys()), sorted([
+            'pet!##!addPet',
+            'pet!##!deletePet',
+            'pet!##!findPetsByStatus',
+            'pet!##!findPetsByTags',
+            'pet!##!getPetById',
+            'pet!##!partialUpdate',
+            'pet!##!updatePet',
+            'pet!##!updatePetWithForm',
+            'pet!##!uploadFile',
+            'store!##!deleteOrder',
+            'store!##!getOrderById',
+            'store!##!placeOrder',
+            'user!##!createUser',
+            'user!##!createUsersWithArrayInput',
+            'user!##!createUsersWithListInput',
+            'user!##!deleteUser',
+            'user!##!getUserByName',
+            'user!##!loginUser',
+            'user!##!logoutUser',
+            'user!##!updateUser'
+        ]))
+        self.assertTrue(self.app.op['user!##!getUserByName'], Operation)
+
+        # Model
+        # TODO: provide a real shortcut
+        d = self.app.ref('#/definitions')
+        self.assertEqual(len(d.values()), 5)
+        self.assertEqual(sorted(d.keys()), sorted([
+            'pet!##!Category',
+            'pet!##!Pet',
+            'pet!##!Tag',
+            'store!##!Order',
+            'user!##!User'
+        ]))
 
