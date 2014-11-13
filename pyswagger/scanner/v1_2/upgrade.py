@@ -148,7 +148,9 @@ class Upgrade(object):
         # Operation return value
         o.update_field('responses', {})
         resp = objects.Response(NullContext())
-        resp.update_field('schema', convert_schema_from_datatype(obj, scope))
+        if obj.type != 'void':
+            # TODO: add test case
+            resp.update_field('schema', convert_schema_from_datatype(obj, scope))
         o.responses['default'] = resp
 
         path = obj._parent_.basePath + obj.path
