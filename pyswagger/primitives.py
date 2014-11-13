@@ -5,6 +5,7 @@ import functools
 import six
 import base64
 import json
+import inspect
 
 
 class Byte(object):
@@ -90,7 +91,7 @@ class Array(list):
     """ for array type, or parameter when allowMultiple=True
     """
 
-    def __init__(self, item_type, v, unique=False):
+    def __init__(self, obj, v):
         """ v: list or string_types
         """
         super(Array, self).__init__()
@@ -98,9 +99,19 @@ class Array(list):
         if isinstance(v, six.string_types):
             v = json.loads(v)
 
+        v = set(v) if o.uniqueItems else v
+        self.extend(map(functools.partial(prim_factory, o.items), v))
+        self.apply_with(obj)
+
+    def apply_with(self, obj):
+        """
+        """
         # init array as list
-        v = set(v) if unique else v
-        self.extend(map(functools.partial(prim_factory, item_type, multiple=False), v))
+        if o.minItems and len(self) < o.minItems:
+            raise ValueError('Array should be more than {0}, not {1}'.format(o.minItems, len(self)))
+        if o.maxItems and len(self) > o.maxItems:
+            raise ValueError('Array should be less than {0}, not {1}'.format(o.maxItems, len(self)))
+
 
     def __str__(self):
         """ array primitives should be for 'path', 'header', 'query'.
@@ -138,11 +149,17 @@ class Model(dict):
             # TODO: encoding problem...
             val = json.loads(val.decode('utf-8'))
 
+        self.__val = val
+        self.apply_with(obj)
+
+    def apply_with(self, obj):
+        """ recursivly apply Schema object
+        """
         cur = obj
         while cur != None:
             # init model as dict
             for k, v in six.iteritems(cur.properties):
-                to_update = val.get(k, None)
+                to_update = self.__val.pop(k, None)
 
                 # update discriminator with model's id
                 if cur.discriminator and cur.discriminator == k:
@@ -154,8 +171,6 @@ class Model(dict):
                         raise ValueError('Model:[' + str(cur.id) + '], require:[' + str(k) + ']')
 
                 self[k] = prim_factory(v, to_update)
-
-            cur = cur._extends_
 
     def __eq__(self, other):
         """ equality operater, 
@@ -198,22 +213,6 @@ class Model(dict):
         return ret
 
 
-class Void(object):
-    """ for type void
-    """
-    def __init__(self, _, v):
-        pass
-
-    def __eq__(self, v):
-        return v == None
-
-    def __str__(self):
-        return ''
-
-    def to_json(self):
-        return None
-
-
 class File(object):
     """ for type File
     """
@@ -239,6 +238,9 @@ class File(object):
         self.data = val.get('data', None)
         self.filename = val.get('filename', '')
 
+    def apply_with(self, o):
+        # TODO:
+
 
 class PrimJSONEncoder(json.JSONEncoder):
     """ json encoder for primitives
@@ -248,26 +250,56 @@ class PrimJSONEncoder(json.JSONEncoder):
             return obj.to_json()
         return json.JSONEncoder.default(self, obj)
 
-def create_numeric(obj, v, t):
-    # truncate based on min/max
-    if obj.minimum and v < obj.minimum:
-        raise ValueError('below minimum: {0}, {1}'.format(v, obj.minimum))
-    if obj.maximum and v > obj.maximum:
-        raise ValueError('above maximum: {0}, {1}'.format(v, obj.maximum))
- 
-    return t(v)
+
+def apply_with(v, obj):
+    """ helper function for Number, Integer, String.
+    These types didn't have a class, so can't have apply_with
+    member function.
+
+    Their apply_with would be implemented here.
+    """
+    def _comp_(vv, o, name, exclusive_name):
+        """ compare for min/max """
+        n = getattr(o, name, None)
+        if not n:
+            return
+
+        to_raise = v <= n if getattr(o, exclusive_name, False) else v < n
+        if to_raise:
+            raise ValueError('condition failed: {0}, ex:{1}, v:{2} compared to o:{3}'.format(name, ex, vv, n))
+
+    if isinstance(ret, six.integer_types):
+        _comp_(v, obj, 'minimum', 'exclusiveMinimum')
+        _comp_(v, obj, 'maximum', 'exclusiveMaximum')
+    elif isinstance(ret, six.string_types):
+        if obj.enum and v not in obj.enum:
+            raise ValueError('{0} is not a valid enum for {1}'.format(v, str(obj.enum)))
+        if obj.maxLength and len(v) > obj.maxLength:
+            raise ValueError('[{0}] is longer than {1} characters'.format(v, str(obj.maxLength)))
+        if obj.minLength and len(v) < obj.minLength:
+            raise ValueError('[{0}] is shoter than {1} characters'.format(v, str(obj.minLength)))
+        # TODO: handle pattern
+    elif isinstance(ret, float):
+        _comp_(v, obj, 'minimum', 'exclusiveMinimum')
+        _comp_(v, obj, 'maximum', 'exclusiveMaximum')
+    else:
+        raise ValueError('Unknown Type: {0}'.format(type(ret)))
+
 
 def create_int(obj, v):
-    return create_numeric(obj, v, int)
+    r = int(v)
+    apply_with(r, obj)
+    return r
 
 def create_float(obj, v):
-    return create_numeric(obj, v, float)
+    r = float(v)
+    apply_with(r, obj)
+    return r
 
 def create_str(obj, v):
-    if obj.enum and v not in obj.enum:
-        raise ValueError('{0} is not a valid enum for {1}'.format(v, str(obj.enum)))
-
-    return str(v)
+    r = str(v)
+    apply_with(r, obj)
+    return r
 
 # refer to 4.3.1 Primitives in v1.2
 prim_obj_map = {
@@ -295,9 +327,7 @@ prim_obj_map = {
     ('file', ''): File,
     ('file', None): File,
 
-    # void
-    ('void', ''): Void,
-    ('void', None): Void,
+    # TODO: add support for email, uuid
 };
 
 
@@ -306,44 +336,77 @@ prim_types = [
     'number',
     'string',
     'boolean',
-    'void',
     'file',
     'array',
 ]
 
-def prim_factory(obj, v, multiple=False):
+
+def prim_factory(o, v):
     """ factory function to create primitives
 
-    :param DataTypeObj obj: spec to construct primitives
+    :param pyswagger.spec.v2_0.objects.Schema obj: spec to construct primitives
     :param v: value to construct primitives
-    :param bool multiple: if multiple value is enabled.
 
     :return: the created primitive
     """
-    v = obj.defaultValue if v == None else v
+    v = o.default if v == None else v
     if v == None:
         return None
 
-    # wrap 'allowmultiple' date with array
-    if multiple and obj.type != 'array' and isinstance(v, (tuple, list)):
-        return Array(obj, v, unique=False);
+    r = None
+    if o.ref_obj:
+        r = o.ref_obj._prim_(v)
+    elif o.type:
+        if isinstance(o.type, six.string_types):
+            if o.type == 'array':
+                r = Array(o.items, v, unique=o.uniqueItems)
+            else:
+                t = prim_obj_map.get((o.type, o.format), None)
+                if not t:
+                    raise ValueError('Can\'t resolve type from:(' + str(o.type) + ', ' + str(o.format) + ')')
 
-    ref = getattr(obj, '$ref')
-    if ref:
-        return ref._prim_(v)
-    elif isinstance(obj.type, six.string_types):
-        if obj.type == 'array':
-            return Array(obj.items, v, unique=obj.uniqueItems)
+                r = t(o, v)
         else:
-            t = prim_obj_map.get((obj.type, obj.format), None)
-            if not t:
-                raise ValueError('Can\'t resolve type from:(' + str(obj.type) + ', ' + str(obj.format) + ')')
+            raise ValueError('obj.type should be str, not {0}'.format(type(o.type)))
+    elif o.properties and len(o.properties):
+        r = Model(o, v)
 
-            return t(obj, v)
+    # TODO: handle these properties
+    # collectionFormat
 
-    else:
-        # obj.type is a reference to a Model
-        return obj.type._prim_(v)
+    if isinstace(ret, [Date, Datetime, Byte]):
+        # it's meanless to handle allOf for these types.
+        return r
+
+    is_class = inspect.isclass(type(r))
+    def _apply(ret, obj):
+        if is_class == True:
+            ret.apply_with(obj)
+        else:
+            apply_with(ret, obj)
+
+    # handle allOf for Schema Object
+    allOf = getattr(o, 'allOf', None)
+    if allOf:
+        not_applied = []
+        for a in allOf:
+            if not r:
+                # try to find right type for this primitive.
+                r = prim_factory(a, v)
+                is_class = inspect.isclass(type(r))
+            else:
+                _apply(r, a)
+
+            if not r:
+                # if we still can't determine the type,
+                # keep this Schema object for later use.
+                not_applied.append(a)
+        if r:
+            for a in not_applied:
+                _apply(r, a)
+
+    return r
+
 
 def is_primitive(obj):
     """ check if a given object refering to a primitive
