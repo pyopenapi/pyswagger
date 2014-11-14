@@ -22,7 +22,7 @@ class ItemsContext(Context):
     __swagger_ref_object__ = Items
 
 # self-reference 
-setattr(ItemsContext, '_' + ItemsContext.__name__ + '__' + '__swagger_child__', [
+setattr(ItemsContext, '__swagger_child__', [
     ('item', None, ItemsContext),
 ])
 
@@ -34,7 +34,7 @@ class SchemaContext(Context):
     __swagger_ref_object__ = Schema
 
 # self-reference 
-setattr(SchemaContext, '_' + SchemaContext.__name__ + '__' + '__swagger_child__', [
+setattr(SchemaContext, '__swagger_child__', [
     # items here should refer to an Schema Object.
     # refer to https://github.com/swagger-api/swagger-spec/issues/165
     # for details
