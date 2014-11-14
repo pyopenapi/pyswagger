@@ -73,11 +73,19 @@ class FileGetter(Getter):
     """
     def __init__(self, path):
         super(FileGetter, self).__init__(path)
-        if self.base_path.endswith(const.RESOURCE_LISTING_FILE_NAME):
-            self.base_path = os.path.dirname(self.base_path)
-            self.urls = [(path, '')]
+
+        for n in const.SWAGGER_FILE_NAMES:
+            if self.base_path.endswith(n):
+                self.base_path = os.path.dirname(self.base_path)
+                self.urls = [(path, '')]
+                break
+            else:
+                p = os.path.join(path, n)
+                if os.path.isfile(p):
+                    self.urls = [(p, '')]
+                    break
         else:
-            self.urls = [(os.path.join(path, const.RESOURCE_LISTING_FILE_NAME), '')]
+            raise ValueError('Unable to locate resource file: [{0}]'.format(path))
 
     def load(self, path):
         ret = None

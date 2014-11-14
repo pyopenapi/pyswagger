@@ -5,15 +5,14 @@ from pyswagger import primitives, io
 import six
 
 
-class Items(six.with_metaclass(FieldMeta, BaseObj)):
-    """ Items Object
+class BaseSchema(BaseObj):
+    """ Base type for Items, Schema, Parameter, Header
     """
 
     __swagger_fields__ = [
         ('type', None),
         ('format', None),
         ('items', None),
-        ('collectionFormat', None),
         ('default', None),
         ('maximum', None),
         ('exclusiveMaximum', None),
@@ -21,43 +20,43 @@ class Items(six.with_metaclass(FieldMeta, BaseObj)):
         ('exclusiveMinimum', None),
         ('maxLength', None),
         ('minLength', None),
-        ('pattern', None),
         ('maxItems', None),
         ('minItems', None),
-        ('uniqueItems', None),
         ('enum', None),
+        ('pattern', None),
+        ('uniqueItems', None),
+    ]
+
+    def __init__(self, ctx):
+        super(BaseSchema, self).__init__(ctx)
+
+        # __swagger_fields__ would be overriden by child class.
+        for name, default in BaseSchema.__swagger_fields__:
+            setattr(self, self.get_private_name(name), ctx._obj.get(name, default))
+
+
+class Items(six.with_metaclass(FieldMeta, BaseSchema)):
+    """ Items Object
+    """
+
+    __swagger_fields__ = [
+        ('collectionFormat', None),
     ]
 
     def _prim_(self, v):
         return primitives.prim_factory(self, v)
 
 
-class Schema(six.with_metaclass(FieldMeta, BaseObj)):
+class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
     """ Schema Object
     """
 
     __swagger_fields__ = [
         ('$ref', None),
-        ('format', None),
-        ('default', None),
-        ('multipleOf', None),
-        ('maximum', None),
-        ('exclusiveMaximum', None),
-        ('minimum', None),
-        ('exclusiveMinimum', None),
-        ('maxLength', None),
-        ('minLength', None),
-        ('pattern', None),
-        ('maxItems', None),
-        ('minItems', None),
-        ('uniqueItems', None),
         ('maxProperties', None),
         ('minProperties', None),
         ('required', None),
-        ('enum', None),
-        ('type', None),
 
-        ('items', None),
         ('allOf', []),
         ('properties', None),
 
@@ -103,7 +102,7 @@ class Info(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class Parameter(six.with_metaclass(FieldMeta, BaseObj)):
+class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
     """ Parameter Object
     """
 
@@ -119,54 +118,23 @@ class Parameter(six.with_metaclass(FieldMeta, BaseObj)):
         ('schema', None),
 
         # other parameter
-        ('type', None),
-        ('format', None),
-        ('items', None),
         ('collectionFormat', None),
-        ('default', None),
-        ('maximum', None),
-        ('exclusiveMaximum', None),
-        ('minimum', None),
-        ('exclusiveMinimum', None),
-        ('maxLength', None),
-        ('minLength', None),
-        ('pattern', None),
-        ('maxItems', None),
-        ('minItems', None),
-        ('uniqueItems', None),
-        ('enum', None),
-        ('multipleOf', None),
 
         # pyswagger only
         ('ref_obj', None),
     ]
 
     def _prim_(self, v):
-        return primitives.prim_factory(self, v)
+        i = getattr(self, 'in')
+        return primitives.prim_factory(self.schema, v) if i == 'body' else primitives.prim_factory(self, v)
 
 
-class Header(six.with_metaclass(FieldMeta, BaseObj)):
+class Header(six.with_metaclass(FieldMeta, BaseSchema)):
     """ Header Object
     """
 
     __swagger_fields__ = [
-        ('type', None),
-        ('format', None),
-        ('items', None),
         ('collectionFormat', None),
-        ('default', None),
-        ('maximum', None),
-        ('exclusiveMaximum', None),
-        ('minimum', None),
-        ('exclusiveMinimum', None),
-        ('maxLength', None),
-        ('minLength', None),
-        ('pattern', None),
-        ('maxItems', None),
-        ('minItems', None),
-        ('uniqueItems', None),
-        ('enum', None),
-        ('multipleOf', None),
     ]
 
 

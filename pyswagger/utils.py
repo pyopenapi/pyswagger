@@ -162,7 +162,7 @@ def import_string(name):
     """ import module
     """
     # TODO: unittest
-    mod = None
+    mod = fp = None
 
     # code below, please refer to 
     #   https://docs.python.org/2/library/imp.html
@@ -172,10 +172,11 @@ def import_string(name):
     except KeyError:
         pass
 
-    fp, pathname, desc = imp.find_module(name)
-
     try:
-        return imp.load_module(name, fp, pathname, desc)
+        fp, pathname, desc = imp.find_module(name)
+        mod = imp.load_module(name, fp, pathname, desc)
+    except ImportError:
+        mod = None 
     finally:
         # Since we may exit via an exception, close fp explicitly.
         if fp:
