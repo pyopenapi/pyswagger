@@ -123,14 +123,14 @@ class SwaggerAppTestCase(unittest.TestCase):
 
     def test_ref(self):
         """ test ref function """
-        self.assertRaises(ValueError, self.app.ref, None)
-        self.assertRaises(ValueError, self.app.ref, '')
-        self.assertRaises(ValueError, self.app.ref, '//')
+        self.assertRaises(ValueError, self.app.resolve, None)
+        self.assertRaises(ValueError, self.app.resolve, '')
+        self.assertRaises(ValueError, self.app.resolve, '//')
 
-        self.assertTrue(isinstance(self.app.ref('#/definitions/user!##!User'), Schema))
-        self.assertTrue(isinstance(self.app.ref('#/paths/~1user~1{username}/put'), Operation))
-        self.assertEqual(self.app.ref('#/paths/~1store~1order/post/produces'), ['application/json'])
-        self.assertEqual(self.app.ref('#/host'), 'petstore.swagger.wordnik.com')
+        self.assertTrue(isinstance(self.app.resolve('#/definitions/user!##!User'), Schema))
+        self.assertTrue(isinstance(self.app.resolve('#/paths/~1user~1{username}/put'), Operation))
+        self.assertEqual(self.app.resolve('#/paths/~1store~1order/post/produces'), ['application/json'])
+        self.assertEqual(self.app.resolve('#/host'), 'petstore.swagger.wordnik.com')
 
     def test_scope_dict(self):
         """ ScopeDict is a syntactic suger
@@ -177,7 +177,7 @@ class SwaggerAppTestCase(unittest.TestCase):
 
         # Model
         # TODO: provide a real shortcut
-        d = self.app.ref('#/definitions')
+        d = self.app.resolve('#/definitions')
         self.assertEqual(len(d.values()), 5)
         self.assertEqual(sorted(d.keys()), sorted([
             'pet!##!Category',

@@ -215,7 +215,7 @@ class SwaggerApp(object):
 
         return app
 
-    def ref(self, path):
+    def resolve(self, path):
         """ reference resolver
 
         :param str path: json-pointer path of object to be referenced

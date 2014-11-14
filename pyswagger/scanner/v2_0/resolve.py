@@ -19,7 +19,7 @@ class Resolve(object):
         if r == None:
             return
 
-        ro = app.ref(r)
+        ro = app.resolve(r)
         if not ro:
             raise ReferenceError('Unable to resolve: {0}'.format(r))
         if ro.__class__ != obj.__class__:
