@@ -3,6 +3,7 @@ from ...base import BaseObj, FieldMeta
 from ...utils import deref
 from pyswagger import primitives, io
 import six
+import copy
 
 
 class BaseSchema(BaseObj):
@@ -28,12 +29,12 @@ class BaseSchema(BaseObj):
     ]
 
     def __init__(self, ctx):
-        super(BaseSchema, self).__init__(ctx)
-
         # __swagger_fields__ would be overriden by child class.
+        # TODO: duplicated code in BaseObj.__init__
         for name, default in BaseSchema.__swagger_fields__:
-            setattr(self, self.get_private_name(name), ctx._obj.get(name, default))
+            setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
 
+        super(BaseSchema, self).__init__(ctx)
 
 class Items(six.with_metaclass(FieldMeta, BaseSchema)):
     """ Items Object

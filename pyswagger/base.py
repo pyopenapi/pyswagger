@@ -154,8 +154,8 @@ class BaseObj(object):
             raise TypeError('should provide args[0] as Context, not: ' + ctx.__class__.__name__)
 
         # handle fields
-        for field in self.__swagger_fields__:
-            setattr(self, self.get_private_name(field[0]), ctx._obj.get(field[0], copy.copy(field[1])))
+        for name, default in self.__swagger_fields__:
+            setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
 
         self._assign_parent(ctx)
 

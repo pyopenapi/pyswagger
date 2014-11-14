@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from ...base import BaseObj, FieldMeta, Context
 import six
+import copy
 
 
 class Items(six.with_metaclass(FieldMeta, BaseObj)):
@@ -35,8 +36,6 @@ class DataTypeObj(BaseObj):
     ]
 
     def __init__(self, ctx):
-        super(DataTypeObj, self).__init__(ctx)
-
         # Items Object, too lazy to create a Context for DataTypeObj
         # to wrap this child.
         items_data = ctx._obj.get('items', None)
@@ -46,10 +45,12 @@ class DataTypeObj(BaseObj):
         else:
             setattr(self, self.get_private_name('items'), None)
 
+        # TODO: duplicate code in BaseObj.__init__
         for name, default in DataTypeObj.__swagger_fields__:
             # almost every data field is not required.
-            setattr(self, self.get_private_name(name), ctx._obj.get(name, default))
+            setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
 
+        super(DataTypeObj, self).__init__(ctx)
 
 class Scope(six.with_metaclass(FieldMeta, BaseObj)):
     """ Scope Object
