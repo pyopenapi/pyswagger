@@ -6,6 +6,7 @@ from ...spec.v2_0.objects import (
     Response,
     PathItem,
     )
+from ...utils import jp_split, jp_compose
 
 
 class Resolve(object):
@@ -14,12 +15,18 @@ class Resolve(object):
     class Disp(Dispatcher): pass
 
     @Disp.register([Schema, Parameter, Response, PathItem])
-    def _resolve(self, _, obj, app):
+    def _resolve(self, path, obj, app):
         r = getattr(obj, '$ref')
         if r == None:
             return
 
-        ro = app.resolve(r)
+        try:
+            ro = app.resolve(r)
+        except Exception:
+            ps = jp_split(path)[:2]
+            ps.append(r)
+            ro = app.resolve(jp_compose(ps))
+
         if not ro:
             raise ReferenceError('Unable to resolve: {0}'.format(r))
         if ro.__class__ != obj.__class__:
