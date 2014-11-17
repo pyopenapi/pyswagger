@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 from ...scan import Dispatcher
-from ...spec.v2_0.objects import PathItem, Operation
+from ...spec.v2_0.objects import PathItem, Operation, Schema
 from ...spec.v2_0.parser import PathItemContext
 from ...utils import jp_split
 
 
-class PatchOperation(object):
+class PatchObject(object):
     """ 
     - produces/consumes in Operation object should override those in Swagger object.
     - parameters in Operation object should override those in PathItem object.
@@ -40,4 +40,13 @@ class PatchOperation(object):
                 o.update_field('url', url)
                 # http method
                 o.update_field('method', c[0]) 
+
+    @Disp.register([Schema])
+    def _schema(self, path, obj, app):
+        """ fulfill 'name' field for objects under
+        '#/definitions'
+        """
+        # TODO: test case
+        if path.startswith('#/definitions'):
+            obj.update_field('name', jp_split(path)[-1])
 
