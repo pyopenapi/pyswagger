@@ -66,6 +66,7 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
 
         # pyswagger only
         ('ref_obj', None),
+        ('name', None),
     ]
 
     def _prim_(self, v):

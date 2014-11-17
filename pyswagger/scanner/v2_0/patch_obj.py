@@ -44,9 +44,9 @@ class PatchObject(object):
     @Disp.register([Schema])
     def _schema(self, path, obj, app):
         """ fulfill 'name' field for objects under
-        '#/definitions'
+        '#/definitions' and with 'properties'
         """
         # TODO: test case
-        if path.startswith('#/definitions'):
+        if path.startswith('#/definitions') and hasattr(obj, 'properties'):
             obj.update_field('name', jp_split(path)[-1])
 
