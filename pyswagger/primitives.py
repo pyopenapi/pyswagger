@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .utils import from_iso8601, none_count
+from .utils import from_iso8601, none_count, deref
 import datetime
 import functools
 import six
@@ -91,27 +91,30 @@ class Array(list):
     """ for array type, or parameter when allowMultiple=True
     """
 
-    def __init__(self, obj, v):
+    def __init__(self):
         """ v: list or string_types
         """
         super(Array, self).__init__()
 
-        if isinstance(v, six.string_types):
-            v = json.loads(v)
-
-        v = set(v) if o.uniqueItems else v
-        self.extend(map(functools.partial(prim_factory, o.items), v))
-        self.apply_with(obj)
-
-    def apply_with(self, obj):
+    def apply_with(self, obj, val):
         """
         """
+        if isinstance(val, six.string_types):
+            val = json.loads(val)
+
+        val = set(val) if obj.uniqueItems else val
+
+        if obj.items and len(val):
+            self.extend(map(functools.partial(prim_factory, obj.items), val))
+            val = []
+
         # init array as list
-        if o.minItems and len(self) < o.minItems:
+        if obj.minItems and len(self) < obj.minItems:
             raise ValueError('Array should be more than {0}, not {1}'.format(o.minItems, len(self)))
-        if o.maxItems and len(self) > o.maxItems:
+        if obj.maxItems and len(self) > obj.maxItems:
             raise ValueError('Array should be less than {0}, not {1}'.format(o.maxItems, len(self)))
 
+        return val
 
     def __str__(self):
         """ array primitives should be for 'path', 'header', 'query'.
@@ -134,43 +137,40 @@ class Model(dict):
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setitem__
 
-    def __init__(self, obj, val):
+    def __init__(self):
         """ constructor
+        """
+        super(Model, self).__init__()
+
+    def apply_with(self, obj, val):
+        """ recursivly apply Schema object
 
         :param obj.Model obj: model object to instruct how to create this model
         :param val: things used to construct this model
         :type val: dict of json string in str or byte
         """
-        super(Model, self).__init__()
-
         if isinstance(val, six.string_types):
             val = json.loads(val)
         elif isinstance(val, six.binary_type):
             # TODO: encoding problem...
             val = json.loads(val.decode('utf-8'))
 
-        self.__val = val
-        self.apply_with(obj)
+        # init model as dict
+        for k, v in six.iteritems(obj.properties):
+            to_update = val.pop(k, None)
 
-    def apply_with(self, obj):
-        """ recursivly apply Schema object
-        """
-        cur = obj
-        while cur != None:
-            # init model as dict
-            for k, v in six.iteritems(cur.properties):
-                to_update = self.__val.pop(k, None)
+            # update discriminator with model's name
+            if obj.discriminator and obj.discriminator == k:
+                to_update = obj.name
 
-                # update discriminator with model's id
-                if cur.discriminator and cur.discriminator == k:
-                    to_update = obj.id
+            # check require properties of a Model
+            if to_update == None:
+                if obj.required and k in obj.required:
+                    raise ValueError('Model:[' + str(obj.name) + '], require:[' + str(k) + ']')
 
-                # check require properties of a Model
-                if to_update == None:
-                    if cur.required and k in cur.required:
-                        raise ValueError('Model:[' + str(cur.id) + '], require:[' + str(k) + ']')
+            self[k] = prim_factory(v, to_update)
 
-                self[k] = prim_factory(v, to_update)
+        return val
 
     def __eq__(self, other):
         """ equality operater, 
@@ -248,7 +248,7 @@ class PrimJSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def apply_with(v, obj):
+def apply_with(ret, obj):
     """ helper function for Number, Integer, String.
     These types didn't have a class, so can't have apply_with
     member function.
@@ -261,24 +261,24 @@ def apply_with(v, obj):
         if not n:
             return
 
-        to_raise = v <= n if getattr(o, exclusive_name, False) else v < n
+        to_raise = vv <= n if getattr(o, exclusive_name, False) else vv < n
         if to_raise:
-            raise ValueError('condition failed: {0}, ex:{1}, v:{2} compared to o:{3}'.format(name, ex, vv, n))
+            raise ValueError('condition failed: {0}, v:{2} compared to o:{3}'.format(name, vv, n))
 
     if isinstance(ret, six.integer_types):
-        _comp_(v, obj, 'minimum', 'exclusiveMinimum')
-        _comp_(v, obj, 'maximum', 'exclusiveMaximum')
+        _comp_(ret, obj, 'minimum', 'exclusiveMinimum')
+        _comp_(ret, obj, 'maximum', 'exclusiveMaximum')
     elif isinstance(ret, six.string_types):
-        if obj.enum and v not in obj.enum:
-            raise ValueError('{0} is not a valid enum for {1}'.format(v, str(obj.enum)))
-        if obj.maxLength and len(v) > obj.maxLength:
-            raise ValueError('[{0}] is longer than {1} characters'.format(v, str(obj.maxLength)))
-        if obj.minLength and len(v) < obj.minLength:
-            raise ValueError('[{0}] is shoter than {1} characters'.format(v, str(obj.minLength)))
+        if obj.enum and ret not in obj.enum:
+            raise ValueError('{0} is not a valid enum for {1}'.format(ret, str(obj.enum)))
+        if obj.maxLength and len(ret) > obj.maxLength:
+            raise ValueError('[{0}] is longer than {1} characters'.format(ret, str(obj.maxLength)))
+        if obj.minLength and len(ret) < obj.minLength:
+            raise ValueError('[{0}] is shoter than {1} characters'.format(ret, str(obj.minLength)))
         # TODO: handle pattern
     elif isinstance(ret, float):
-        _comp_(v, obj, 'minimum', 'exclusiveMinimum')
-        _comp_(v, obj, 'maximum', 'exclusiveMaximum')
+        _comp_(ret, obj, 'minimum', 'exclusiveMinimum')
+        _comp_(ret, obj, 'maximum', 'exclusiveMaximum')
     else:
         raise ValueError('Unknown Type: {0}'.format(type(ret)))
 
@@ -351,12 +351,12 @@ def prim_factory(o, v):
         return None
 
     r = None
-    if o.ref_obj:
-        r = o.ref_obj._prim_(v)
-    elif o.type:
+    o = deref(o)
+    if o.type:
         if isinstance(o.type, six.string_types):
             if o.type == 'array':
-                r = Array(o.items, v, unique=o.uniqueItems)
+                r = Array()
+                v = r.apply_with(o, v)
             else:
                 t = prim_obj_map.get((o.type, o.format), None)
                 if not t:
@@ -366,33 +366,37 @@ def prim_factory(o, v):
         else:
             raise ValueError('obj.type should be str, not {0}'.format(type(o.type)))
     elif o.properties and len(o.properties):
-        r = Model(o, v)
+        r = Model()
+        v = r.apply_with(o, v)
 
     # TODO: handle these properties
     # collectionFormat
 
-    if isinstance(r, [Date, Datetime, Byte, File]):
+    if isinstance(r, (Date, Datetime, Byte, File)):
         # it's meanless to handle allOf for these types.
         return r
 
     is_class = inspect.isclass(type(r))
-    def _apply(ret, obj):
+    def _apply(ret, obj, val):
         if is_class == True:
-            ret.apply_with(obj)
+            val = ret.apply_with(obj, val)
         else:
             apply_with(ret, obj)
+
+        return val
 
     # handle allOf for Schema Object
     allOf = getattr(o, 'allOf', None)
     if allOf:
         not_applied = []
         for a in allOf:
+            a = deref(a)
             if not r:
                 # try to find right type for this primitive.
                 r = prim_factory(a, v)
                 is_class = inspect.isclass(type(r))
             else:
-                _apply(r, a)
+                v = _apply(r, a, v)
 
             if not r:
                 # if we still can't determine the type,
@@ -400,7 +404,7 @@ def prim_factory(o, v):
                 not_applied.append(a)
         if r:
             for a in not_applied:
-                _apply(r, a)
+                v = _apply(r, a, v)
 
     return r
 

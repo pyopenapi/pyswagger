@@ -98,6 +98,46 @@
          "xml":{
             "name":"Tag"
          }
+      },
+      "User":{
+         "properties":{
+            "id":{
+               "type":"integer",
+               "format":"int64"
+            },
+            "location":{
+               "type":"string"
+            }
+         }
+      },
+      "Skill":{
+         "properties":{
+            "skill_id":{
+               "type":"integer",
+               "format":"int64"
+            },
+            "skill_name":{
+               "type":"string"
+            }
+         }
+      },
+      "Employee":{
+         "allOf":[
+            {"$ref":"User"},
+            {"$ref":"Skill"}
+         ]
+      },
+      "Boss":{
+         "properties":{
+            "boss_name":{
+               "type":"string"
+            }
+         },
+         "allOf":[
+            {"$ref":"User"},
+            {"$ref":"Skill"}
+         ]
       }
    }
 }
+
