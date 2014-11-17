@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .utils import jp_append
+from .utils import jp_compose
 import six
 import weakref
 import copy
@@ -283,13 +283,13 @@ class BaseObj(object):
                     ret[name] = obj
             elif isinstance(obj, list):
                 for i, v in zip(range(len(obj)), obj):
-                    down(jp_append(str(i), name), v)
+                    down(jp_compose(str(i), name), v)
             elif isinstance(obj, dict):
                 for k, v in six.iteritems(obj):
-                    down(jp_append(k, name), v)
+                    down(jp_compose(k, name), v)
 
         for n in names:
-            down(jp_append(n), getattr(self, n))
+            down(jp_compose(n), getattr(self, n))
 
         return ret
 

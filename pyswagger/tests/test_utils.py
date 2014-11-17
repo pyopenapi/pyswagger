@@ -22,12 +22,17 @@ class SwaggerUtilsTestCase(unittest.TestCase):
 
     def test_json_pointer(self):
         """ json pointer io function """
-        self.assertEqual(utils.jp_append('/test'), '~1test')
-        self.assertEqual(utils.jp_append('~test'), '~0test')
-        self.assertEqual(utils.jp_append('/~test'), '~1~0test')
-        self.assertEqual(utils.jp_append('a', 'b'), 'b/a')
-        self.assertEqual(utils.jp_append(''), '')
-        self.assertEqual(utils.jp_append(None, 'base'), 'base')
+        self.assertEqual(utils.jp_compose('/test'), '~1test')
+        self.assertEqual(utils.jp_compose('~test'), '~0test')
+        self.assertEqual(utils.jp_compose('/~test'), '~1~0test')
+        self.assertEqual(utils.jp_compose('a', 'b'), 'b/a')
+        self.assertEqual(utils.jp_compose(''), '')
+        self.assertEqual(utils.jp_compose(None, 'base'), 'base')
+
+        cs = ['~test1', '/test2', 'test3']
+        c = utils.jp_compose(cs, 'base')
+        self.assertEqual(c, 'base/~0test1/~1test2/test3')
+        self.assertEqual(utils.jp_split(c)[1:], cs)
 
         self.assertEqual(utils.jp_split('~1test'), ['/test'])
         self.assertEqual(utils.jp_split('~0test'), ['~test'])

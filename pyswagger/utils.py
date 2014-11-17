@@ -184,14 +184,17 @@ def import_string(name):
 
     return mod
 
-def jp_append(s, base=None):
+def jp_compose(s, base=None):
     """ append/encode a string to json-pointer
     """
     if s == None:
         return base
 
-    s = s.replace('~', '~0')
-    return s.replace('/', '~1') if base == None else ''.join([base, '/', s.replace('/', '~1')])
+    ss = [s] if isinstance(s, six.string_types) else s
+    ss = [s.replace('~', '~0').replace('/', '~1') for s in ss]
+    if base:
+        ss.insert(0, base)
+    return '/'.join(ss)
 
 def jp_split(s):
     """ split/decode a string from json-pointer
