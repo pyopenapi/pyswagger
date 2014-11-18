@@ -23,7 +23,7 @@ class ItemsContext(Context):
 
 # self-reference 
 setattr(ItemsContext, '__swagger_child__', [
-    ('item', None, ItemsContext),
+    ('items', None, ItemsContext),
 ])
 
 

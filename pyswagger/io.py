@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from .base import BaseObj
 from .primitives import PrimJSONEncoder
 from .utils import deref
 from uuid import uuid4
