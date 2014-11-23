@@ -23,6 +23,7 @@ class BaseSchema(BaseObj):
         ('minLength', None),
         ('maxItems', None),
         ('minItems', None),
+        ('multipleOf', None),
         ('enum', None),
         ('pattern', None),
         ('uniqueItems', None),

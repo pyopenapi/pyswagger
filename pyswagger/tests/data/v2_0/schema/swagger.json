@@ -185,6 +185,27 @@
             {"$ref":"User"},
             {"$ref":"Skill"}
          ]
+      },
+      "int":{
+         "type":"integer",
+         "format":"int32",
+         "allOf":[
+            {
+                "maximum":200,
+                "exclusiveMaximum":true
+            },
+            {
+                "minimum":100,
+                "exclusiveMinimum":false
+            }
+         ]
+      },
+      "num_multipleOf":{
+         "type":"number",
+         "format":"float",
+         "allOf":[
+            {"multipleOf":5}
+         ]
       }
    }
 }

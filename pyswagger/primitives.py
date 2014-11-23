@@ -5,7 +5,6 @@ import functools
 import six
 import base64
 import json
-import inspect
 
 
 class Byte(object):
@@ -309,6 +308,8 @@ def apply_with(ret, obj):
     elif isinstance(ret, float):
         _comp_(ret, obj, False)
         _comp_(ret, obj, True)
+        if obj.multipleOf and ret % obj.multipleOf != 0:
+            raise ValueError('{0} should be multiple of {1}'.format(ret, obj.multipleOf))
     else:
         raise ValueError('Unknown Type: {0}'.format(type(ret)))
 
@@ -403,9 +404,9 @@ def prim_factory(o, v):
         # it's meanless to handle allOf for these types.
         return r
 
-    is_class = inspect.isclass(type(r))
+    is_member = hasattr(r, 'apply_with')
     def _apply(ret, obj, val):
-        if is_class == True:
+        if is_member == True:
             val = ret.apply_with(obj, val)
         else:
             apply_with(ret, obj)
@@ -421,7 +422,7 @@ def prim_factory(o, v):
             if not r:
                 # try to find right type for this primitive.
                 r = prim_factory(a, v)
-                is_class = inspect.isclass(type(r))
+                is_member = hasattr(r, 'apply_with')
             else:
                 v = _apply(r, a, v)
 

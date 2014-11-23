@@ -88,6 +88,22 @@ class SchemaTestCase(unittest.TestCase):
         self.assertEqual(v.location, "office")
         self.assertEqual(v.boss_name, "not you")
 
+    def test_int(self):
+        """ test integer,
+        schema is separated into parts
+        """
+        i = self.app.resolve("#/definitions/int")
+
+        self.assertRaises(ValueError, i._prim_, 200)
+        self.assertRaises(ValueError, i._prim_, 99)
+
+    def test_num_multiple_of(self):
+        """ test multipleOf """
+        i = self.app.resolve("#/definitions/num_multipleOf")
+
+        self.assertRaises(ValueError, i._prim_, 4)
+        i._prim_(5)
+
 
 class HeaderTestCase(unittest.TestCase):
     """ test for Header object """
@@ -96,7 +112,7 @@ class HeaderTestCase(unittest.TestCase):
     def setUpClass(kls):
         kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which='schema'))
 
-    def test_p1(self):
+    def test_simple_array(self):
         """ header in array """
         p1 = self.app.resolve(jp_compose(['#', 'paths', '/t', 'get', 'parameters', '0']))
         self.assertTrue(isinstance(p1, objects.Parameter))
@@ -105,7 +121,7 @@ class HeaderTestCase(unittest.TestCase):
         self.assertTrue(isinstance(v, primitives.Array))
         self.assertEqual(str(v), '1,2,3,4,5')
 
-    def test_p2(self):
+    def test_integer_limit(self):
         """ header in integer """
         p2 = self.app.resolve(jp_compose(['#', 'paths', '/t', 'get', 'parameters', '1']))
         self.assertTrue(isinstance(p2, objects.Parameter))
@@ -113,7 +129,7 @@ class HeaderTestCase(unittest.TestCase):
         self.assertRaises(ValueError, p2._prim_, 101)
         self.assertRaises(ValueError, p2._prim_, -1)
 
-    def test_p3(self):
+    def test_multi_level_array(self):
         """ header in array of array """
         p3 = self.app.resolve(jp_compose(['#', 'paths', '/t', 'get', 'parameters', '2']))
         self.assertTrue(isinstance(p3, objects.Parameter))
