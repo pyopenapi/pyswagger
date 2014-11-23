@@ -95,6 +95,7 @@ class Array(list):
         """ v: list or string_types
         """
         super(Array, self).__init__()
+        self.__collection_format = 'csv'
 
     def apply_with(self, obj, val):
         """
@@ -114,6 +115,7 @@ class Array(list):
         if obj.maxItems and len(self) > obj.maxItems:
             raise ValueError('Array should be less than {0}, not {1}'.format(o.maxItems, len(self)))
 
+        self.__collection_format = getattr(obj, 'collectionFormat', 'csv')
         return val
 
     def __str__(self):
@@ -123,10 +125,31 @@ class Array(list):
         :return: the converted string
         :rtype: str
         """
-        s = ''
-        for v in self:
-            s = ''.join([s, ',' if s else '', str(v)])
-        return s
+        def _conv(p):
+            s = ''
+            for v in self:
+                s = ''.join([s, p if s else '', str(v)])
+            return s
+    
+        if self.__collection_format == 'csv':
+            return _conv(',')
+        elif self.__collection_format == 'ssv':
+            return _conv(' ')
+        elif self.__collection_format == 'tsv':
+            return _conv('\t')
+        elif self.__collection_format == 'pipes':
+            return _conv('|')
+        else:
+            raise ValueError('Unsupported collection format when converting to str: {0}'.format(self.__collection_format))
+
+    def to_url(self):
+        """ special function for handling 'multi',
+        refer to Swagger 2.0, Parameter Object, collectionFormat
+        """
+        if self.__collection_format == 'multi':
+            return [str(s) for s in self]
+        else:
+            return str(s)
 
 
 class Model(dict):
@@ -196,6 +219,9 @@ class Model(dict):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __str__(self):
+        raise ValueError('Can\'t convert a model to str')
+
     def to_json(self):
         """ convert to json string
         
@@ -255,19 +281,23 @@ def apply_with(ret, obj):
 
     Their apply_with would be implemented here.
     """
-    def _comp_(vv, o, name, exclusive_name):
-        """ compare for min/max """
-        n = getattr(o, name, None)
-        if not n:
+    def _comp_(vv, o, is_max):
+        n = getattr(o, 'maximum' if is_max else 'minimum', None)
+        if n == None:
             return
 
-        to_raise = vv <= n if getattr(o, exclusive_name, False) else vv < n
+        _eq = getattr(o, 'exclusiveMaximum' if is_max else 'exclusiveMinimum', False)
+        if is_max:
+            to_raise = vv >= n if _eq else vv > n
+        else:
+            to_raise = vv <= n if _eq else vv < n
+
         if to_raise:
-            raise ValueError('condition failed: {0}, v:{2} compared to o:{3}'.format(name, vv, n))
+            raise ValueError('condition failed: {0}, v:{1} compared to o:{2}'.format('maximum' if is_max else 'minimum', vv, n))
 
     if isinstance(ret, six.integer_types):
-        _comp_(ret, obj, 'minimum', 'exclusiveMinimum')
-        _comp_(ret, obj, 'maximum', 'exclusiveMaximum')
+        _comp_(ret, obj, False)
+        _comp_(ret, obj, True)
     elif isinstance(ret, six.string_types):
         if obj.enum and ret not in obj.enum:
             raise ValueError('{0} is not a valid enum for {1}'.format(ret, str(obj.enum)))
@@ -277,8 +307,8 @@ def apply_with(ret, obj):
             raise ValueError('[{0}] is shoter than {1} characters'.format(ret, str(obj.minLength)))
         # TODO: handle pattern
     elif isinstance(ret, float):
-        _comp_(ret, obj, 'minimum', 'exclusiveMinimum')
-        _comp_(ret, obj, 'maximum', 'exclusiveMaximum')
+        _comp_(ret, obj, False)
+        _comp_(ret, obj, True)
     else:
         raise ValueError('Unknown Type: {0}'.format(type(ret)))
 
@@ -368,9 +398,6 @@ def prim_factory(o, v):
     elif o.properties and len(o.properties):
         r = Model()
         v = r.apply_with(o, v)
-
-    # TODO: handle these properties
-    # collectionFormat
 
     if isinstance(r, (Date, Datetime, Byte, File)):
         # it's meanless to handle allOf for these types.

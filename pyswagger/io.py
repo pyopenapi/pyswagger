@@ -46,7 +46,7 @@ class SwaggerRequest(object):
         if self.__op.__consumes and content_type not in self.__op.__consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
-        return content_type, six.moves.urllib.parse.urlencode(self.__p['form'])
+        return content_type, six.moves.urllib.parse.urlencode(self.__p['formData'])
 
     def _prepare_body(self):
         """ private function to prepare content for paramType=body

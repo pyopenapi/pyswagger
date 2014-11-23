@@ -177,7 +177,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
 
     def __call__(self, **k):
         # prepare parameter set
-        params = dict(header={}, query={}, path={}, body={}, formData={}, file={})
+        params = dict(header={}, query=[], path={}, body={}, formData=[], file={})
         def _convert_parameter(p):
             v = k.get(p.name, p.default)
             if v == None and p.required:
@@ -185,12 +185,16 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
 
             c = p._prim_(v)
             i = getattr(p, 'in')
-            if i in ('path', 'query'):
-                c = six.moves.urllib.parse.quote(str(c))
-            elif i == 'header':
-                c = str(c)
+            if i in ('query', 'formData'):
+                if isinstance(c, primitives.Array):
+                    params[i].extend([tuple(i.name, v) for v in c.to_url()])
+                else:
+                    params[i].append((i.name, str(c),))
+            else:
+                if i != 'body' and p.type != 'file':
+                    c = str(c)
 
-            params[i if p.type != 'file' else 'file'][p.name] = c
+                params[i if p.type != 'file' else 'file'][p.name] = c
 
         # TODO: check for unknown parameter
         for p in self.parameters:

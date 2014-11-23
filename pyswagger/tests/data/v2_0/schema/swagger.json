@@ -1,5 +1,53 @@
 {
     "swagger": "2.0",
+    "host":"http://test.com",
+    "basePath":"/v1",
+    "paths":{
+      "/t":{
+        "get":{
+          "parameters":[
+            {
+              "name":"p1",
+              "in":"header",
+              "type":"array",
+              "items":{
+                "type":"integer",
+                "format":"int64"
+              },
+              "collectionFormat":"csv"
+            },
+            {
+              "name":"p2",
+              "in":"header",
+              "type":"integer",
+              "format":"int32",
+              "maximum":100,
+              "exclusiveMaximum":true,
+              "minimum":0,
+              "exclusiveMinimum":false
+            },
+            {
+              "name":"p3",
+              "in":"header",
+              "type":"array",
+              "items":{
+                "type":"array",
+                "items":{
+                  "type":"array",
+                  "items":{
+                    "type":"integer",
+                    "format":"int64"
+                  },
+                  "collectionFormat":"pipes"
+                },
+                "collectionFormat":"csv"
+              },
+              "collectionFormat":"ssv"
+            }
+          ]
+        }
+      }
+    },
     "definitions":{
       "Category":{
          "properties":{
