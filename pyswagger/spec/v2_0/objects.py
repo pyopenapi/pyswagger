@@ -188,9 +188,9 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
             i = getattr(p, 'in')
             if i in ('query', 'formData'):
                 if isinstance(c, primitives.Array):
-                    params[i].extend([tuple(i.name, v) for v in c.to_url()])
+                    params[i].extend([tuple(p.name, v) for v in c.to_url()])
                 else:
-                    params[i].append((i.name, str(c),))
+                    params[i].append((p.name, str(c),))
             else:
                 if i != 'body' and p.type != 'file':
                     c = str(c)
@@ -202,15 +202,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
             _convert_parameter(deref(p))
 
         return \
-        io.SwaggerRequest(
-            params=params,
-            produces=self.produces,
-            consumes=self.consumes,
-            method=self.method,
-            url=self.url,
-            security=self.security,
-            ),
-        io.SwaggerResponse(self)
+        io.SwaggerRequest(op=self, params=params), io.SwaggerResponse(self)
 
 
 class PathItem(six.with_metaclass(FieldMeta, BaseObj)):

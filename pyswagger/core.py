@@ -347,8 +347,8 @@ class BaseClient(object):
         req._patch(opt)
 
         # apply authorizations
-        if self.__auth:
-            self.__auth.prepare(req) 
+        if self.__security:
+            self.__security.prepare(req) 
 
         return req, resp
 

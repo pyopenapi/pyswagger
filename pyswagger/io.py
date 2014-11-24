@@ -33,8 +33,8 @@ class SwaggerRequest(object):
 
         # update 'accept' header section
         accepts = 'application/json'
-        if accepts and self.__op.__produces and accepts not in self.__op.__produces:
-            accepts = self.__op.__produces[0]
+        if accepts and self.__op.produces and accepts not in self.__op.produces:
+            accepts = self.__op.produces[0]
 
         if accepts:
             self.__header.update({'Accept': accepts})
@@ -43,7 +43,7 @@ class SwaggerRequest(object):
         """ private function to prepare content for paramType=form
         """
         content_type = 'application/x-www-form-urlencoded'
-        if self.__op.__consumes and content_type not in self.__op.__consumes:
+        if self.__op.consumes and content_type not in self.__op.consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
         return content_type, six.moves.urllib.parse.urlencode(self.__p['formData'])
@@ -52,7 +52,7 @@ class SwaggerRequest(object):
         """ private function to prepare content for paramType=body
         """
         content_type = 'application/json'
-        if self.__op.__consumes and content_type not in self.__op.__consumes:
+        if self.__op.consumes and content_type not in self.__op.consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
         return content_type, json.dumps(
@@ -62,7 +62,7 @@ class SwaggerRequest(object):
         """ private function to prepare content for paramType=form with File
         """
         content_type = 'multipart/form-data'
-        if self.__op.__consumes and content_type not in self.__op.__consumes:
+        if self.__op.consumes and content_type not in self.__op.consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
         boundary = uuid4().hex
@@ -73,7 +73,7 @@ class SwaggerRequest(object):
         body = io.BytesIO()
         w = codecs.getwriter(encoding)
 
-        for k, v in six.iteritems(self.__p['form']):
+        for k, v in six.iteritems(self.__p['formData']):
             body.write(six.b('--{0}\r\n'.format(boundary)))
 
             w(body).write('Content-Disposition: form-data; name="{0}"'.format(k))
@@ -85,7 +85,7 @@ class SwaggerRequest(object):
             body.write(six.b('\r\n'))
 
         # begin of file section
-        for k, v in six.iteritems(self.__p['File']):
+        for k, v in six.iteritems(self.__p['file']):
             body.write(six.b('--{0}\r\n'.format(boundary)))
 
             # header
@@ -153,7 +153,7 @@ class SwaggerRequest(object):
 
         # update data parameter
         content_type = None
-        if self.__p['File']:
+        if self.__p['file']:
             if handle_files:
                 content_type, self.__data = self._prepare_files(encoding)
             else:
@@ -162,9 +162,9 @@ class SwaggerRequest(object):
                 # property.
 
                 # only form data can be carried along with files,
-                self.__data = self.__p['form']
+                self.__data = self.__p['formData']
 
-        elif self.__p['form']:
+        elif self.__p['formData']:
             content_type, self.__data = self._prepare_forms()
         elif self.__p['body']:
             content_type, self.__data = self._prepare_body()
@@ -199,7 +199,7 @@ class SwaggerRequest(object):
 
         :type: str
         """
-        return self.__op.__method
+        return self.__op.method
 
     @property
     def header(self):
@@ -223,7 +223,7 @@ class SwaggerRequest(object):
 
         :type: dict of (name, primitives.File)
         """
-        return self.__p['File']
+        return self.__p['file']
 
     @property
     def _p(self):
