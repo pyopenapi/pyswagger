@@ -206,6 +206,22 @@
          "allOf":[
             {"multipleOf":5}
          ]
+      },
+      "byte":{
+         "type":"string",
+         "format":"byte"
+      },
+      "date":{
+         "type":"string",
+         "format":"date"
+      },
+      "date-time":{
+         "type":"string",
+         "format":"date-time"
+      },
+      "str_enum":{
+         "type":"string",
+         "enum":["red", "blue", "green"]
       }
    }
 }

@@ -41,7 +41,7 @@ class Time(object):
     def to_json(self):
         # according to
         #   https://github.com/wordnik/swagger-spec/issues/95
-        return self.isoformat()
+        return self.v.isoformat()
 
 
 class Date(Time):

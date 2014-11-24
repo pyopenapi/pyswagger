@@ -3,6 +3,7 @@ from .utils import get_test_data_folder
 from pyswagger.spec.v2_0 import objects
 from pyswagger.utils import jp_compose
 import unittest
+import datetime
 
 
 class SchemaTestCase(unittest.TestCase):
@@ -102,7 +103,48 @@ class SchemaTestCase(unittest.TestCase):
         i = self.app.resolve("#/definitions/num_multipleOf")
 
         self.assertRaises(ValueError, i._prim_, 4)
-        i._prim_(5)
+        i._prim_(5) # should raise nothing
+
+    def test_str_enum(self):
+        """ test str enum """
+        e = self.app.resolve("#/definitions/str_enum")
+
+        self.assertRaises(ValueError, e._prim_, "yellow")
+        e._prim_("green") # should raise nothing
+
+    def test_byte(self):
+        """ test byte """
+        b = self.app.resolve("#/definitions/byte")
+
+        bv = b._prim_("BBBBB")
+        self.assertEqual(str(bv), "BBBBB")
+        self.assertEqual(bv.to_json(), "QkJCQkI=")
+
+    def test_date(self):
+        """ test date """
+        d = self.app.resolve("#/definitions/date")
+
+        # test input of constructor
+        self.assertEqual(str(d._prim_(float(0))), "1970-01-01")
+        self.assertEqual(str(d._prim_(datetime.date.fromtimestamp(0))), "1970-01-01")
+        self.assertEqual(str(d._prim_(datetime.date.fromtimestamp(0).isoformat())), "1970-01-01")
+
+        # to_json
+        dv = d._prim_(float(0))
+        self.assertEqual(dv.to_json(), "1970-01-01")
+
+    def test_date_time(self):
+        """ test date-time """
+        d = self.app.resolve("#/definitions/date-time")
+
+        # test input of constructor
+        self.assertEqual(str(d._prim_(float(0))), "1970-01-01T08:00:00")
+        self.assertEqual(str(d._prim_(datetime.datetime.fromtimestamp(0))), "1970-01-01T08:00:00")
+        self.assertEqual(str(d._prim_(datetime.datetime.fromtimestamp(0).isoformat())), "1970-01-01T08:00:00")
+
+        # to_json
+        dv = d._prim_(float(0))
+        self.assertEqual(dv.to_json(), "1970-01-01T08:00:00")
 
 
 class HeaderTestCase(unittest.TestCase):
@@ -151,3 +193,4 @@ class HeaderTestCase(unittest.TestCase):
                 ]
             ]
         )), '1|2,3|4,5|6 7|8,9|10 11|12,13|14')
+
