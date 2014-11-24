@@ -10,6 +10,8 @@ class TornadoClient(BaseClient):
     tornado.http.AsyncHTTPClient.
     """
 
+    __schemes__ = set(['http', 'https'])
+
     def __init__(self, auth=None):
         """
         """
@@ -21,7 +23,8 @@ class TornadoClient(BaseClient):
         """
         """
         req, resp = super(TornadoClient, self).request(req_and_resp, opt)
-        req.prepare(handle_files=True)
+
+        req.prepare(scheme=self.prepare_schemes(req).pop(), handle_files=True)
 
         url = url_concat(req.url, req.query)
 

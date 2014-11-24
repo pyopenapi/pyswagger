@@ -27,7 +27,7 @@ class SwaggerRequest(object):
 
         self.__op = op
         self.__p = params
-        self.__url = op.url
+        self.__url = ''
         self.__header = {}
         self.__is_prepared = False # a flag to indicate if prepared
 
@@ -135,7 +135,7 @@ class SwaggerRequest(object):
         if self.__is_prepared:
             self.prepare()
 
-    def prepare(self, handle_files=True, encoding='utf-8'):
+    def prepare(self, scheme, handle_files=True, encoding='utf-8'):
         """ make this request ready for Clients
 
         :param bool handle_files: False to skip multipart/form-data encoding
@@ -146,7 +146,7 @@ class SwaggerRequest(object):
         self.__is_prepared = True
 
         # combine path parameters into url
-        self.__url = self.__url.format(**self.__p['path'])
+        self.__url = ''.join([scheme, '://', self.__op.url.format(**self.__p['path'])])
 
         # header parameters
         self.__header.update(self.__p['header'])
@@ -224,6 +224,12 @@ class SwaggerRequest(object):
         :type: dict of (name, primitives.File)
         """
         return self.__p['file']
+
+    @property
+    def schemes(self):
+        """ TODO:
+        """
+        return self.__op.schemes
 
     @property
     def _p(self):

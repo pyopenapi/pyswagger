@@ -27,6 +27,7 @@ class SwaggerApp(object):
         self.__op = None
         self.__m = None
         self.__version = ''
+        self.__schemes = []
 
         # TODO: allow init App-wised SCOPE_SEPARATOR
 
@@ -78,6 +79,12 @@ class SwaggerApp(object):
         """
         return self.__version
 
+    @property
+    def schemes(self):
+        """
+        """
+        return self.__schemes
+
     @classmethod
     def load(kls, url, getter=None):
         """ load json as a raw SwaggerApp
@@ -91,6 +98,8 @@ class SwaggerApp(object):
         :raises NotImplementedError: the swagger version is not supported.
         """
 
+        app = kls()
+
         local_getter = getter or HttpGetter
         p = six.moves.urllib.parse.urlparse(url)
         if p.scheme == "":
@@ -99,6 +108,9 @@ class SwaggerApp(object):
                 local_getter = FileGetter(p.path)
             else:
                 raise ValueError('url should be a http-url or file path -- ' + url)
+        else:
+            # TODO: test case
+            app.schemes.append(p.scheme)
 
         if inspect.isclass(local_getter):
             # default initialization is passing the url
@@ -106,7 +118,6 @@ class SwaggerApp(object):
             # initialized getter object.
             local_getter = local_getter(url)
 
-        app = kls()
         tmp = {'_tmp_': {}}
 
         # get root document to check its swagger version.
@@ -181,6 +192,10 @@ class SwaggerApp(object):
         else:
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
        
+        # update schemes if any
+        if self.__root.schemes and len(self.__root.schemes) > 0:
+            self.__schemes = self.__root.schemes
+
         # reducer for Operation 
         tr = TypeReduce()
         s.scan(root=self.__root, route=[tr, Resolve(), PatchObject()])
@@ -323,6 +338,9 @@ class BaseClient(object):
                 return resp
     """
 
+    # TODO: comments
+    __schemes__ = set()
+
     def __init__(self, security=None):
         """ constructor
 
@@ -331,6 +349,14 @@ class BaseClient(object):
 
         # placeholder of SwaggerSecurity
         self.__security = security
+
+    def prepare_schemes(self, req):
+        """
+        """
+        ret = self.__schemes__ & set(req.schemes)
+        if len(ret) == 0:
+            raise ValueError('No schemes available: {0}'.format(req.schemes))
+        return ret
 
     def request(self, req_and_resp, opt={}):
         """ preprocess before performing a request, usually some patching.

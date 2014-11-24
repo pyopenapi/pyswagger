@@ -21,6 +21,7 @@ class PatchObject(object):
         obj.update_field('produces', app.root.produces if len(obj.produces) == 0 else obj.produces)
         obj.update_field('consumes', app.root.consumes if len(obj.consumes) == 0 else obj.consumes)
 
+        # TODO: test case
         # combine parameters from PathItem
         for p in obj._parent_.parameters:
             for pp in obj.parameters:
@@ -28,6 +29,10 @@ class PatchObject(object):
                     break
             else:
                 obj.parameters.append(p)
+
+        # TODO: test case
+        # schemes
+        obj.update_field('schemes', app.schemes if len(obj.schemes) == 0 else obj.schemes)
 
     @Disp.register([PathItem])
     def _path_item(self, path, obj, app):
