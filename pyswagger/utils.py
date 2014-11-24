@@ -99,6 +99,7 @@ _iso8601_fmt = re.compile(''.join([
     '(?P<hour>\d{2}):(?P<minute>\d{2})(:(?P<second>\d{1,2}))?', # hh:mm:ss
     '(?P<tz>Z|[+-]\d{2}:\d{2})?' # Z or +/-hh:mm
 ]))
+_iso8601_fmt_date = re.compile('(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})') # YYYY-MM-DD
 
 def from_iso8601(s):
     """ convert iso8601 string to datetime object.
@@ -110,24 +111,35 @@ def from_iso8601(s):
     """
     m = _iso8601_fmt.match(s)
     if not m:
+        m = _iso8601_fmt_date.match(s)
+
+    if not m:
         raise ValueError('not a valid iso 8601 format string:[{0}]'.format(s))
 
     g = m.groupdict()
 
     def _default_zero(key):
-        v = g.get(key)
+        v = g.get(key, None)
         return int(v) if v else 0
+
+    def _default_none(key):
+        v = g.get(key, None)
+        return int(v) if v else None
 
     year = _default_zero('year')
     month = _default_zero('month')
     day = _default_zero('day')
-    hour = _default_zero('hour')
-    minute = _default_zero('minute')
-    second = _default_zero('second')
+    hour = _default_none('hour')
+    minute = _default_none('minute')
+    second = _default_none('second')
     tz_s = g.get('tz')
 
     if not (year and month and day):
         raise ValueError('missing y-m-d: [{0}]'.format(s))
+
+    # only date part, time part is none
+    if hour == None and minute == None and second == None:
+        return datetime.datetime(year, month, day)
 
     # prepare tz info
     tz = None
@@ -148,9 +160,9 @@ def from_iso8601(s):
         year=year,
         month=month,
         day=day,
-        hour=hour,
-        minute=minute,
-        second=second,
+        hour=hour or 0,
+        minute=minute or 0,
+        second=second or 0,
         tzinfo=tz
     )
 
