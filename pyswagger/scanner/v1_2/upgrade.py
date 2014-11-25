@@ -142,8 +142,12 @@ class Upgrade(object):
 
         o.update_field('parameters', [])
         o.update_field('security', {})
-        for name, scopes in obj.authorizations.iteritems():
-            o.security[name] = [v.scope for v in scopes]
+        # if there is not authorizations in this operation,
+        # looking for it in resource object.
+        _auth = obj.authorizations if obj.authorizations and len(obj.authorizations) > 0 else obj._parent_.authorizations
+        if _auth:
+            for name, scopes in _auth.iteritems():
+                o.security[name] = [v.scope for v in scopes]
 
         # Operation return value
         o.update_field('responses', {})

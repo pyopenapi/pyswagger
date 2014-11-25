@@ -29,8 +29,9 @@ class BasicAuthAndApiKeyTestCase(unittest.TestCase):
         req, _ = app.op['getUserByName'](username='mission')
         self.s(req).prepare()
 
-        self.assertTrue('simpleQK' in req.query)
-        self.assertEqual(req.query['simpleQK'], '123456')
+        qk = [x for x in req.query if x[0] == 'simpleQK']
+        self.assertTrue(len(qk) > 0)
+        self.assertEqual(qk[0][1], '123456')
 
     def test_createUser(self):
         """ api key, passed by header """

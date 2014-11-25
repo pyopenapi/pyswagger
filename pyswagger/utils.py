@@ -224,3 +224,25 @@ def deref(obj):
     o = getattr(obj, 'ref_obj', None) if obj else None
     return o if o else obj
 
+def get_dict_as_tuple(d):
+    """ get the first item in dict,
+    and return it as tuple.
+    """
+    # TODO: test case
+    for k, v in d.iteritems():
+        return k, v
+    return None
+
+def nv_tuple_list_replace(l, v):
+    """ replace a tuple in a tuple list
+    """
+    # TODO: test case
+    _found = False
+    for i, x in enumerate(l):
+        if x[0] == v[0]:
+            l[i] = v
+            _found = True
+
+    if not _found:
+        l.append(v)
+

@@ -6,7 +6,13 @@ from .scan import Scanner
 from .scanner import TypeReduce
 from .scanner.v1_2 import Upgrade
 from .scanner.v2_0 import AssignParent, Resolve, PatchObject
-from .utils import ScopeDict, import_string, jp_split
+from .utils import (
+    ScopeDict,
+    import_string,
+    jp_split,
+    get_dict_as_tuple,
+    nv_tuple_list_replace
+    )
 import inspect
 import base64
 import six
@@ -306,15 +312,18 @@ class SwaggerSecurity(object):
         :return: the updated request
         :rtype: SwaggerRequest
         """
-        if not req._auths:
+        if not req._security:
             return req
 
-        for k, v in six.iteritems(req._auths):
+        for k, v in six.iteritems(req._security):
             if not k in self.__info:
                 continue
 
             header, cred = self.__info[k]
-            req._p['header'].update(cred) if header else req.query.update(cred)
+            if header:
+                req._p['header'].update(cred)
+            else:
+                nv_tuple_list_replace(req._p['query'], get_dict_as_tuple(cred))
 
         return req
 
@@ -374,7 +383,7 @@ class BaseClient(object):
 
         # apply authorizations
         if self.__security:
-            self.__security.prepare(req) 
+            self.__security(req) 
 
         return req, resp
 
