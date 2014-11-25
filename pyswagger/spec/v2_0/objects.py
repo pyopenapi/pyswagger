@@ -187,16 +187,16 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
 
             c = p._prim_(v)
             i = getattr(p, 'in')
-            if i in ('query', 'formData'):
+
+            if p.type == 'file':
+                params['file'][p.name] = c
+            elif i in ('query', 'formData'):
                 if isinstance(c, primitives.Array):
                     params[i].extend([tuple([p.name, v]) for v in c.to_url()])
                 else:
                     params[i].append((p.name, str(c),))
             else:
-                if i != 'body' and p.type != 'file':
-                    c = str(c)
-
-                params[i if p.type != 'file' else 'file'][p.name] = c
+                params[i][p.name] = str(c) if i != 'body' else c
 
         # TODO: check for unknown parameter
         for p in self.parameters:
