@@ -192,7 +192,6 @@ class SwaggerResponse_TestCase(unittest.TestCase):
 
         resp.apply_with(status=200, raw={})
         self.assertEqual(resp.data, None)
-        self.assertTrue(isinstance(resp.data, Void))
 
     def test_invalid_enum(self):
         """ invalid enum value """

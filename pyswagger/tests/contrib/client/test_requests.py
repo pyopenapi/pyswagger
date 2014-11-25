@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from pyswagger import SwaggerApp
 from pyswagger.contrib.client.requests import Client
 from ...utils import get_test_data_folder
-from ....primitives import Model, Array, Void
+from ....primitives import Model, Array
 import unittest
 import httpretty
 import json
@@ -137,7 +137,6 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
-        self.assertTrue(isinstance(resp.data, Void))
 
     @httpretty.activate
     def test_getPetById(self):
