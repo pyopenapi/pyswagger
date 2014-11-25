@@ -159,10 +159,11 @@ class Model(dict):
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setitem__
 
-    def __init__(self):
+    def __init__(self, o):
         """ constructor
         """
         super(Model, self).__init__()
+        self._name = o.name
 
     def apply_with(self, obj, val):
         """ recursivly apply Schema object
@@ -182,8 +183,8 @@ class Model(dict):
             to_update = val.pop(k, None)
 
             # update discriminator with model's name
-            if obj.discriminator and obj.discriminator == k:
-                to_update = obj.name
+            if to_update == None and obj.discriminator and obj.discriminator == k:
+                to_update = self._name
 
             # check require properties of a Model
             if to_update == None:
@@ -397,7 +398,7 @@ def prim_factory(o, v):
         else:
             raise ValueError('obj.type should be str, not {0}'.format(type(o.type)))
     elif o.properties and len(o.properties):
-        r = Model()
+        r = Model(o)
         v = r.apply_with(o, v)
 
     if isinstance(r, (Date, Datetime, Byte, File)):

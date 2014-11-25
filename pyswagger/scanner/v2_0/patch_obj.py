@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from ...scan import Dispatcher
 from ...spec.v2_0.objects import PathItem, Operation, Schema
 from ...spec.v2_0.parser import PathItemContext
-from ...utils import jp_split
+from ...utils import jp_split, scope_split
 
 
 class PatchObject(object):
@@ -53,5 +53,9 @@ class PatchObject(object):
         """
         # TODO: test case
         if path.startswith('#/definitions') and hasattr(obj, 'properties'):
-            obj.update_field('name', jp_split(path)[-1])
+            last_token = jp_split(path)[-1]
+            if app.version == '1.2':
+                obj.update_field('name', scope_split(last_token)[-1])
+            else:
+                obj.update_field('name', last_token)
 

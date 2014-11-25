@@ -150,7 +150,7 @@ class Response(six.with_metaclass(FieldMeta, BaseObj)):
         ('$ref', None),
 
         ('schema', None),
-        ('headers', None),
+        ('headers', {}),
 
         # pyswagger only
         ('ref_obj', None),

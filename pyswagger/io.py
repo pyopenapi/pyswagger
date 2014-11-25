@@ -276,7 +276,9 @@ class SwaggerResponse(object):
         if status != None:
             self.__status = status
 
-        r = deref(self.__op.response.get(self.status, None))
+        r = deref(self.__op.responses.get(self.status, None))
+        r = deref(self.__op.responses.get('default', None)) if r == None else r
+
         if raw != None:
             if self.status == 0:
                 raise Exception('Update status code before assigning raw data')
