@@ -1,4 +1,4 @@
-pyswagger (Support on Swagger 2.0 is ongoing)
+pyswagger
 =========
 
 [![Build Status](https://travis-ci.org/mission-liao/pyswagger.svg?branch=master)](https://travis-ci.org/mission-liao/pyswagger)
@@ -23,7 +23,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 ---------
 
 ##Features
-- support Swagger **1.2** on python **2.6**, **2.7**, **3.3**, **3.4**, supporting on Swagger **2.0** is under [development](https://github.com/mission-liao/pyswagger/tree/swagger_2.0).
+- support Swagger **1.2**, **2.0** on python **2.6**, **2.7**, **3.3**, **3.4**
 - type safe, input/output are converted to python types according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in Swagger. You don't need to touch any json schema when using pyswagger. Limitations like **minimum/maximum** or **enum** are also checked. **Model inheritance** also supported.
 - provide function **SwaggerApp.validate** to check validity of the loaded API definition according to spec.
 - builtin client implementation based on various http clients in python.
