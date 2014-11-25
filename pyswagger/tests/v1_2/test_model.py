@@ -62,7 +62,7 @@ class ModelInteritanceTestCase(unittest.TestCase):
     def test_inheritance_root(self):
         """ make sure we could init a root Model """
         req, _ = app.op['createUser'](body=u_mission)
-        req.prepare(scheme='http')
+        req.prepare()
 
         self.assertTrue(isinstance(req._p['body']['body'], Model))
         m = req._p['body']['body']

@@ -135,7 +135,7 @@ class SwaggerRequest(object):
         if self.__is_prepared:
             self.prepare()
 
-    def prepare(self, scheme, handle_files=True, encoding='utf-8'):
+    def prepare(self, scheme='http', handle_files=True, encoding='utf-8'):
         """ make this request ready for Clients
 
         :param bool handle_files: False to skip multipart/form-data encoding
