@@ -96,7 +96,7 @@ class Array(list):
         super(Array, self).__init__()
         self.__collection_format = 'csv'
 
-    def apply_with(self, obj, val):
+    def apply_with(self, obj, val, _):
         """
         """
         if isinstance(val, six.string_types):
@@ -148,7 +148,7 @@ class Array(list):
         if self.__collection_format == 'multi':
             return [str(s) for s in self]
         else:
-            return str(s)
+            return [str(self)]
 
 
 class Model(dict):
@@ -159,13 +159,14 @@ class Model(dict):
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setitem__
 
+    __name_key__ = '!!_name____!!'
+
     def __init__(self, o):
         """ constructor
         """
         super(Model, self).__init__()
-        self._name = o.name
 
-    def apply_with(self, obj, val):
+    def apply_with(self, obj, val, ctx):
         """ recursivly apply Schema object
 
         :param obj.Model obj: model object to instruct how to create this model
@@ -183,8 +184,8 @@ class Model(dict):
             to_update = val.pop(k, None)
 
             # update discriminator with model's name
-            if to_update == None and obj.discriminator and obj.discriminator == k:
-                to_update = self._name
+            if obj.discriminator and obj.discriminator == k:
+                to_update = ctx['name']
 
             # check require properties of a Model
             if to_update == None:
@@ -370,72 +371,76 @@ prim_types = [
 ]
 
 
-def prim_factory(o, v):
+def prim_factory(obj, val, ctx=None):
     """ factory function to create primitives
 
     :param pyswagger.spec.v2_0.objects.Schema obj: spec to construct primitives
-    :param v: value to construct primitives
+    :param val: value to construct primitives
 
     :return: the created primitive
     """
-    v = o.default if v == None else v
-    if v == None:
+    val = obj.default if val == None else val
+    if val == None:
         return None
 
-    r = None
-    o = deref(o)
-    if o.type:
-        if isinstance(o.type, six.string_types):
-            if o.type == 'array':
-                r = Array()
-                v = r.apply_with(o, v)
-            else:
-                t = prim_obj_map.get((o.type, o.format), None)
-                if not t:
-                    raise ValueError('Can\'t resolve type from:(' + str(o.type) + ', ' + str(o.format) + ')')
+    obj = deref(obj)
+    ctx = {} if ctx == None else ctx
+    if 'name' not in ctx and hasattr(obj, 'name'):
+        ctx['name'] = obj.name
 
-                r = t(o, v)
+    ret = None
+    if obj.type:
+        if isinstance(obj.type, six.string_types):
+            if obj.type == 'array':
+                ret = Array()
+                val = ret.apply_with(obj, val, ctx)
+            else:
+                t = prim_obj_map.get((obj.type, obj.format), None)
+                if not t:
+                    raise ValueError('Can\'t resolve type from:(' + str(obj.type) + ', ' + str(obj.format) + ')')
+
+                ret = t(obj, val)
         else:
             raise ValueError('obj.type should be str, not {0}'.format(type(o.type)))
-    elif o.properties and len(o.properties):
-        r = Model(o)
-        v = r.apply_with(o, v)
+    elif obj.properties and len(obj.properties):
+        ret = Model(obj)
+        val = ret.apply_with(obj, val, ctx)
 
-    if isinstance(r, (Date, Datetime, Byte, File)):
+    if isinstance(ret, (Date, Datetime, Byte, File)):
         # it's meanless to handle allOf for these types.
-        return r
+        return ret
 
-    is_member = hasattr(r, 'apply_with')
-    def _apply(ret, obj, val):
+    is_member = hasattr(ret, 'apply_with')
+    def _apply(r, o, v, c):
         if is_member == True:
-            val = ret.apply_with(obj, val)
+            v = r.apply_with(o, v, c)
         else:
-            apply_with(ret, obj)
+            apply_with(r, o)
 
-        return val
+        return v
 
     # handle allOf for Schema Object
-    allOf = getattr(o, 'allOf', None)
+    allOf = getattr(obj, 'allOf', None)
     if allOf:
         not_applied = []
         for a in allOf:
             a = deref(a)
-            if not r:
+            if not ret:
                 # try to find right type for this primitive.
-                r = prim_factory(a, v)
-                is_member = hasattr(r, 'apply_with')
+                ret = prim_factory(a, val, ctx)
+                is_member = hasattr(ret, 'apply_with')
             else:
-                v = _apply(r, a, v)
+                val = _apply(ret, a, val, ctx)
 
-            if not r:
+            if not ret:
                 # if we still can't determine the type,
                 # keep this Schema object for later use.
                 not_applied.append(a)
-        if r:
+        if ret:
             for a in not_applied:
-                v = _apply(r, a, v)
+                val = _apply(ret, a, val, ctx)
 
-    return r
+    return ret
 
 
 def is_primitive(obj):
