@@ -181,7 +181,7 @@ class Model(dict):
 
         # init model as dict
         for k, v in six.iteritems(obj.properties):
-            to_update = val.pop(k, None)
+            to_update = val.get(k, None)
 
             # update discriminator with model's name
             if obj.discriminator and obj.discriminator == k:
