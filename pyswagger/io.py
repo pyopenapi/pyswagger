@@ -10,6 +10,7 @@ import io, codecs
 class SwaggerRequest(object):
     """ Request layer
     """
+    # TODO: make a new class for 'prepared' SwaggerRequest
 
     # option: url_netloc, replace netloc part in url, useful
     # when testing a set of Swagger APIs locally.
@@ -29,7 +30,6 @@ class SwaggerRequest(object):
         self.__p = params
         self.__url = ''
         self.__header = {}
-        self.__is_prepared = False # a flag to indicate if prepared
 
         # update 'accept' header section
         accepts = 'application/json'
@@ -130,11 +130,6 @@ class SwaggerRequest(object):
                 (scheme, opt_netloc, path, params, query, fragment)
                 )
 
-        # if already prepared, prepare again to apply 
-        # those patches.
-        if self.__is_prepared:
-            self.prepare()
-
     def prepare(self, scheme='http', handle_files=True, encoding='utf-8'):
         """ make this request ready for Clients
 
@@ -142,8 +137,6 @@ class SwaggerRequest(object):
         :param str encoding: encoding for body content.
         :rtype: SwaggerRequest
         """
-
-        self.__is_prepared = True
 
         # combine path parameters into url
         self.__url = ''.join([scheme, '://', self.__op.url.format(**self.__p['path'])])
@@ -280,13 +273,17 @@ class SwaggerResponse(object):
         r = deref(self.__op.responses.get('default', None)) if r == None else r
 
         if raw != None:
-            if self.status == 0:
+            if not self.status:
                 raise Exception('Update status code before assigning raw data')
 
-            self.__raw = raw
+            if r.schema == None:
+                if raw:
+                    raise Exception('updating response when schema is None')
+            else:
+                self.__raw = raw
 
-            # update data from Opeartion if succeed else from responseMessage.responseModel
-            self.__data = r.schema._prim_(self.raw)
+                # update data from Opeartion if succeed else from responseMessage.responseModel
+                self.__data = r.schema._prim_(self.raw)
 
         if header != None:
             for k, v in six.iteritems(header):
