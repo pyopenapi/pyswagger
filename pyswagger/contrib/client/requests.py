@@ -8,6 +8,8 @@ class Client(BaseClient):
     """ Client implementation based on requests
     """
 
+    __schemes__ = set(['http', 'https'])
+
     def __init__(self, auth=None):
         """
         """
@@ -20,7 +22,8 @@ class Client(BaseClient):
         req, resp = super(Client, self).request(req_and_resp, opt)
 
         # apply request-related options before preparation.
-        req.prepare(handle_files=False)
+        req.prepare(scheme=self.prepare_schemes(req).pop(), handle_files=False)
+        req._patch(opt)
 
         # prepare for uploaded files
         file_obj = {}
@@ -32,7 +35,7 @@ class Client(BaseClient):
                 file_obj[k] = (v.filename, f)
 
         rq = Request(
-            method=req.method,
+            method=req.method.upper(),
             url=req.url,
             params=req.query,
             data=req.data,

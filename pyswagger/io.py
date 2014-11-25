@@ -1,6 +1,6 @@
 from __future__ import absolute_import
-from .base import BaseObj
 from .primitives import PrimJSONEncoder
+from .utils import deref
 from uuid import uuid4
 import six
 import json
@@ -10,12 +10,13 @@ import io, codecs
 class SwaggerRequest(object):
     """ Request layer
     """
+    # TODO: make a new class for 'prepared' SwaggerRequest
 
     # option: url_netloc, replace netloc part in url, useful
     # when testing a set of Swagger APIs locally.
     opt_url_netloc = 'url_netloc'
 
-    def __init__(self, op, params={}, produces=None, consumes=None, authorizations=None):
+    def __init__(self, op, params):
         """ constrcutor
 
         :param Operation op: the related Operation object
@@ -25,48 +26,15 @@ class SwaggerRequest(object):
         :param authorizations: list of required authorizations from parent object
         """
 
-        self.__method = op.method
-        self.__p = dict(header={}, query={}, path={}, body={}, form={}, File={})
-        self.__url = op._parent_.basePath + op.path
-
-        # a flag to indicate if prepared
-        self.__is_prepared = False
-
+        self.__op = op
+        self.__p = params
+        self.__url = self.__op.url
         self.__header = {}
-
-        # TODO: this part can be resolved once by using scanner.
-        # let produces/consumes/authorizations in Operation override global ones.
-        self.__produces = op.produces if op.produces else produces
-        self.__consumes = op.consumes if op.consumes else consumes
-        self.__authorizations = op.authorizations if op.authorizations else authorizations
-
-        # check for unknown parameters
-        unknown = set(params.keys()) - set([p.name for p in op.parameters])
-        if len(unknown):
-            raise ValueError('Unknown parameters: ' + str(unknown))
-
-        # convert params into internal types
-        for p in op.parameters:
-            val = params.get(p.name, None)
-
-            # check required parameter
-            val = p.defaultValue if val == None else val
-            if val == None and p.required:
-                raise ValueError('requires parameter: ' + p.name)
-
-            converted = p._prim_(val)
-            # we could only have string for those parameter types
-            if p.paramType in ('path', 'query'):
-                converted = six.moves.urllib.parse.quote(str(converted))
-            elif p.paramType == 'header':
-                converted = str(converted)
-
-            self.__p[p.paramType if p.type != 'File' else 'File'][p.name] = converted
 
         # update 'accept' header section
         accepts = 'application/json'
-        if accepts and self.__produces and accepts not in self.__produces:
-            accepts = self.__produces[0]
+        if accepts and self.__op.produces and accepts not in self.__op.produces:
+            accepts = self.__op.produces[0]
 
         if accepts:
             self.__header.update({'Accept': accepts})
@@ -75,16 +43,16 @@ class SwaggerRequest(object):
         """ private function to prepare content for paramType=form
         """
         content_type = 'application/x-www-form-urlencoded'
-        if self.__consumes and content_type not in self.__consumes:
+        if self.__op.consumes and content_type not in self.__op.consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
-        return content_type, six.moves.urllib.parse.urlencode(self.__p['form'])
+        return content_type, six.moves.urllib.parse.urlencode(self.__p['formData'])
 
     def _prepare_body(self):
         """ private function to prepare content for paramType=body
         """
         content_type = 'application/json'
-        if self.__consumes and content_type not in self.__consumes:
+        if self.__op.consumes and content_type not in self.__op.consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
         return content_type, json.dumps(
@@ -94,7 +62,7 @@ class SwaggerRequest(object):
         """ private function to prepare content for paramType=form with File
         """
         content_type = 'multipart/form-data'
-        if self.__consumes and content_type not in self.__consumes:
+        if self.__op.consumes and content_type not in self.__op.consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
         boundary = uuid4().hex
@@ -105,7 +73,7 @@ class SwaggerRequest(object):
         body = io.BytesIO()
         w = codecs.getwriter(encoding)
 
-        for k, v in six.iteritems(self.__p['form']):
+        for k, v in self.__p['formData']:
             body.write(six.b('--{0}\r\n'.format(boundary)))
 
             w(body).write('Content-Disposition: form-data; name="{0}"'.format(k))
@@ -117,7 +85,7 @@ class SwaggerRequest(object):
             body.write(six.b('\r\n'))
 
         # begin of file section
-        for k, v in six.iteritems(self.__p['File']):
+        for k, v in six.iteritems(self.__p['file']):
             body.write(six.b('--{0}\r\n'.format(boundary)))
 
             # header
@@ -157,17 +125,12 @@ class SwaggerRequest(object):
         """
         opt_netloc = opt.pop(SwaggerRequest.opt_url_netloc, None)
         if opt_netloc:
-            scheme, netloc, path, params, query, fragment = six.moves.urllib.parse.urlparse(self.__url)    
+            scheme, netloc, path, params, query, fragment = six.moves.urllib.parse.urlparse(self.__url)
             self.__url = six.moves.urllib.parse.urlunparse(
                 (scheme, opt_netloc, path, params, query, fragment)
                 )
 
-        # if already prepared, prepare again to apply 
-        # those patches.
-        if self.__is_prepared:
-            self.prepare()
-
-    def prepare(self, handle_files=True, encoding='utf-8'):
+    def prepare(self, scheme='http', handle_files=True, encoding='utf-8'):
         """ make this request ready for Clients
 
         :param bool handle_files: False to skip multipart/form-data encoding
@@ -175,17 +138,15 @@ class SwaggerRequest(object):
         :rtype: SwaggerRequest
         """
 
-        self.__is_prepared = True
-
         # combine path parameters into url
-        self.__url = self.__url.format(**self.__p['path'])
+        self.__url = ''.join([scheme, '://', self.__url.format(**self.__p['path'])])
 
         # header parameters
         self.__header.update(self.__p['header'])
 
         # update data parameter
         content_type = None
-        if self.__p['File']:
+        if self.__p['file']:
             if handle_files:
                 content_type, self.__data = self._prepare_files(encoding)
             else:
@@ -194,9 +155,9 @@ class SwaggerRequest(object):
                 # property.
 
                 # only form data can be carried along with files,
-                self.__data = self.__p['form']
+                self.__data = self.__p['formData']
 
-        elif self.__p['form']:
+        elif self.__p['formData']:
             content_type, self.__data = self._prepare_forms()
         elif self.__p['body']:
             content_type, self.__data = self._prepare_body()
@@ -231,7 +192,7 @@ class SwaggerRequest(object):
 
         :type: str
         """
-        return self.__method
+        return self.__op.method
 
     @property
     def header(self):
@@ -255,7 +216,13 @@ class SwaggerRequest(object):
 
         :type: dict of (name, primitives.File)
         """
-        return self.__p['File']
+        return self.__p['file']
+
+    @property
+    def schemes(self):
+        """ TODO:
+        """
+        return self.__op.schemes
 
     @property
     def _p(self):
@@ -265,12 +232,12 @@ class SwaggerRequest(object):
         return self.__p
 
     @property
-    def _auths(self):
+    def _security(self):
         """ list of authorizations required
         
         :type: dict of list of Authorizations object.
         """
-        return self.__authorizations
+        return self.__op.security
 
 
 class SwaggerResponse(object):
@@ -286,7 +253,7 @@ class SwaggerResponse(object):
         self.__raw = self.__data = None
 
         # init properties
-        self.__status = 0
+        self.__status = ''
         self.__header = {}
 
     def apply_with(self, status=None, raw=None, header=None):
@@ -298,48 +265,32 @@ class SwaggerResponse(object):
         :return: return self for chaining
         :rtype: SwaggerResponse
         """
-        def _find_rm():
-            """ helper function to find
-            ResponseMessage object.
-            """
-            for rm in self.__op.responseMessages:
-                if rm.code == self.status:
-                    return rm
-            return None
-
-        rm = None
 
         if status != None:
             self.__status = status
 
-            # looking for responseMessages in Operation object
-            rm = _find_rm()
-            self.__message = '' if not rm else rm.message
+        r = deref(self.__op.responses.get(self.__status, None))
+        r = deref(self.__op.responses.get('default', None)) if r == None else r
 
         if raw != None:
-            if self.status == 0:
+            if not self.__status:
                 raise Exception('Update status code before assigning raw data')
 
-            self.__raw = raw
+            if r.schema:
+                self.__raw = raw
 
-            # update data from Opeartion if succeed else from responseMessage.responseModel
-            rm = _find_rm() if not rm else rm
-            if rm and isinstance(rm.responseModel, BaseObj):
-                self.__data = rm.responseModel._prim_(self.raw)
-
-            if not self.__data:
-                # when nothing works, convert raw with Operation's return type.
-                self.__data = self.__op._prim_(self.__raw)
+                # update data from Opeartion if succeed else from responseMessage.responseModel
+                self.__data = r.schema._prim_(self.raw)
 
         if header != None:
             for k, v in six.iteritems(header):
-                # split v into comma separated list
-                v = str(v).split(',')
+                if k in r.headers:
+                    v = r.headers[k]._prim_(v)
 
                 if k in self.__header:
                     self.__header[k].extend(v)
                 else:
-                    self.__header[k] = v
+                    self.__header[k] = [v]
 
         return self
 
@@ -350,14 +301,6 @@ class SwaggerResponse(object):
         :type: int
         """
         return self.__status
-
-    @property
-    def message(self):
-        """ response message
-
-        :type: str
-        """
-        return self.__message
 
     @property
     def data(self):

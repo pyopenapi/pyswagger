@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ...base import Context, ContainerType
-from .obj import (
+from .objects import (
     Scope,
     LoginEndpoint,
     Implicit,
@@ -19,7 +19,6 @@ from .obj import (
     Resource,
     Info,
     ResourceList)
-import six
 
 
 class ScopeContext(Context):
@@ -156,18 +155,16 @@ class ResourceListContext(Context):
         ('info', None, InfoContext),
         ('authorizations', ContainerType.dict_, AuthorizationContext)]
 
-    def __init__(self, parent, backref, getter):
+    def __init__(self, parent, backref):
         super(ResourceListContext, self).__init__(parent, backref)
-        self.__getter = getter
 
-    def parse(self, obj=None):
-        obj, _ = six.advance_iterator(self.__getter)
+    def parse(self, getter, obj):
         super(ResourceListContext, self).parse(obj=obj)
 
         # replace each element in 'apis' with Resource
         self._obj['apis'] = {}
         # get into resource object
-        for obj, name in self.__getter:
+        for obj, name in getter:
             # here we assume Resource is always a dict
             self._obj['apis'][name] = {}
             with ResourceContext(self._obj['apis'], name) as ctx:

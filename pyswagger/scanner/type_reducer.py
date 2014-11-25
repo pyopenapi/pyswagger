@@ -1,8 +1,7 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
-from ..spec.v1_2.obj import Operation, Model
+from ..spec.v2_0.objects import Operation
 from ..utils import scope_compose
-
 
 class TypeReduce(object):
     """ Type Reducer, collect Operation & Model
@@ -12,21 +11,16 @@ class TypeReduce(object):
 
     def __init__(self):
         self.op = {}
-        self.model = {}
-
-    @staticmethod
-    def __insert(target, scope, name, obj):
-        new_scope = scope_compose(scope, name)
-        if new_scope in target.keys():
-            raise ValueError('duplicated key found: ' + new_scope)
-
-        target[new_scope] = obj
-
-    @Disp.register([Model])
-    def _model(self, scope, name, obj, _):
-        self.__insert(self.model, scope, name, obj)
 
     @Disp.register([Operation])
-    def _op(self, scope, name, obj, _):
-        self.__insert(self.op, scope, name, obj)
+    def _op(self, path, obj, _):
+        scope = obj.tags[0] if obj.tags and len(obj.tags) > 0 else None
+        name = obj.operationId if obj.operationId else None
+
+        if scope and name:
+            new_scope = scope_compose(scope, name)
+            if new_scope in self.op.keys():
+                raise ValueError('duplicated key found: ' + new_scope)
+
+            self.op[new_scope] = obj
 

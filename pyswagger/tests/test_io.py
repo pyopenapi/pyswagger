@@ -1,6 +1,6 @@
 from pyswagger import SwaggerApp
-from ..utils import get_test_data_folder
-from pyswagger.primitives import Model, Array, Void
+from .utils import get_test_data_folder
+from pyswagger.primitives import Model, Array
 from pyswagger.io import SwaggerRequest
 import unittest
 
@@ -16,10 +16,10 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req, _ = app.op['updatePet'](body=dict(id=1, name='Mary', category=dict(id=1, name='dog')))
         req.prepare()
 
-        self.assertEqual(req.method, 'PUT')
+        self.assertEqual(req.method, 'put')
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet')
-        self.assertEqual(req.query, {})
+        self.assertEqual(req.query, [])
 
         m = req._p['body']['body']
         self.assertTrue(isinstance(m, Model))
@@ -35,10 +35,10 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/findByStatus')
-        self.assertEqual(req.method, 'GET')
+        self.assertEqual(req.method, 'get')
         self.assertEqual(req.header, {'Accept': 'application/json'})
         self.assertEqual(req.data, None)
-        self.assertEqual(req.query, {'status': 'available%2Csold'})
+        self.assertEqual(req.query, [('status', 'available,sold')])
 
     def test_findPetsByTags(self):
         """ Pet.findPetsByTags """
@@ -46,10 +46,10 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/findByTags')
-        self.assertEqual(req.method, 'GET')
+        self.assertEqual(req.method, 'get')
         self.assertEqual(req.header, {'Accept': 'application/json'})
         self.assertEqual(req.data, None)
-        self.assertEqual(req.query, {'tags': 'small%2Ccute%2Cnorth'})
+        self.assertEqual(req.query, [('tags', 'small,cute,north')])
 
     def test_partialUpdate(self):
         """ Pet.partialUpdate """
@@ -57,7 +57,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/0')
-        self.assertEqual(req.method, 'PATCH')
+        self.assertEqual(req.method, 'patch')
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
 
         m = req._p['body']['body']
@@ -81,7 +81,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertEqual(m.tags[1].id, 1)
         self.assertEqual(m.tags[1].name, 'small')
 
-        self.assertEqual(req.query, {})
+        self.assertEqual(req.query, [])
 
     def test_updatePetWithForm(self):
         """ Pet.updatePetWithForm """
@@ -89,14 +89,14 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/23')
-        self.assertEqual(req.method, 'POST')
+        self.assertEqual(req.method, 'post')
         self.assertEqual(req.header,{
             'Content-Type': u'application/x-www-form-urlencoded',
             'Accept': 'application/json'
         })
         self.assertTrue(req.data.find('status=pending') != -1)
         self.assertTrue(req.data.find('name=Gary') != -1)
-        self.assertEqual(req.query, {})
+        self.assertEqual(req.query, [])
 
     def test_addPet(self):
         """ Pet.addPet """
@@ -104,7 +104,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet')
-        self.assertEqual(req.method, 'POST')
+        self.assertEqual(req.method, 'post')
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
 
         m = req._p['body']['body']
@@ -118,7 +118,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertEqual(mm.id, 2)
         self.assertEqual(mm.name, 'cat')
 
-        self.assertEqual(req.query, {})
+        self.assertEqual(req.query, [])
 
     def test_deletePet(self):
         """ Pet.deletePet """
@@ -126,10 +126,10 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/22')
-        self.assertEqual(req.method, 'DELETE')
+        self.assertEqual(req.method, 'delete')
         self.assertEqual(req.header, {'Accept': 'application/json'})
         self.assertEqual(req.data, None)
-        self.assertEqual(req.query, {})
+        self.assertEqual(req.query, [])
 
     def test_getPetById(self):
         """ Pet.getPetById """
@@ -137,10 +137,10 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/100')
-        self.assertEqual(req.method, 'GET')
+        self.assertEqual(req.method, 'get')
         self.assertEqual(req.header, {'Accept': 'application/json'})
         self.assertEqual(req.data, None)
-        self.assertEqual(req.query, {})
+        self.assertEqual(req.query, [])
 
     def test_opt_url_netloc(self):
         """ test the replace of net loc """
@@ -166,11 +166,7 @@ class SwaggerResponse_TestCase(unittest.TestCase):
         self.assertRaises(Exception, resp.apply_with, raw={})
 
         resp.apply_with(status=400)
-        self.assertEqual(resp.message, 'Invalid ID supplied')
-        resp.apply_with(status=404)
-        self.assertEqual(resp.message, 'Pet not found')
-        resp.apply_with(status=405)
-        self.assertEqual(resp.message, 'Validation exception')
+        self.assertEqual(resp.status, 400)
 
     def test_findPetsByTags(self):
         """ Pet.findPetsByTags """
@@ -180,7 +176,6 @@ class SwaggerResponse_TestCase(unittest.TestCase):
             dict(id=1, name='Tom', category=dict(id=1, name='dog'), tags=[dict(id=1, name='small')]),
             dict(id=2, name='QQ', tags=[dict(id=1, name='small')])
         ])
-        self.assertEqual(resp.message, '')
 
         d = resp.data
         self.assertTrue(isinstance(d, Array))
@@ -197,7 +192,6 @@ class SwaggerResponse_TestCase(unittest.TestCase):
 
         resp.apply_with(status=200, raw={})
         self.assertEqual(resp.data, None)
-        self.assertTrue(isinstance(resp.data, Void))
 
     def test_invalid_enum(self):
         """ invalid enum value """
@@ -206,7 +200,7 @@ class SwaggerResponse_TestCase(unittest.TestCase):
     def test_default_value(self):
         """ make sure defaultValue works """
         req, _ = app.op['findPetsByStatus']()
-        self.assertEqual(req._p['query'], {'status': 'available'})
+        self.assertEqual(req._p['query'], [(u'status', 'available')])
 
     def test_min_max(self):
         """ make sure minimum/maximum works """

@@ -1,20 +1,21 @@
 from __future__ import absolute_import
 from .base import BaseObj
-from .utils import scope_compose
 import six
 
 
-def default_tree_traversal(app):
+def default_tree_traversal(root):
     """ default tree traversal """
-    objs = [(None, None, app.schema)]
+    objs = [('#', root)]
     while len(objs) > 0:
-        scope, name, obj = objs.pop()
+        path, obj = objs.pop()
 
-        # get children
-        new_scope = scope_compose(scope, name)
-        objs.extend(map(lambda c: (new_scope,) + c, obj._children_))
+        # name of child are json-pointer encoded, we don't have
+        # to encode it again.
+        objs.extend(map(lambda i: (path + '/' + i[0],) + (i[1],), obj._children_.iteritems()))
 
-        yield scope, name, obj
+        # the path we expose here follows JsonPointer described here
+        #   http://tools.ietf.org/html/draft-ietf-appsawg-json-pointer-07
+        yield path, obj
 
 
 class DispatcherMeta(type):
@@ -99,18 +100,21 @@ class Scanner(object):
 
         return ret
 
-    def scan(self, route, nexter=default_tree_traversal):
+    def scan(self, route, root, nexter=default_tree_traversal):
         """
         """
+        if root == None:
+            raise ValueError('Can\'t scan because root==None')
+
         merged_r = self.__build_route(route)
-        for scope, name, obj in nexter(self.app):
+        for path, obj in nexter(root):
             for the_self, r, res in merged_r:
 
                 def handle_cls(cls):
                     f = r.get(cls, None)
                     if f:
                         for ff in f:
-                            ret = ff(the_self, scope, name, obj, self.app)
+                            ret = ff(the_self, path, obj, self.app)
                             if res:
                                 res(the_self, ret)
 

@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .utils import from_iso8601, none_count
+from .utils import from_iso8601, none_count, deref
 import datetime
 import functools
 import six
@@ -41,7 +41,7 @@ class Time(object):
     def to_json(self):
         # according to
         #   https://github.com/wordnik/swagger-spec/issues/95
-        return self.isoformat()
+        return self.v.isoformat()
 
 
 class Date(Time):
@@ -90,17 +90,32 @@ class Array(list):
     """ for array type, or parameter when allowMultiple=True
     """
 
-    def __init__(self, item_type, v, unique=False):
+    def __init__(self):
         """ v: list or string_types
         """
         super(Array, self).__init__()
+        self.__collection_format = 'csv'
 
-        if isinstance(v, six.string_types):
-            v = json.loads(v)
+    def apply_with(self, obj, val, _):
+        """
+        """
+        if isinstance(val, six.string_types):
+            val = json.loads(val)
+
+        val = set(val) if obj.uniqueItems else val
+
+        if obj.items and len(val):
+            self.extend(map(functools.partial(prim_factory, obj.items), val))
+            val = []
 
         # init array as list
-        v = set(v) if unique else v
-        self.extend(map(functools.partial(prim_factory, item_type, multiple=False), v))
+        if obj.minItems and len(self) < obj.minItems:
+            raise ValueError('Array should be more than {0}, not {1}'.format(o.minItems, len(self)))
+        if obj.maxItems and len(self) > obj.maxItems:
+            raise ValueError('Array should be less than {0}, not {1}'.format(o.maxItems, len(self)))
+
+        self.__collection_format = getattr(obj, 'collectionFormat', 'csv')
+        return val
 
     def __str__(self):
         """ array primitives should be for 'path', 'header', 'query'.
@@ -109,10 +124,31 @@ class Array(list):
         :return: the converted string
         :rtype: str
         """
-        s = ''
-        for v in self:
-            s = ''.join([s, ',' if s else '', str(v)])
-        return s
+        def _conv(p):
+            s = ''
+            for v in self:
+                s = ''.join([s, p if s else '', str(v)])
+            return s
+    
+        if self.__collection_format == 'csv':
+            return _conv(',')
+        elif self.__collection_format == 'ssv':
+            return _conv(' ')
+        elif self.__collection_format == 'tsv':
+            return _conv('\t')
+        elif self.__collection_format == 'pipes':
+            return _conv('|')
+        else:
+            raise ValueError('Unsupported collection format when converting to str: {0}'.format(self.__collection_format))
+
+    def to_url(self):
+        """ special function for handling 'multi',
+        refer to Swagger 2.0, Parameter Object, collectionFormat
+        """
+        if self.__collection_format == 'multi':
+            return [str(s) for s in self]
+        else:
+            return [str(self)]
 
 
 class Model(dict):
@@ -123,39 +159,42 @@ class Model(dict):
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setitem__
 
-    def __init__(self, obj, val):
+    __name_key__ = '!!_name____!!'
+
+    def __init__(self, o):
         """ constructor
+        """
+        super(Model, self).__init__()
+
+    def apply_with(self, obj, val, ctx):
+        """ recursivly apply Schema object
 
         :param obj.Model obj: model object to instruct how to create this model
         :param val: things used to construct this model
         :type val: dict of json string in str or byte
         """
-        super(Model, self).__init__()
-
         if isinstance(val, six.string_types):
             val = json.loads(val)
         elif isinstance(val, six.binary_type):
             # TODO: encoding problem...
             val = json.loads(val.decode('utf-8'))
 
-        cur = obj
-        while cur != None:
-            # init model as dict
-            for k, v in six.iteritems(cur.properties):
-                to_update = val.get(k, None)
+        # init model as dict
+        for k, v in six.iteritems(obj.properties):
+            to_update = val.get(k, None)
 
-                # update discriminator with model's id
-                if cur.discriminator and cur.discriminator == k:
-                    to_update = obj.id
+            # update discriminator with model's name
+            if obj.discriminator and obj.discriminator == k:
+                to_update = ctx['name']
 
-                # check require properties of a Model
-                if to_update == None:
-                    if cur.required and k in cur.required:
-                        raise ValueError('Model:[' + str(cur.id) + '], require:[' + str(k) + ']')
+            # check require properties of a Model
+            if to_update == None:
+                if obj.required and k in obj.required:
+                    raise ValueError('Model:[' + str(obj.name) + '], require:[' + str(k) + ']')
 
-                self[k] = prim_factory(v, to_update)
+            self[k] = prim_factory(v, to_update)
 
-            cur = cur._extends_
+        return val
 
     def __eq__(self, other):
         """ equality operater, 
@@ -181,6 +220,9 @@ class Model(dict):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def __str__(self):
+        raise ValueError('Can\'t convert a model to str')
+
     def to_json(self):
         """ convert to json string
         
@@ -196,22 +238,6 @@ class Model(dict):
                 continue
             ret.update({k: v})
         return ret
-
-
-class Void(object):
-    """ for type void
-    """
-    def __init__(self, _, v):
-        pass
-
-    def __eq__(self, v):
-        return v == None
-
-    def __str__(self):
-        return ''
-
-    def to_json(self):
-        return None
 
 
 class File(object):
@@ -248,26 +274,62 @@ class PrimJSONEncoder(json.JSONEncoder):
             return obj.to_json()
         return json.JSONEncoder.default(self, obj)
 
-def create_numeric(obj, v, t):
-    # truncate based on min/max
-    if obj.minimum and v < obj.minimum:
-        raise ValueError('below minimum: {0}, {1}'.format(v, obj.minimum))
-    if obj.maximum and v > obj.maximum:
-        raise ValueError('above maximum: {0}, {1}'.format(v, obj.maximum))
- 
-    return t(v)
+
+def apply_with(ret, obj):
+    """ helper function for Number, Integer, String.
+    These types didn't have a class, so can't have apply_with
+    member function.
+
+    Their apply_with would be implemented here.
+    """
+    def _comp_(vv, o, is_max):
+        n = getattr(o, 'maximum' if is_max else 'minimum', None)
+        if n == None:
+            return
+
+        _eq = getattr(o, 'exclusiveMaximum' if is_max else 'exclusiveMinimum', False)
+        if is_max:
+            to_raise = vv >= n if _eq else vv > n
+        else:
+            to_raise = vv <= n if _eq else vv < n
+
+        if to_raise:
+            raise ValueError('condition failed: {0}, v:{1} compared to o:{2}'.format('maximum' if is_max else 'minimum', vv, n))
+
+    if isinstance(ret, six.integer_types):
+        _comp_(ret, obj, False)
+        _comp_(ret, obj, True)
+    elif isinstance(ret, six.string_types):
+        if obj.enum and ret not in obj.enum:
+            raise ValueError('{0} is not a valid enum for {1}'.format(ret, str(obj.enum)))
+        if obj.maxLength and len(ret) > obj.maxLength:
+            raise ValueError('[{0}] is longer than {1} characters'.format(ret, str(obj.maxLength)))
+        if obj.minLength and len(ret) < obj.minLength:
+            raise ValueError('[{0}] is shoter than {1} characters'.format(ret, str(obj.minLength)))
+        # TODO: handle pattern
+    elif isinstance(ret, float):
+        _comp_(ret, obj, False)
+        _comp_(ret, obj, True)
+        if obj.multipleOf and ret % obj.multipleOf != 0:
+            raise ValueError('{0} should be multiple of {1}'.format(ret, obj.multipleOf))
+    else:
+        raise ValueError('Unknown Type: {0}'.format(type(ret)))
+
 
 def create_int(obj, v):
-    return create_numeric(obj, v, int)
+    r = int(v)
+    apply_with(r, obj)
+    return r
 
 def create_float(obj, v):
-    return create_numeric(obj, v, float)
+    r = float(v)
+    apply_with(r, obj)
+    return r
 
 def create_str(obj, v):
-    if obj.enum and v not in obj.enum:
-        raise ValueError('{0} is not a valid enum for {1}'.format(v, str(obj.enum)))
-
-    return str(v)
+    r = str(v)
+    apply_with(r, obj)
+    return r
 
 # refer to 4.3.1 Primitives in v1.2
 prim_obj_map = {
@@ -291,13 +353,11 @@ prim_obj_map = {
     ('boolean', ''): bool,
     ('boolean', None): bool,
 
-    # File
-    ('File', ''): File,
-    ('File', None): File,
+    # file
+    ('file', ''): File,
+    ('file', None): File,
 
-    # void
-    ('void', ''): Void,
-    ('void', None): Void,
+    # TODO: add support for email, uuid
 };
 
 
@@ -306,43 +366,82 @@ prim_types = [
     'number',
     'string',
     'boolean',
-    'void',
-    'File',
+    'file',
     'array',
 ]
 
-def prim_factory(obj, v, multiple=False):
+
+def prim_factory(obj, val, ctx=None):
     """ factory function to create primitives
 
-    :param DataTypeObj obj: spec to construct primitives
-    :param v: value to construct primitives
-    :param bool multiple: if multiple value is enabled.
+    :param pyswagger.spec.v2_0.objects.Schema obj: spec to construct primitives
+    :param val: value to construct primitives
 
     :return: the created primitive
     """
-    v = obj.defaultValue if v == None else v
-    if v == None:
+    val = obj.default if val == None else val
+    if val == None:
         return None
 
-    # wrap 'allowmultiple' date with array
-    if multiple and obj.type != 'array' and isinstance(v, (tuple, list)):
-        return Array(obj, v, unique=False);
+    obj = deref(obj)
+    ctx = {} if ctx == None else ctx
+    if 'name' not in ctx and hasattr(obj, 'name'):
+        ctx['name'] = obj.name
 
-    if obj.ref:
-        return obj.ref._prim_(v)
-    elif isinstance(obj.type, six.string_types):
-        if obj.type == 'array':
-            return Array(obj.items, v, unique=obj.uniqueItems)
+    ret = None
+    if obj.type:
+        if isinstance(obj.type, six.string_types):
+            if obj.type == 'array':
+                ret = Array()
+                val = ret.apply_with(obj, val, ctx)
+            else:
+                t = prim_obj_map.get((obj.type, obj.format), None)
+                if not t:
+                    raise ValueError('Can\'t resolve type from:(' + str(obj.type) + ', ' + str(obj.format) + ')')
+
+                ret = t(obj, val)
         else:
-            t = prim_obj_map.get((obj.type, obj.format), None)
-            if not t:
-                raise ValueError('Can\'t resolve type from:(' + str(obj.type) + ', ' + str(obj.format) + ')')
+            raise ValueError('obj.type should be str, not {0}'.format(type(o.type)))
+    elif obj.properties and len(obj.properties):
+        ret = Model(obj)
+        val = ret.apply_with(obj, val, ctx)
 
-            return t(obj, v)
+    if isinstance(ret, (Date, Datetime, Byte, File)):
+        # it's meanless to handle allOf for these types.
+        return ret
 
-    else:
-        # obj.type is a reference to a Model
-        return obj.type._prim_(v)
+    is_member = hasattr(ret, 'apply_with')
+    def _apply(r, o, v, c):
+        if is_member == True:
+            v = r.apply_with(o, v, c)
+        else:
+            apply_with(r, o)
+
+        return v
+
+    # handle allOf for Schema Object
+    allOf = getattr(obj, 'allOf', None)
+    if allOf:
+        not_applied = []
+        for a in allOf:
+            a = deref(a)
+            if not ret:
+                # try to find right type for this primitive.
+                ret = prim_factory(a, val, ctx)
+                is_member = hasattr(ret, 'apply_with')
+            else:
+                val = _apply(ret, a, val, ctx)
+
+            if not ret:
+                # if we still can't determine the type,
+                # keep this Schema object for later use.
+                not_applied.append(a)
+        if ret:
+            for a in not_applied:
+                val = _apply(ret, a, val, ctx)
+
+    return ret
+
 
 def is_primitive(obj):
     """ check if a given object refering to a primitive

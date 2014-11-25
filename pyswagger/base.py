@@ -1,6 +1,8 @@
 from __future__ import absolute_import
+from .utils import jp_compose
 import six
 import weakref
+import copy
 
 
 class ContainerType:
@@ -133,6 +135,8 @@ class BaseObj(object):
     __swagger_rename__ = {}
 
     # list of names of fields, we will skip fields not in this list.
+    # field format:
+    # - tuple(string, default-value): a field name with default value
     __swagger_fields__ = []
 
     def __init__(self, ctx):
@@ -150,26 +154,44 @@ class BaseObj(object):
             raise TypeError('should provide args[0] as Context, not: ' + ctx.__class__.__name__)
 
         # handle fields
-        for field in self.__swagger_fields__:
-            self.update_field(field, ctx._obj.get(field, None))
+        for name, default in self.__swagger_fields__:
+            setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
+
+        self._assign_parent(ctx)
+
+    def _assign_parent(self, ctx):
+        """ parent assignment, internal usage only
+        """
+        def _assign(cls, obj):
+            if obj == None:
+                return
+
+            if isinstance(obj, cls.__swagger_ref_object__):
+                obj._parent__ = self
+            else:
+                raise TypeError('Object is not instance of {0} but {1}'.format(cls.__swagger_ref_object__, type(obj)))
 
         # set self as childrent's parent
-        for name, _, cls in ctx.__swagger_child__:
+        for name, ct, ctx in ctx.__swagger_child__:
             obj = getattr(self, name)
+            if obj == None:
+                continue
 
-            def assign_parent(obj, cls, parent):
-                if isinstance(obj, list):
-                    for v in obj:
-                        assign_parent(v, cls, parent)
-                elif isinstance(obj, cls.__swagger_ref_object__):
-                    obj._parent__ = parent
-
-            if isinstance(obj, dict):
-                # Objects from NamedContext
+            # iterate through children by ContainerType
+            if ct == None:
+                _assign(ctx, obj)
+            elif ct == ContainerType.list_:
+                for v in obj:
+                    _assign(ctx, v)
+            elif ct == ContainerType.dict_:
                 for v in obj.values():
-                    assign_parent(v, cls, self)
+                    _assign(ctx, v)
+            elif ct == ContainerType.dict_of_list_:
+                for v in obj.values():
+                    for vv in v:
+                        _assign(ctx, vv)
             else:
-                assign_parent(obj, cls, self)
+                raise ValueError('Unknown ContainerType: {0}'.format(ct))
 
 
     def get_private_name(self, f):
@@ -186,7 +208,27 @@ class BaseObj(object):
         :param str f: name of field to be updated.
         :param obj: value of field to be updated.
         """
-        setattr(self, self.get_private_name(f), obj)
+        n = self.get_private_name(f)
+        if not hasattr(self, n):
+            raise AttributeError('{0} is not in {1}'.format(n, self.__class__.__name__))
+
+        setattr(self, n, obj)
+
+    def resolve(self, ts):
+        """ resolve a list of tokens to an child object
+        """
+        obj = self
+        while len(ts) > 0:
+            t = ts.pop(0)
+
+            if issubclass(obj.__class__, BaseObj):
+                obj = getattr(obj, t)
+            elif isinstance(obj, list):
+                obj = obj[int(t)]
+            elif isinstance(obj, dict):
+                obj = obj[t]
+
+        return obj
 
     @property
     def _parent_(self):
@@ -212,9 +254,9 @@ class BaseObj(object):
                 return
 
             if not rename:
-                ret.extend(f)
+                ret.extend([n for n, _ in f])
             else:
-                for n in f:
+                for n, _ in f:
                     new_n = rename.get(n, None)
                     ret.append(new_n) if new_n else ret.append(n)
 
@@ -230,24 +272,24 @@ class BaseObj(object):
     def _children_(self):
         """ get children objects
 
-        :rtype: a list of tuples(name, child_object)
+        :rtype: a dict of children {child_name: child_object}
         """
-        ret = []
+        ret = {}
         names = self._field_names_
 
         def down(name, obj):
             if isinstance(obj, BaseObj):
                 if not isinstance(obj, weakref.ProxyTypes):
-                    ret.append((name, obj))
+                    ret[name] = obj
             elif isinstance(obj, list):
-                for v in obj:
-                    down(name, v)
+                for i, v in zip(range(len(obj)), obj):
+                    down(jp_compose(str(i), name), v)
             elif isinstance(obj, dict):
                 for k, v in six.iteritems(obj):
-                    down(k, v)
+                    down(jp_compose(k, name), v)
 
         for n in names:
-            down(None, getattr(self, n))
+            down(jp_compose(n), getattr(self, n))
 
         return ret
 
@@ -267,18 +309,27 @@ class FieldMeta(type):
         and create those fields.
         """
         def init_fields(fields, rename):
-            for f in fields:
-                f = rename[f] if f in rename.keys() else f
-                spc[f] = property(_method_(f))
+            for name, _ in fields:
+                name = rename[name] if name in rename.keys() else name
+                spc[name] = property(_method_(name))
 
         rename = spc['__swagger_rename__'] if '__swagger_rename__' in spc.keys() else {}
         if '__swagger_fields__' in spc.keys():
             init_fields(spc['__swagger_fields__'], rename)
 
         for b in bases:
-            fields = b.__swagger_fields__ if hasattr(b, '__swagger_fields__') else {}
+            fields = b.__swagger_fields__ if hasattr(b, '__swagger_fields__') else []
             rename = b.__swagger_rename__ if hasattr(b, '__swagger_rename__') else {}
             init_fields(fields, rename)
 
         return type.__new__(metacls, name, bases, spc)
 
+
+class NullContext(Context):
+    """ black magic to initialize BaseObj
+    """
+
+    _obj = None
+
+    def __init__(self):
+        super(NullContext, self).__init__(None, None)
