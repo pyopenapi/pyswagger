@@ -25,12 +25,13 @@ class TornadoClient(BaseClient):
         req, resp = super(TornadoClient, self).request(req_and_resp, opt)
 
         req.prepare(scheme=self.prepare_schemes(req).pop(), handle_files=True)
+        req._patch(opt)
 
         url = url_concat(req.url, req.query)
 
         rq = HTTPRequest(
             url=url,
-            method=req.method,
+            method=req.method.upper(),
             headers=req.header,
             body=req.data
             )

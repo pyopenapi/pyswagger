@@ -367,7 +367,7 @@ class BaseClient(object):
             raise ValueError('No schemes available: {0}'.format(req.schemes))
         return ret
 
-    def request(self, req_and_resp, opt={}):
+    def request(self, req_and_resp, opt):
         """ preprocess before performing a request, usually some patching.
         authorization also applied here.
 
@@ -377,9 +377,6 @@ class BaseClient(object):
         :rtype: SwaggerRequest, SwaggerResponse
         """
         req, resp = req_and_resp
-
-        # handle options
-        req._patch(opt)
 
         # apply authorizations
         if self.__security:

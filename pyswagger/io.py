@@ -28,7 +28,7 @@ class SwaggerRequest(object):
 
         self.__op = op
         self.__p = params
-        self.__url = ''
+        self.__url = self.__op.url
         self.__header = {}
 
         # update 'accept' header section
@@ -73,7 +73,7 @@ class SwaggerRequest(object):
         body = io.BytesIO()
         w = codecs.getwriter(encoding)
 
-        for k, v in six.iteritems(self.__p['formData']):
+        for k, v in self.__p['formData']:
             body.write(six.b('--{0}\r\n'.format(boundary)))
 
             w(body).write('Content-Disposition: form-data; name="{0}"'.format(k))
@@ -139,7 +139,7 @@ class SwaggerRequest(object):
         """
 
         # combine path parameters into url
-        self.__url = ''.join([scheme, '://', self.__op.url.format(**self.__p['path'])])
+        self.__url = ''.join([scheme, '://', self.__url.format(**self.__p['path'])])
 
         # header parameters
         self.__header.update(self.__p['header'])
@@ -269,17 +269,14 @@ class SwaggerResponse(object):
         if status != None:
             self.__status = status
 
-        r = deref(self.__op.responses.get(self.status, None))
+        r = deref(self.__op.responses.get(self.__status, None))
         r = deref(self.__op.responses.get('default', None)) if r == None else r
 
         if raw != None:
-            if not self.status:
+            if not self.__status:
                 raise Exception('Update status code before assigning raw data')
 
-            if r.schema == None:
-                if raw:
-                    raise Exception('updating response when schema is None')
-            else:
+            if r.schema:
                 self.__raw = raw
 
                 # update data from Opeartion if succeed else from responseMessage.responseModel
@@ -289,7 +286,11 @@ class SwaggerResponse(object):
             for k, v in six.iteritems(header):
                 if k in r.headers:
                     v = r.headers[k]._prim_(v)
-                self.__header[k] = v
+
+                if k in self.__header:
+                    self.__header[k].extend(v)
+                else:
+                    self.__header[k] = [v]
 
         return self
 

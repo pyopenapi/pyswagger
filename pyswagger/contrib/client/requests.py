@@ -23,6 +23,7 @@ class Client(BaseClient):
 
         # apply request-related options before preparation.
         req.prepare(scheme=self.prepare_schemes(req).pop(), handle_files=False)
+        req._patch(opt)
 
         # prepare for uploaded files
         file_obj = {}
