@@ -68,7 +68,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         self.assertTrue('default' in o.responses)
 
         r = o.responses['default']
-        self.assertEqual(r.headers, None)
+        self.assertEqual(r.headers, {})
         self.assertEqual(r.schema.type, 'array')
         self.assertEqual(getattr(r.schema.items, '$ref'), '#/definitions/pet!##!Pet')
 
