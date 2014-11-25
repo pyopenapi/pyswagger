@@ -189,7 +189,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
             i = getattr(p, 'in')
             if i in ('query', 'formData'):
                 if isinstance(c, primitives.Array):
-                    params[i].extend([tuple(p.name, v) for v in c.to_url()])
+                    params[i].extend([tuple([p.name, v]) for v in c.to_url()])
                 else:
                     params[i].append((p.name, str(c),))
             else:

@@ -52,7 +52,7 @@ class PatchObject(object):
         '#/definitions' and with 'properties'
         """
         # TODO: test case
-        if path.startswith('#/definitions') and hasattr(obj, 'properties'):
+        if path.startswith('#/definitions'):
             last_token = jp_split(path)[-1]
             if app.version == '1.2':
                 obj.update_field('name', scope_split(last_token)[-1])

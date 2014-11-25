@@ -1,5 +1,5 @@
 from pyswagger import SwaggerApp, SwaggerSecurity
-from .utils import get_test_data_folder
+from ..utils import get_test_data_folder
 import unittest
 
 
