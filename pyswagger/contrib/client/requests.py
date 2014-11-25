@@ -34,7 +34,7 @@ class Client(BaseClient):
                 file_obj[k] = (v.filename, f)
 
         rq = Request(
-            method=req.method,
+            method=req.method.upper(),
             url=req.url,
             params=req.query,
             data=req.data,
