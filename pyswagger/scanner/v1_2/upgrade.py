@@ -216,6 +216,9 @@ class Upgrade(object):
                 o.update_field('collectionFormat', 'csv')
                 o.update_field('uniqueItems', obj.uniqueItems)
                 o.update_field('items', convert_items(obj))
+                if obj.defaultValue:
+                    o.update_field('default', [obj.defaultValue])
+                o.items.update_field('enum', obj.enum)
             else:
                 o.update_field('type', obj.type.lower())
                 o.update_field('format', obj.format)
