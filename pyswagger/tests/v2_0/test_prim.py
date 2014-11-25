@@ -1,5 +1,5 @@
 from pyswagger import SwaggerApp, primitives
-from .utils import get_test_data_folder
+from ..utils import get_test_data_folder
 from pyswagger.spec.v2_0 import objects
 from pyswagger.utils import jp_compose
 import unittest
