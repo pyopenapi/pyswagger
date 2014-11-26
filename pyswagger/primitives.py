@@ -79,7 +79,7 @@ class Datetime(Time):
         """
         self.v = None
         if isinstance(v, float):
-            self.v = datetime.datetime.fromtimestamp(v)
+            self.v = datetime.datetime.utcfromtimestamp(v)
         elif isinstance(v, datetime.datetime):
             self.v = v
         elif isinstance(v, six.string_types):
