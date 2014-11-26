@@ -217,6 +217,10 @@ class BaseObj(object):
     def resolve(self, ts):
         """ resolve a list of tokens to an child object
         """
+        # TODO: test case
+        if isinstance(ts, six.string_types):
+            ts = [ts]
+
         obj = self
         while len(ts) > 0:
             t = ts.pop(0)
