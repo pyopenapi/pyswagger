@@ -4,6 +4,7 @@ from pyswagger.spec.v2_0 import objects
 from pyswagger.utils import jp_compose
 import unittest
 import datetime
+import six
 
 
 class SchemaTestCase(unittest.TestCase):
@@ -118,7 +119,7 @@ class SchemaTestCase(unittest.TestCase):
 
         bv = b._prim_("BBBBB")
         self.assertEqual(str(bv), "BBBBB")
-        self.assertEqual(bv.to_json(), "QkJCQkI=")
+        self.assertEqual(bv.to_json(), six.b("QkJCQkI="))
 
     def test_date(self):
         """ test date """
