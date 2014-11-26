@@ -81,7 +81,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         """ Authorization -> Security Scheme
         """
         s = app.root.securityDefinitions
-        self.assertEqual(s.keys(), ['oauth2'])
+        self.assertEqual(list(s.keys()), ['oauth2'])
 
         ss = s['oauth2']
         self.assertEqual(ss.type, 'oauth2')
@@ -104,17 +104,15 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
 
         # form
         o = app.root.paths['/pet/uploadImage'].post
-        p = sorted([p for p in o.parameters if getattr(p, 'in') == 'formData'])[0]
+        p = [p for p in o.parameters if getattr(p, 'in') == 'formData' and p.type == 'string'][0]
         self.assertEqual(p.name, 'additionalMetadata')
         self.assertEqual(p.required, False)
-        self.assertEqual(p.type, 'string')
  
         # file
         o = app.root.paths['/pet/uploadImage'].post
-        p = sorted([p for p in o.parameters if getattr(p, 'in') == 'formData'])[1]
+        p = [p for p in o.parameters if getattr(p, 'in') == 'formData' and p.type == 'file'][0]
         self.assertEqual(p.name, 'file')
         self.assertEqual(p.required, False)
-        self.assertEqual(p.type, 'file')
 
     def test_model(self):
         """ Model -> Definition
