@@ -4,6 +4,7 @@ from pyswagger.spec.v2_0 import objects
 from pyswagger.utils import jp_compose
 import unittest
 import datetime
+import six
 
 
 class SchemaTestCase(unittest.TestCase):
@@ -118,7 +119,7 @@ class SchemaTestCase(unittest.TestCase):
 
         bv = b._prim_("BBBBB")
         self.assertEqual(str(bv), "BBBBB")
-        self.assertEqual(bv.to_json(), "QkJCQkI=")
+        self.assertEqual(bv.to_json(), six.b("QkJCQkI="))
 
     def test_date(self):
         """ test date """
@@ -138,13 +139,13 @@ class SchemaTestCase(unittest.TestCase):
         d = self.app.resolve("#/definitions/date-time")
 
         # test input of constructor
-        self.assertEqual(str(d._prim_(float(0))), "1970-01-01T08:00:00")
-        self.assertEqual(str(d._prim_(datetime.datetime.fromtimestamp(0))), "1970-01-01T08:00:00")
-        self.assertEqual(str(d._prim_(datetime.datetime.fromtimestamp(0).isoformat())), "1970-01-01T08:00:00")
+        self.assertEqual(str(d._prim_(float(0))), "1970-01-01T00:00:00")
+        self.assertEqual(str(d._prim_(datetime.datetime.utcfromtimestamp(0))), "1970-01-01T00:00:00")
+        self.assertEqual(str(d._prim_(datetime.datetime.utcfromtimestamp(0).isoformat())), "1970-01-01T00:00:00")
 
         # to_json
         dv = d._prim_(float(0))
-        self.assertEqual(dv.to_json(), "1970-01-01T08:00:00")
+        self.assertEqual(dv.to_json(), "1970-01-01T00:00:00")
 
 
 class HeaderTestCase(unittest.TestCase):

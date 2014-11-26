@@ -229,7 +229,7 @@ def get_dict_as_tuple(d):
     and return it as tuple.
     """
     # TODO: test case
-    for k, v in d.iteritems():
+    for k, v in six.iteritems(d):
         return k, v
     return None
 

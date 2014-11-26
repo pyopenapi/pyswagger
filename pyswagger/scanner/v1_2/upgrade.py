@@ -146,7 +146,7 @@ class Upgrade(object):
         # looking for it in resource object.
         _auth = obj.authorizations if obj.authorizations and len(obj.authorizations) > 0 else obj._parent_.authorizations
         if _auth:
-            for name, scopes in _auth.iteritems():
+            for name, scopes in six.iteritems(_auth):
                 o.security[name] = [v.scope for v in scopes]
 
         # Operation return value
@@ -247,7 +247,7 @@ class Upgrade(object):
             self.__swagger.definitions[s] = o
 
         props = {}
-        for name, prop in obj.properties.iteritems():
+        for name, prop in six.iteritems(obj.properties):
             props[name] = convert_schema_from_datatype(prop, scope)
         o.update_field('properties', props)
         o.update_field('required', obj.required)

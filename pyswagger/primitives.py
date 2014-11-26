@@ -14,15 +14,17 @@ class Byte(object):
     def __init__(self, _, v):
         """ constructor
 
-        :param str v: only accept six.string_types
+        :param str v: accept six.string_types, six.binary_type
         """
-        if isinstance(v, six.string_types):
+        if isinstance(v, six.binary_type):
             self.v = v
+        elif isinstance(v, six.string_types):
+            self.v = v.encode('utf-8')
         else:
             raise ValueError('Unsupported type for Byte: ' + str(type(v)))
 
     def __str__(self):
-        return self.v
+        return self.v.decode('utf-8')
 
     def to_json(self):
         """ according to https://github.com/wordnik/swagger-spec/issues/50,
@@ -77,7 +79,7 @@ class Datetime(Time):
         """
         self.v = None
         if isinstance(v, float):
-            self.v = datetime.datetime.fromtimestamp(v)
+            self.v = datetime.datetime.utcfromtimestamp(v)
         elif isinstance(v, datetime.datetime):
             self.v = v
         elif isinstance(v, six.string_types):
