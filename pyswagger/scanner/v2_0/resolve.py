@@ -6,7 +6,27 @@ from ...spec.v2_0.objects import (
     Response,
     PathItem,
     )
-from ...utils import jp_split, jp_compose
+from ...utils import jp_compose
+
+
+# TODO: test case
+
+def _resolve(obj, app, prefix):
+    r = getattr(obj, '$ref')
+    if r == None:
+        return
+
+    try:
+        ro = app.resolve(r)
+    except Exception:
+        ro = app.resolve(jp_compose(r, base=prefix)) 
+
+    if not ro:
+        raise ReferenceError('Unable to resolve: {0}'.format(r))
+    if ro.__class__ != obj.__class__:
+        raise TypeError('Referenced Type mismatch: {0}'.format(r))
+
+    obj.update_field('ref_obj', ro)
 
 
 class Resolve(object):
@@ -14,23 +34,17 @@ class Resolve(object):
 
     class Disp(Dispatcher): pass
 
+
     @Disp.register([Schema, Parameter, Response, PathItem])
-    def _resolve(self, path, obj, app):
-        r = getattr(obj, '$ref')
-        if r == None:
-            return
+    def _schema(self, _, obj, app):
+        _resolve(obj, app, '#/definitions')
 
-        try:
-            ro = app.resolve(r)
-        except Exception:
-            ps = jp_split(path)[:2]
-            ps.append(r)
-            ro = app.resolve(jp_compose(ps))
+    def _parameter(self, _, obj, app):
+        _resolve(obj, app, '#/parameters')
 
-        if not ro:
-            raise ReferenceError('Unable to resolve: {0}'.format(r))
-        if ro.__class__ != obj.__class__:
-            raise TypeError('Referenced Type mismatch: {0}'.format(r))
+    def _response(self, _, obj, app):
+        _resolve(obj, app, '#/responses')
 
-        obj.update_field('ref_obj', ro)
+    def _path_item(self, _, obj, app):
+        _resolve(obj, app, '#/paths')
 
