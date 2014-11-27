@@ -234,6 +234,14 @@ class BaseObj(object):
 
         return obj
 
+    def merge(self, other):
+        """ merge properties from other object
+        """
+        for name, _ in self.__swagger_fields__:
+            v = getattr(other, name)
+            if v and getattr(self, name) == None:
+                self.update_field(name, v)
+
     @property
     def _parent_(self):
         """ get parent object

@@ -83,3 +83,24 @@ class SwaggerBaseTestCase(unittest.TestCase):
         o2 = TestObj(base.NullContext())
         self.assertTrue(id(o1.a) != id(o2.a))
 
+    def test_merge(self):
+        """ test merge function """
+        tmp = {'t': {}}
+        obj1 = {'a': [{}, {}, {}], 'd': {}}
+        obj2 = {'a': [{}]}
+
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(obj1)
+        o1 = tmp['t']
+
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(obj2)
+        o2 = tmp['t']
+
+        self.assertTrue(len(o2.a), 1)
+        self.assertEqual(o2.d, None)
+
+        o2.merge(o1)
+        self.assertTrue(len(o2.a), 1)
+        self.assertTrue(isinstance(o2.d, ChildObj))
+
