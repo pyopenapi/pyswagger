@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from pyswagger import base
 import unittest
+import weakref
 import six
 
 
@@ -16,6 +17,7 @@ class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
         ('b', {}),
         ('c', {}),
         ('d', None),
+        ('f', None)
     ]
 
 class TestContext(base.Context):
@@ -86,7 +88,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
     def test_merge(self):
         """ test merge function """
         tmp = {'t': {}}
-        obj1 = {'a': [{}, {}, {}], 'd': {}}
+        obj1 = {'a': [{}, {}, {}], 'd': {}, 'f': ''}
         obj2 = {'a': [{}]}
 
         with TestContext(tmp, 't') as ctx:
@@ -102,5 +104,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
 
         o2.merge(o1)
         self.assertTrue(len(o2.a), 1)
+        self.assertEqaul(o2.f, '')
         self.assertTrue(isinstance(o2.d, ChildObj))
+        self.assertTrue(isinstance(o2.d, weakref.ProxyTypes))
 

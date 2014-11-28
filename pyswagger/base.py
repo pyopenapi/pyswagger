@@ -240,7 +240,13 @@ class BaseObj(object):
         for name, _ in self.__swagger_fields__:
             v = getattr(other, name)
             if v and getattr(self, name) == None:
-                self.update_field(name, v)
+                if isinstance(v, weakref.ProxyTypes):
+                    # TODO: test case
+                    self.update_field(name, v)
+                elif isinstance(v, BaseObj):
+                    self.update_field(name, weakref.proxy(v))
+                else:
+                    self.update_field(name, v)
 
     @property
     def _parent_(self):
