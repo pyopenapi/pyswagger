@@ -10,11 +10,16 @@ from ...utils import jp_compose
 
 
 # TODO: test case
+# TODO: cyclic detection
+
+def is_resolved(obj):
+    return getattr(obj, '$ref') == None or obj.ref_obj != None
 
 def _resolve(obj, app, prefix):
-    r = getattr(obj, '$ref')
-    if r == None:
+    if is_resolved(obj):
         return
+
+    r = getattr(obj, '$ref')
 
     try:
         ro = app.resolve(r)
@@ -28,6 +33,23 @@ def _resolve(obj, app, prefix):
 
     obj.update_field('ref_obj', ro)
 
+def _merge(obj, app, prefix):
+    """ resolve $ref as ref_obj, and merge ref_obj to self.
+    This operation should be carried in a cascade manner.
+    """
+
+    cur = obj
+    to_resolve = []
+    while not is_resolved(cur):
+        _resolve(cur, app, prefix)
+
+        to_resolve.append(cur)
+        cur = cur.ref_obj if cur.ref_obj else cur
+
+    while (len(to_resolve)):
+        o = to_resolve.pop()
+        o.merge(o.ref_obj)
+
 
 class Resolve(object):
     """ pre-resolve '$ref' """
@@ -35,16 +57,26 @@ class Resolve(object):
     class Disp(Dispatcher): pass
 
 
-    @Disp.register([Schema, Parameter, Response, PathItem])
+    @Disp.register([Schema])
     def _schema(self, _, obj, app):
         _resolve(obj, app, '#/definitions')
 
+    @Disp.register([Parameter])
     def _parameter(self, _, obj, app):
         _resolve(obj, app, '#/parameters')
 
+    @Disp.register([Response])
     def _response(self, _, obj, app):
         _resolve(obj, app, '#/responses')
 
+    @Disp.register([PathItem])
     def _path_item(self, _, obj, app):
-        _resolve(obj, app, '#/paths')
+
+        # $ref in PathItem is 'merge', not 'replace'
+        # we need to merge properties of others if missing
+        # in current object.
+
+        # TODO: test case
+        _merge(obj, app, '#/paths')
+
 
