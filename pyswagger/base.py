@@ -217,6 +217,10 @@ class BaseObj(object):
     def resolve(self, ts):
         """ resolve a list of tokens to an child object
         """
+        # TODO: test case
+        if isinstance(ts, six.string_types):
+            ts = [ts]
+
         obj = self
         while len(ts) > 0:
             t = ts.pop(0)
@@ -229,6 +233,21 @@ class BaseObj(object):
                 obj = obj[t]
 
         return obj
+
+    def merge(self, other):
+        """ merge properties from other object,
+        only merge from 'not None' to 'None'.
+        """
+        for name, _ in self.__swagger_fields__:
+            v = getattr(other, name)
+            if v != None and getattr(self, name) == None:
+                if isinstance(v, weakref.ProxyTypes):
+                    # TODO: test case
+                    self.update_field(name, v)
+                elif isinstance(v, BaseObj):
+                    self.update_field(name, weakref.proxy(v))
+                else:
+                    self.update_field(name, v)
 
     @property
     def _parent_(self):
