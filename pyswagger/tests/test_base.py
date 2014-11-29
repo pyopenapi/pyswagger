@@ -101,10 +101,11 @@ class SwaggerBaseTestCase(unittest.TestCase):
 
         self.assertTrue(len(o2.a), 1)
         self.assertEqual(o2.d, None)
+        self.assertEqual(o2.f, None)
 
         o2.merge(o1)
         self.assertTrue(len(o2.a), 1)
-        self.assertEqaul(o2.f, '')
+        self.assertEqual(o2.f, '')
         self.assertTrue(isinstance(o2.d, ChildObj))
         self.assertTrue(isinstance(o2.d, weakref.ProxyTypes))
 

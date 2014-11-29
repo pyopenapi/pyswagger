@@ -235,11 +235,12 @@ class BaseObj(object):
         return obj
 
     def merge(self, other):
-        """ merge properties from other object
+        """ merge properties from other object,
+        only merge from 'not None' to 'None'.
         """
         for name, _ in self.__swagger_fields__:
             v = getattr(other, name)
-            if v and getattr(self, name) == None:
+            if v != None and getattr(self, name) == None:
                 if isinstance(v, weakref.ProxyTypes):
                     # TODO: test case
                     self.update_field(name, v)
