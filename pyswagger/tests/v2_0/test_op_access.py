@@ -31,3 +31,9 @@ class OperationAccessTestCase(unittest.TestCase):
         _check(self, self.app.op['pet', 'addPet'])
         _check(self, self.app.op['addPet'])
 
+    def test_shortcut(self):
+        """
+        """
+        _check(self, self.app.s('/pet').post)
+        _check(self, self.app.s('/pet', t=SwaggerApp.sc_path).post)
+

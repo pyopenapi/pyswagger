@@ -9,6 +9,7 @@ from .scanner.v2_0 import AssignParent, Resolve, PatchObject
 from .utils import (
     ScopeDict,
     import_string,
+    jp_compose,
     jp_split,
     get_dict_as_tuple,
     nv_tuple_list_replace
@@ -25,6 +26,13 @@ class SwaggerApp(object):
     This object is tended to be used in read-only manner. Therefore,
     all accessible attributes are almost read-only properties.
     """
+
+    sc_path = 1
+
+    _shortcut_ = {
+        sc_path: '#/paths'
+    }
+
     def __init__(self):
         """ constructor
         """
@@ -257,11 +265,17 @@ class SwaggerApp(object):
         obj = self.root.resolve(jp_split(path)[1:]) # heading element is #, mapping to self.root
 
         if obj == None:
-            raise ValueError('Unable to resolve path, remain path: [{0}]'.format(ts))
+            raise ValueError('Unable to resolve path, [{0}]'.format(path))
 
         if isinstance(obj, (six.string_types, int, list, dict)):
             return obj
         return weakref.proxy(obj)
+
+    def s(self, p, t=sc_path):
+        """ shortcut to access objects
+        """
+        # TODO: test case
+        return self.resolve(jp_compose(p, base=self._shortcut_[t]))
 
 
 class SwaggerSecurity(object):
