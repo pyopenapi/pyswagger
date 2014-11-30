@@ -11,6 +11,7 @@ from ...utils import jp_compose
 
 # TODO: test case
 # TODO: cyclic detection
+# TODO: $ref to external docs
 
 def is_resolved(obj):
     return getattr(obj, '$ref') == None or obj.ref_obj != None

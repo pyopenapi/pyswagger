@@ -6,6 +6,7 @@ import six
 import base64
 import json
 
+# TODO: add type: 'object'
 
 class Byte(object):
     """ for string type, byte format
