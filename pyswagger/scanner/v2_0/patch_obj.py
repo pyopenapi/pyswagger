@@ -16,12 +16,12 @@ class PatchObject(object):
 
     @Disp.register([Operation])
     def _operation(self, path, obj, app):
-        # TODO: test case
+        """
+        """
         # produces/consumes
         obj.update_field('produces', app.root.produces if len(obj.produces) == 0 else obj.produces)
         obj.update_field('consumes', app.root.consumes if len(obj.consumes) == 0 else obj.consumes)
 
-        # TODO: test case
         # combine parameters from PathItem
         for p in obj._parent_.parameters:
             for pp in obj.parameters:
@@ -30,13 +30,13 @@ class PatchObject(object):
             else:
                 obj.parameters.append(p)
 
-        # TODO: test case
         # schemes
         obj.update_field('schemes', app.schemes if len(obj.schemes) == 0 else obj.schemes)
 
     @Disp.register([PathItem])
     def _path_item(self, path, obj, app):
-        # TODO: test case
+        """
+        """
         url = app.root.host + app.root.basePath + jp_split(path)[-1]
         for c in PathItemContext.__swagger_child__:
             o = getattr(obj, c[0])
@@ -51,7 +51,6 @@ class PatchObject(object):
         """ fulfill 'name' field for objects under
         '#/definitions' and with 'properties'
         """
-        # TODO: test case
         if path.startswith('#/definitions'):
             last_token = jp_split(path)[-1]
             if app.version == '1.2':
