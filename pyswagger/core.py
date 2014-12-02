@@ -218,13 +218,6 @@ class SwaggerApp(object):
         self.__m = ScopeDict(self.__root.definitions)
 
     @classmethod
-    def _create_(kls, url, getter=None):
-        """ for backward compatible, for later version,
-        please call SwaggerApp.create instead.
-        """
-        return kls.create(url, getter)
-
-    @classmethod
     def create(kls, url, getter=None):
         """ factory of SwaggerApp
 
@@ -242,10 +235,15 @@ class SwaggerApp(object):
 
         return app
 
+    """ for backward compatible, for later version,
+    please call SwaggerApp.create instead.
+    """
+    _create_ = create
+
     def resolve(self, path):
         """ reference resolver
 
-        :param str path: json-pointer path of object to be referenced
+        :param str path: a JSON Reference, refer to http://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03 for details.
         :return: the referenced object, wrapped by weakref.ProxyType
         :rtype: weakref.ProxyType
         :raises ValueError: if path is not valid
