@@ -176,7 +176,6 @@ class SwaggerAppTestCase(unittest.TestCase):
         self.assertTrue(self.app.op['user!##!getUserByName'], Operation)
 
         # Model
-        # TODO: provide a real shortcut
         d = self.app.resolve('#/definitions')
         self.assertEqual(len(d.values()), 5)
         self.assertEqual(sorted(d.keys()), sorted([

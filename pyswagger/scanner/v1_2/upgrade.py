@@ -67,10 +67,8 @@ def convert_schema_from_datatype(obj, scope):
 def convert_items(o):
     item = objects.Items(NullContext())
     if getattr(o, '$ref'):
-        # TODO: test case
         raise ValueError('Can\'t have $ref for Items')
     if not is_primitive(o):
-        # TODO: test case
         raise ValueError('Non primitive type is not allowed for Items')
     item.update_field('type', o.type.lower())
     item.update_field('format', o.format)
@@ -208,7 +206,6 @@ class Upgrade(object):
             o.update_field('schema', convert_schema_from_datatype(obj, scope))
         else:
             if getattr(obj, '$ref'):
-                # TODO: add test case
                 raise ValueError('Can\'t have $ref in non-body Parameters')
 
             if obj.allowMultiple == True and obj.items == None:

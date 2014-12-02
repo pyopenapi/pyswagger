@@ -173,7 +173,6 @@ def none_count(d):
 def import_string(name):
     """ import module
     """
-    # TODO: unittest
     mod = fp = None
 
     # code below, please refer to 
@@ -228,7 +227,6 @@ def get_dict_as_tuple(d):
     """ get the first item in dict,
     and return it as tuple.
     """
-    # TODO: test case
     for k, v in six.iteritems(d):
         return k, v
     return None
@@ -236,7 +234,6 @@ def get_dict_as_tuple(d):
 def nv_tuple_list_replace(l, v):
     """ replace a tuple in a tuple list
     """
-    # TODO: test case
     _found = False
     for i, x in enumerate(l):
         if x[0] == v[0]:

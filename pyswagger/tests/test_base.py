@@ -90,6 +90,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
         tmp = {'t': {}}
         obj1 = {'a': [{}, {}, {}], 'd': {}, 'f': ''}
         obj2 = {'a': [{}]}
+        o3 = TestObj(base.NullContext())
 
         with TestContext(tmp, 't') as ctx:
             ctx.parse(obj1)
@@ -108,4 +109,20 @@ class SwaggerBaseTestCase(unittest.TestCase):
         self.assertEqual(o2.f, '')
         self.assertTrue(isinstance(o2.d, ChildObj))
         self.assertTrue(isinstance(o2.d, weakref.ProxyTypes))
+
+        o3.merge(o2)
+        self.assertEqual(id(o2.d), id(o3.d))
+        self.assertTrue(isinstance(o3.d, weakref.ProxyTypes))
+
+    def test_resolve(self):
+        """ test resolve function """
+        tmp = {'t': {}}
+        obj = {'a': [{}, {}, {}], 'b': {'/a': {}, '~b': {}, 'cc': {}}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(obj)
+ 
+        o = tmp['t']
+        self.assertEqual(id(o.resolve('a')), id(o.a))
+        self.assertEqual(id(o.resolve(['a'])), id(o.resolve('a')))
+        self.assertEqual(id(o.resolve(['b', '/a'])), id(o.b['/a']))
 

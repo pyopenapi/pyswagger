@@ -20,10 +20,10 @@ pet_Kay = dict(id=4, name='Kay', category=dict(id=2, name='cat'), status='availa
 pet_QQQ = dict(id=1, name='QQQ', category=dict(id=1, name='dog'), tags=None, status=None)
 
 
+@httpretty.activate
 class RequestsClient_Pet_TestCase(unittest.TestCase):
     """ test SwaggerClient implemented by requests """
 
-    @httpretty.activate
     def test_updatePet(self):
         """ Pet.updatePet """
         httpretty.register_uri(
@@ -42,7 +42,6 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(resp.data, None)
         self.assertEqual(resp.header['content-type'][0], 'text/plain; charset=utf-8')
 
-    @httpretty.activate
     def test_findPetsByStatus(self):
         """ Pet.findPetsByStatus """
         httpretty.register_uri(httpretty.GET, 'http://petstore.swagger.wordnik.com/api/pet/findByStatus',
@@ -63,7 +62,6 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(resp.data[0].name, 'Tom')
         self.assertTrue(isinstance(resp.data[0].tags, Array))
 
-    @httpretty.activate
     def test_findPetsByTags(self):
         """ Pet.findPetsByTags """
         httpretty.register_uri(httpretty.GET, 'http://petstore.swagger.wordnik.com/api/pet/findByTags',
@@ -83,7 +81,6 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(resp.data[1].name, 'Qoo')
         self.assertTrue(isinstance(resp.data[1].tags, Array))
 
-    @httpretty.activate
     def test_partialUpdate(self):
         """ Pet.partialUpdate """
         httpretty.register_uri(httpretty.PATCH, 'http://petstore.swagger.wordnik.com/api/pet/0',
@@ -101,7 +98,6 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(resp.data[1].name, 'Sue')
         self.assertTrue(isinstance(resp.data[1].tags, Array))
 
-    @httpretty.activate
     def test_updatePetWithForm(self):
         """ Pet.updatePetWithForm """
         httpretty.register_uri(httpretty.POST, 'http://petstore.swagger.wordnik.com/api/pet/0',
@@ -114,7 +110,6 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
 
-    @httpretty.activate
     def test_addPet(self):
         """ Pet.addPet """
         httpretty.register_uri(httpretty.POST, 'http://petstore.swagger.wordnik.com/api/pet',
@@ -127,7 +122,6 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
 
-    @httpretty.activate
     def test_deletePet(self):
         """ Pet.deletePet """
         httpretty.register_uri(httpretty.DELETE, 'http://petstore.swagger.wordnik.com/api/pet/22',
@@ -138,7 +132,6 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
 
-    @httpretty.activate
     def test_getPetById(self):
         """ Pet.getPetById """
         httpretty.register_uri(httpretty.GET, 'http://petstore.swagger.wordnik.com/api/pet/1',
@@ -154,7 +147,6 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
             {u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}], u'id': 1}
             )
 
-    @httpretty.activate
     def test_uploadFile(self):
         """ Pet.uploadFile """
         httpretty.register_uri(httpretty.POST, 'http://petstore.swagger.wordnik.com/api/pet/uploadImage',

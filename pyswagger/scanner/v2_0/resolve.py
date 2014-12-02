@@ -9,7 +9,6 @@ from ...spec.v2_0.objects import (
 from ...utils import jp_compose
 
 
-# TODO: test case
 # TODO: cyclic detection
 # TODO: $ref to external docs
 
@@ -76,8 +75,6 @@ class Resolve(object):
         # $ref in PathItem is 'merge', not 'replace'
         # we need to merge properties of others if missing
         # in current object.
-
-        # TODO: test case
         _merge(obj, app, '#/paths')
 
 

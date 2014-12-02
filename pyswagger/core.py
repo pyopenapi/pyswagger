@@ -9,6 +9,7 @@ from .scanner.v2_0 import AssignParent, Resolve, PatchObject
 from .utils import (
     ScopeDict,
     import_string,
+    jp_compose,
     jp_split,
     get_dict_as_tuple,
     nv_tuple_list_replace
@@ -25,6 +26,13 @@ class SwaggerApp(object):
     This object is tended to be used in read-only manner. Therefore,
     all accessible attributes are almost read-only properties.
     """
+
+    sc_path = 1
+
+    _shortcut_ = {
+        sc_path: '#/paths'
+    }
+
     def __init__(self):
         """ constructor
         """
@@ -63,7 +71,6 @@ class SwaggerApp(object):
         """
         return self.__raw
 
-    # TODO: operationId is optional, we need another way to index operations.
     @property
     def op(self):
         """ list of Operations, organized by ScopeDict
@@ -115,7 +122,6 @@ class SwaggerApp(object):
             else:
                 raise ValueError('url should be a http-url or file path -- ' + url)
         else:
-            # TODO: test case
             app.schemes.append(p.scheme)
 
         if inspect.isclass(local_getter):
@@ -244,7 +250,6 @@ class SwaggerApp(object):
         :rtype: weakref.ProxyType
         :raises ValueError: if path is not valid
         """
-        # TODO: test case
         if path == None or len(path) == 0:
             raise ValueError('Empty Path is not allowed')
 
@@ -257,11 +262,16 @@ class SwaggerApp(object):
         obj = self.root.resolve(jp_split(path)[1:]) # heading element is #, mapping to self.root
 
         if obj == None:
-            raise ValueError('Unable to resolve path, remain path: [{0}]'.format(ts))
+            raise ValueError('Unable to resolve path, [{0}]'.format(path))
 
         if isinstance(obj, (six.string_types, int, list, dict)):
             return obj
         return weakref.proxy(obj)
+
+    def s(self, p, b=_shortcut_[sc_path]):
+        """ shortcut to access Objects
+        """
+        return self.resolve(jp_compose(p, base=b))
 
 
 class SwaggerSecurity(object):

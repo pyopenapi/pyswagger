@@ -1,18 +1,20 @@
 from pyswagger import SwaggerApp
 from ..utils import get_test_data_folder
 import unittest
-
-
-app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik'))
+import os
 
 
 class Swagger_Upgrade_TestCase(unittest.TestCase):
     """ test for upgrade from converting 1.2 to 2.0 """
 
+    @classmethod
+    def setUpClass(kls):
+        kls.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik'))
+
     def test_resource_list(self):
         """ ResourceList -> Swagger
         """
-        s = app.root
+        s = self.app.root
 
         self.assertEqual(s.swagger, '2.0')
         self.assertEqual(s.host, 'petstore.swagger.wordnik.com')
@@ -27,10 +29,10 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         make sure the way we rearrange resources
         to tags is correct.
         """
-        s = app.root
+        s = self.app.root
         self.assertEqual(sorted([t.name for t in s.tags]), sorted(['store', 'user', 'pet']))
 
-        p = app.root.paths
+        p = self.app.root.paths
         self.assertEqual(sorted(p.keys()), sorted([
             '/user/createWithArray',
             '/store/order',
@@ -50,7 +52,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
     def test_operation(self):
         """ Operation -> Operation
         """
-        p = app.root.paths['/pet/{petId}']
+        p = self.app.root.paths['/pet/{petId}']
 
         # getPetById
         o = p.get
@@ -73,14 +75,14 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         self.assertEqual(getattr(r.schema.items, '$ref'), '#/definitions/pet!##!Pet')
 
         # createUser
-        o = app.root.paths['/user'].post
+        o = self.app.root.paths['/user'].post
         self.assertEqual(o.tags, ['user'])
         self.assertEqual(o.operationId, 'createUser')
 
     def test_authorization(self):
         """ Authorization -> Security Scheme
         """
-        s = app.root.securityDefinitions
+        s = self.app.root.securityDefinitions
         self.assertEqual(list(s.keys()), ['oauth2'])
 
         ss = s['oauth2']
@@ -96,28 +98,39 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         """ Parameter -> Parameter
         """
         # body
-        o = app.root.paths['/pet/{petId}'].patch
+        o = self.app.root.paths['/pet/{petId}'].patch
         p = [p for p in o.parameters if getattr(p, 'in') == 'body'][0]
         self.assertEqual(getattr(p, 'in'), 'body')
         self.assertEqual(p.required, True)
         self.assertEqual(getattr(p.schema, '$ref'), '#/definitions/pet!##!Pet')
 
         # form
-        o = app.root.paths['/pet/uploadImage'].post
+        o = self.app.root.paths['/pet/uploadImage'].post
         p = [p for p in o.parameters if getattr(p, 'in') == 'formData' and p.type == 'string'][0]
         self.assertEqual(p.name, 'additionalMetadata')
         self.assertEqual(p.required, False)
  
         # file
-        o = app.root.paths['/pet/uploadImage'].post
+        o = self.app.root.paths['/pet/uploadImage'].post
         p = [p for p in o.parameters if getattr(p, 'in') == 'formData' and p.type == 'file'][0]
         self.assertEqual(p.name, 'file')
         self.assertEqual(p.required, False)
 
+        # non-body can't have $ref
+        try:
+            SwaggerApp._create_(get_test_data_folder(
+                version='1.2',
+                which='upgrade_parameter'
+            ))
+        except ValueError as e:
+            self.failUnlessEqual(e.args, ("Can't have $ref in non-body Parameters",))
+        else:
+            self.fail('ValueError not raised')
+
     def test_model(self):
         """ Model -> Definition
         """
-        d = app.root.definitions['pet!##!Pet']
+        d = self.app.root.definitions['pet!##!Pet']
         self.assertEqual(d.required, ['id', 'name'])
 
         ps = d.properties.keys()
@@ -144,4 +157,27 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         p = d.properties['status']
         self.assertEqual(p.type, 'string')
         self.assertEqual(p.enum, ['available', 'pending', 'sold'])
+
+    def test_item(self):
+        """ make sure to raise exception for invalid item
+        """
+        try:
+            SwaggerApp._create_(get_test_data_folder(
+                version='1.2',
+                which=os.path.join('upgrade_items', 'with_ref')
+            ))
+        except ValueError as e:
+            self.failUnlessEqual(e.args, ('Can\'t have $ref for Items',))
+        else:
+            self.fail('ValueError not raised')
+
+        try:
+            SwaggerApp._create_(get_test_data_folder(
+                version='1.2',
+                which=os.path.join('upgrade_items', 'invalid_primitive')
+            ))
+        except ValueError as e:
+            self.failUnlessEqual(e.args, ('Non primitive type is not allowed for Items',))
+        else:
+            self.fail('ValueError not raised')
 
