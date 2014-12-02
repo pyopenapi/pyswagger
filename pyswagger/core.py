@@ -250,7 +250,6 @@ class SwaggerApp(object):
         :rtype: weakref.ProxyType
         :raises ValueError: if path is not valid
         """
-        # TODO: test case
         if path == None or len(path) == 0:
             raise ValueError('Empty Path is not allowed')
 

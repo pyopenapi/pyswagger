@@ -53,3 +53,8 @@ class ResolveTestCase(unittest.TestCase):
 
         self.assertEqual(id(p.responses['default'].ref_obj), id(self.app.resolve('#/responses/r1')))
 
+    def test_raises(self):
+        """ make sure to raise for invalid input """
+        self.assertRaises(ValueError, self.app.resolve, None)
+        self.assertRaises(ValueError, self.app.resolve, '')
+
