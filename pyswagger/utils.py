@@ -173,7 +173,6 @@ def none_count(d):
 def import_string(name):
     """ import module
     """
-    # TODO: unittest
     mod = fp = None
 
     # code below, please refer to 

@@ -91,4 +91,7 @@ class SwaggerUtilsTestCase(unittest.TestCase):
             (4, 4)
         ])
 
-       
+    def test_import_string(self):
+        """ test import_string """
+        self.assertEqual(utils.import_string('qoo_%^&%&'), None)
+        self.assertNotEqual(utils.import_string('pyswagger'), None)
