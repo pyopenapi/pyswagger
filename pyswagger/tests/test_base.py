@@ -109,3 +109,15 @@ class SwaggerBaseTestCase(unittest.TestCase):
         self.assertTrue(isinstance(o2.d, ChildObj))
         self.assertTrue(isinstance(o2.d, weakref.ProxyTypes))
 
+    def test_resolve(self):
+        """ test resolve function """
+        tmp = {'t': {}}
+        obj = {'a': [{}, {}, {}], 'b': {'/a': {}, '~b': {}, 'cc': {}}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(obj)
+ 
+        o = tmp['t']
+        self.assertEqual(id(o.resolve('a')), id(o.a))
+        self.assertEqual(id(o.resolve(['a'])), id(o.resolve('a')))
+        self.assertEqual(id(o.resolve(['b', '/a'])), id(o.b['/a']))
+

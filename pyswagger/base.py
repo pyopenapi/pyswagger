@@ -217,7 +217,6 @@ class BaseObj(object):
     def resolve(self, ts):
         """ resolve a list of tokens to an child object
         """
-        # TODO: test case
         if isinstance(ts, six.string_types):
             ts = [ts]
 
