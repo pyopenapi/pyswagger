@@ -241,7 +241,6 @@ class BaseObj(object):
             v = getattr(other, name)
             if v != None and getattr(self, name) == None:
                 if isinstance(v, weakref.ProxyTypes):
-                    # TODO: test case
                     self.update_field(name, v)
                 elif isinstance(v, BaseObj):
                     self.update_field(name, weakref.proxy(v))
