@@ -1,19 +1,12 @@
 from __future__ import absolute_import
-from .getter import HttpGetter, FileGetter
+from .getter import UrlGetter, LocalGetter
 from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
 from .scan import Scanner
 from .scanner import TypeReduce
 from .scanner.v1_2 import Upgrade
 from .scanner.v2_0 import AssignParent, Resolve, PatchObject
-from .utils import (
-    ScopeDict,
-    import_string,
-    jp_compose,
-    jp_split,
-    get_dict_as_tuple,
-    nv_tuple_list_replace
-    )
+from pyswagger import utils
 import inspect
 import base64
 import six
@@ -36,11 +29,14 @@ class SwaggerApp(object):
     def __init__(self):
         """ constructor
         """
+        self.__root_url = None
         self.__root = None
         self.__raw = None
+        self.__version = ''
+
         self.__op = None
         self.__m = None
-        self.__version = ''
+        self.__url2obj = {}
         self.__schemes = []
 
         # TODO: allow init App-wised SCOPE_SEPARATOR
@@ -73,16 +69,16 @@ class SwaggerApp(object):
 
     @property
     def op(self):
-        """ list of Operations, organized by ScopeDict
+        """ list of Operations, organized by utilsScopeDict
 
-        :type: ScopeDict of Operations
+        :type: utils.ScopeDict of Operations
         """
         return self.__op
 
     @property
     def m(self):
         """ backward compatible, convert
-        SwaggerApp.d to ScopeDict
+        SwaggerApp.d to utils.ScopeDict
         """
         return self.__m
 
@@ -98,6 +94,123 @@ class SwaggerApp(object):
         """
         return self.__schemes
 
+    @staticmethod
+    def _prepare_url(url):
+        """
+        """
+        getter = UrlGetter
+
+        p = six.moves.urllib.parse.urlparse(url)
+        if p.scheme == "":
+            if p.netloc == "" and p.path != "":
+                # it should be a file path
+                getter = LocalGetter(p.path)
+                url = utils.path2url(url)
+            else:
+                raise ValueError('url should be a http-url or file path -- ' + url)
+
+        if inspect.isclass(getter):
+            # default initialization is passing the url
+            # you can override this behavior by passing an
+            # initialized getter object.
+            getter = getter(url)
+
+        return getter, url, p.scheme
+
+    def __load_json(self, url, getter=None, parser=None):
+        """
+        """
+        if not getter:
+            getter, url, _ = self._prepare_url(url)
+
+        if url in self.__url2obj:
+            # look into cache first
+            return self.__url2obj[url]
+
+        # get root document to check its swagger version.
+        obj, _ = six.advance_iterator(getter)
+        tmp = {'_tmp_': {}}
+        if not parser:
+            if utils.get_swagger_version(obj) == '1.2':
+                # swagger 1.2
+                with ResourceListContext(tmp, '_tmp_') as ctx:
+                    ctx.parse(getter, obj)
+            else:
+                # swagger 2.0
+                with SwaggerContext(tmp, '_tmp_') as ctx:
+                    ctx.parse(obj)
+        else:
+            with parser(tmp, '_tmp_') as ctx:
+                ctx.parse(obj)
+
+        # update map of url to obj
+        self.__url2obj.update({
+            url: tmp['_tmp_']
+        })
+
+        return tmp['_tmp_']
+
+    def __validate(self, url=None):
+        """ check if this Swagger API valid or not.
+
+        :param bool strict: when in strict mode, exception would be raised if not valid.
+        :return: validation errors
+        :rtype: list of tuple(where, type, msg).
+        """
+        v_mod = utils.import_string('.'.join([
+            'pyswagger',
+            'scanner',
+            'v' + self.version.replace('.', '_'),
+            'validate'
+        ]))
+
+        if not v_mod:
+            # there is no validation module
+            # for this version of spec
+            return []
+
+        s = Scanner(self)
+        v = v_mod.Validate()
+
+        if url:
+            s.scan(route=[v], root=self.__url2obj[url])
+        else:
+            s.scan(route=[v], root=self.__raw)
+
+        return v.errs
+
+    def __prepare_obj(self, url):
+        """
+        """
+        s = Scanner(self)
+        self.__validate(url=url)
+
+        obj = self.__url2obj[url]
+        if self.version == '1.2':
+            converter = Upgrade()
+            s.scan(root=obj, route=[converter])
+            obj = converter.swagger
+
+            # We only have to run this scanner when upgrading from 1.2.
+            # Mainly because we initial BaseObj via NullContext
+            s.scan(root=obj, route=[AssignParent()])
+        elif self.version == '2.0':
+            pass
+        else:
+            raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
+
+        # back to cache
+        self.__url2obj[url] = obj 
+
+        if url == self.__root_url:
+            # TODO: ugly...
+            self.__root = obj
+            # update schemes if any
+            if self.__root.schemes and len(self.__root.schemes) > 0:
+                self.__schemes = self.__root.schemes
+
+        s.scan(root=obj, route=[Resolve(), PatchObject()])
+
     @classmethod
     def load(kls, url, getter=None):
         """ load json as a raw SwaggerApp
@@ -110,49 +223,16 @@ class SwaggerApp(object):
         :raises ValueError: if url is wrong
         :raises NotImplementedError: the swagger version is not supported.
         """
-
+        local_getter, url, scheme = kls._prepare_url(url)
+        getter = getter or local_getter
         app = kls()
+        obj = app.__load_json(url, getter)
 
-        local_getter = getter or HttpGetter
-        p = six.moves.urllib.parse.urlparse(url)
-        if p.scheme == "":
-            if p.netloc == "" and p.path != "":
-                # it should be a file path
-                local_getter = FileGetter(p.path)
-            else:
-                raise ValueError('url should be a http-url or file path -- ' + url)
-        else:
-            app.schemes.append(p.scheme)
+        setattr(app, '_' + kls.__name__ + '__root_url', url)
+        setattr(app, '_' + kls.__name__ + '__version', utils.get_swagger_version(obj))
+        setattr(app, '_' + kls.__name__ + '__raw', obj)
+        app.schemes.append(scheme)
 
-        if inspect.isclass(local_getter):
-            # default initialization is passing the url
-            # you can override this behavior by passing an
-            # initialized getter object.
-            local_getter = local_getter(url)
-
-        tmp = {'_tmp_': {}}
-
-        # get root document to check its swagger version.
-        obj, _ = six.advance_iterator(local_getter)
-        if 'swaggerVersion' in obj and obj['swaggerVersion'] == '1.2':
-            # swagger 1.2
-            with ResourceListContext(tmp, '_tmp_') as ctx:
-                ctx.parse(local_getter, obj)
-
-            setattr(app, '_' + kls.__name__ + '__version', '1.2')
-        elif 'swagger' in obj:
-            if obj['swagger'] == '2.0':
-                # swagger 2.0
-                with SwaggerContext(tmp, '_tmp_') as ctx:
-                    ctx.parse(obj)
-
-                setattr(app, '_' + kls.__name__ + '__version', '2.0')
-            else:
-                raise NotImplementedError('Unsupported Version: {0}'.format(obj['swagger']))
-        else:
-            raise LookupError('Unable to find swagger version')
-
-        setattr(app, '_' + kls.__name__ + '__raw', tmp['_tmp_'])
         return app
 
     def validate(self, strict=True):
@@ -162,60 +242,29 @@ class SwaggerApp(object):
         :return: validation errors
         :rtype: list of tuple(where, type, msg).
         """
-        v_mod = import_string('.'.join([
-            'pyswagger',
-            'scanner',
-            'v' + self.version.replace('.', '_'),
-            'validate'
-        ]))
+        errs = self.__validate()
+        if strict and len(errs):
+            raise ValueError('this Swagger App contains error: {0}.'.format(len(errs)))
 
-        if not v_mod:
-            # there is no validation module
-            # for this version of spec
-            return
-
-        s = Scanner(self)
-        v = v_mod.Validate()
-
-        s.scan(route=[v], root=self.__raw)
-
-        if strict and len(v.errs) > 0:
-            raise ValueError('this Swagger App contains error: {0}.'.format(len(v.errs)))
-
-        return v.errs
+        return errs
 
     def prepare(self):
         """ preparation for loaded json
         """
 
+        self.__prepare_obj(url=self.__root_url)
+        self.__root = self.__url2obj[self.__root_url]
+
         s = Scanner(self)
-        self.validate()
-
-        if self.version == '1.2':
-            converter = Upgrade()
-            s.scan(root=self.__raw, route=[converter])
-            self.__root = converter.swagger
-
-            # We only have to run this scanner when upgrading from 1.2.
-            # Mainly because we initial BaseObj via NullContext
-            s.scan(root=self.__root, route=[AssignParent()])
-        elif self.version == '2.0':
-            self.__root = self.__raw
-        else:
-            raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
-       
-        # update schemes if any
-        if self.__root.schemes and len(self.__root.schemes) > 0:
-            self.__schemes = self.__root.schemes
 
         # reducer for Operation 
         tr = TypeReduce()
-        s.scan(root=self.__root, route=[tr, Resolve(), PatchObject()])
+        s.scan(root=self.__root, route=[tr])
 
         # 'op' -- shortcut for Operation with tag and operaionId
-        self.__op = ScopeDict(tr.op)
+        self.__op = utils.ScopeDict(tr.op)
         # 'm' -- shortcut for model in Swagger 1.2
-        self.__m = ScopeDict(self.__root.definitions)
+        self.__m = utils.ScopeDict(self.__root.definitions)
 
     @classmethod
     def create(kls, url, getter=None):
@@ -257,7 +306,7 @@ class SwaggerApp(object):
         if path.endswith('/'):
             path = path[:-1]
 
-        obj = self.root.resolve(jp_split(path)[1:]) # heading element is #, mapping to self.root
+        obj = self.root.resolve(utils.jp_split(path)[1:]) # heading element is #, mapping to self.root
 
         if obj == None:
             raise ValueError('Unable to resolve path, [{0}]'.format(path))
@@ -269,7 +318,7 @@ class SwaggerApp(object):
     def s(self, p, b=_shortcut_[sc_path]):
         """ shortcut to access Objects
         """
-        return self.resolve(jp_compose(p, base=b))
+        return self.resolve(utils.jp_compose(p, base=b))
 
 
 class SwaggerSecurity(object):
@@ -332,7 +381,7 @@ class SwaggerSecurity(object):
             if header:
                 req._p['header'].update(cred)
             else:
-                nv_tuple_list_replace(req._p['query'], get_dict_as_tuple(cred))
+                utils.nv_tuple_list_replace(req._p['query'], utils.get_dict_as_tuple(cred))
 
         return req
 
