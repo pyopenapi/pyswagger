@@ -243,3 +243,20 @@ def nv_tuple_list_replace(l, v):
     if not _found:
         l.append(v)
 
+def path2url(p):
+    """ Return file:// URL from a filename.
+    """
+    return six.moves.urllib.parse.urljoin(
+        'file:', six.moves.urllib.request.pathname2url(p)
+    )
+
+def get_swagger_version(obj):
+    """ get swagger version from loaded json """
+
+    # TODO: test case
+    if isinstance(obj, dict):
+        return obj['swaggerVersion'] if 'swaggerVersion' in obj else obj['swagger']
+    else:
+        # should be an instance of BaseObj
+        return obj.swaggerVersion if hasattr(obj, 'swaggerVersion') else obj.swagger
+

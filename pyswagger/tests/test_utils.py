@@ -95,3 +95,8 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         """ test import_string """
         self.assertEqual(utils.import_string('qoo_%^&%&'), None)
         self.assertNotEqual(utils.import_string('pyswagger'), None)
+
+    def test_path2url(self):
+        """ test path2url """
+        self.assertEqual(utils.path2url('/opt/local/a.json'), 'file:///opt/local/a.json')
+
