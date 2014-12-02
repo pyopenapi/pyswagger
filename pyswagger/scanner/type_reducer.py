@@ -17,8 +17,8 @@ class TypeReduce(object):
         scope = obj.tags[0] if obj.tags and len(obj.tags) > 0 else None
         name = obj.operationId if obj.operationId else None
 
-        if scope and name:
-            new_scope = scope_compose(scope, name)
+        new_scope = scope_compose(scope, name)
+        if new_scope:
             if new_scope in self.op.keys():
                 raise ValueError('duplicated key found: ' + new_scope)
 
