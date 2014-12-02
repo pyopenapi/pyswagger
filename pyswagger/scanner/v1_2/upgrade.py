@@ -206,7 +206,6 @@ class Upgrade(object):
             o.update_field('schema', convert_schema_from_datatype(obj, scope))
         else:
             if getattr(obj, '$ref'):
-                # TODO: add test case
                 raise ValueError('Can\'t have $ref in non-body Parameters')
 
             if obj.allowMultiple == True and obj.items == None:

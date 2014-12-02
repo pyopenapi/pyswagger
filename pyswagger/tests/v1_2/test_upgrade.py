@@ -116,6 +116,17 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         self.assertEqual(p.name, 'file')
         self.assertEqual(p.required, False)
 
+        # non-body can't have $ref
+        try:
+            SwaggerApp._create_(get_test_data_folder(
+                version='1.2',
+                which='upgrade_parameter'
+            ))
+        except ValueError as e:
+            self.failUnlessEqual(e.args, ("Can't have $ref in non-body Parameters",))
+        else:
+            self.fail('ValueError not raised')
+
     def test_model(self):
         """ Model -> Definition
         """
