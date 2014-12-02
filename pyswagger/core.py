@@ -71,7 +71,6 @@ class SwaggerApp(object):
         """
         return self.__raw
 
-    # TODO: operationId is optional, we need another way to index operations.
     @property
     def op(self):
         """ list of Operations, organized by ScopeDict
@@ -123,7 +122,6 @@ class SwaggerApp(object):
             else:
                 raise ValueError('url should be a http-url or file path -- ' + url)
         else:
-            # TODO: test case
             app.schemes.append(p.scheme)
 
         if inspect.isclass(local_getter):
