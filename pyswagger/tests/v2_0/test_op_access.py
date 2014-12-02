@@ -35,5 +35,5 @@ class OperationAccessTestCase(unittest.TestCase):
         """
         """
         _check(self, self.app.s('/pet').post)
-        _check(self, self.app.s('/pet', t=SwaggerApp.sc_path).post)
+        _check(self, self.app.s('/pet', b=SwaggerApp._shortcut_[SwaggerApp.sc_path]).post)
 

@@ -268,11 +268,10 @@ class SwaggerApp(object):
             return obj
         return weakref.proxy(obj)
 
-    def s(self, p, t=sc_path):
-        """ shortcut to access objects
+    def s(self, p, b=_shortcut_[sc_path]):
+        """ shortcut to access Objects
         """
-        # TODO: test case
-        return self.resolve(jp_compose(p, base=self._shortcut_[t]))
+        return self.resolve(jp_compose(p, base=b))
 
 
 class SwaggerSecurity(object):
