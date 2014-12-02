@@ -61,3 +61,34 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertRaises(ValueError, d.__getitem__, ('f', 'g'))
         self.assertRaises(TypeError, lambda x: d.sep)
 
+    def test_dict_to_tuple(self):
+        """ get_dict_as_tuple """
+        self.assertEqual(
+            utils.get_dict_as_tuple({'a':'b'}),
+            ('a', 'b')
+        )
+
+    def test_nv_tuple_list_replace(self):
+        """ nv_tuple_list_replace """
+        d = [
+            (1, 1),
+            (2, 2),
+            (3, 3)
+        ]
+
+        utils.nv_tuple_list_replace(d, (1, 4))
+        self.assertEqual(d, [
+            (1, 4),
+            (2, 2),
+            (3, 3)
+        ])
+
+        utils.nv_tuple_list_replace(d, (4, 4))
+        self.assertEqual(d, [
+            (1, 4),
+            (2, 2),
+            (3, 3),
+            (4, 4)
+        ])
+
+       
