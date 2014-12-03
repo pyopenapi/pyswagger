@@ -37,7 +37,7 @@ class PatchObject(object):
     def _path_item(self, path, obj, app):
         """
         """
-        url = app.root.host + app.root.basePath + jp_split(path)[-1]
+        url = app.root.host + (app.root.basePath or '') + jp_split(path)[-1]
         for c in PathItemContext.__swagger_child__:
             o = getattr(obj, c[0])
             if isinstance(o, Operation):
