@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from .primitives import PrimJSONEncoder
-from .utils import deref, get_dict_as_tuple
+from .utils import deref
 from uuid import uuid4
 import six
 import json
