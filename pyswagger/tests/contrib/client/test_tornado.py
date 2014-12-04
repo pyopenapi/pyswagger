@@ -41,7 +41,7 @@ class RESTHandler(web.RequestHandler):
 class PetRequestHandler(RESTHandler):
     """ refer to /pet """
     def put(self):
-        pet = self.json_args['body']
+        pet = self.json_args
         if not isinstance(pet['id'], int):
             self.set_status(400)
         if not self.db.update_(**pet):
@@ -51,7 +51,7 @@ class PetRequestHandler(RESTHandler):
         self.finish()
 
     def post(self):
-        pet = self.json_args['body']
+        pet = self.json_args
         if self.db.read_(pet['id']) != None:
             self.set_status(409)
         else:

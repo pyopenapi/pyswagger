@@ -36,7 +36,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         self.assertEqual(httpretty.last_request().method, 'PUT')
         self.assertEqual(httpretty.last_request().headers['content-type'], 'application/json')
-        self.assertTrue(json.loads(httpretty.last_request().body.decode('utf-8')), dict(body=pet_QQQ))
+        self.assertTrue(json.loads(httpretty.last_request().body.decode('utf-8')), pet_QQQ)
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
@@ -117,7 +117,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
 
         resp = client.request(app.op['addPet'](body=pet_Kay))
 
-        self.assertEqual(httpretty.last_request().parsed_body, {u'body': pet_Kay})
+        self.assertEqual(httpretty.last_request().parsed_body, pet_Kay)
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
