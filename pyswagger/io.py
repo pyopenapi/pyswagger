@@ -55,8 +55,11 @@ class SwaggerRequest(object):
         if self.__op.consumes and content_type not in self.__op.consumes:
             raise ValueError('unable to locate content-type: {0}'.format(content_type))
 
-        return content_type, json.dumps(
-            self.__p['body'], cls=PrimJSONEncoder)
+        for v in six.itervalues(self.__p['body']):
+            # according to spec, payload should be one and only,
+            # so we just return the first value in dict.
+            return content_type, json.dumps(v, cls=PrimJSONEncoder)
+        return None, None
 
     def _prepare_files(self, encoding):
         """ private function to prepare content for paramType=form with File
