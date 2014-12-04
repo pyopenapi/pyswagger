@@ -256,7 +256,7 @@ class SwaggerResponse(object):
         self.__raw = self.__data = None
 
         # init properties
-        self.__status = ''
+        self.__status = None 
         self.__header = {}
 
     def apply_with(self, status=None, raw=None, header=None):
@@ -272,11 +272,11 @@ class SwaggerResponse(object):
         if status != None:
             self.__status = status
 
-        r = deref(self.__op.responses.get(self.__status, None))
+        r = deref(self.__op.responses.get(str(self.__status), None))
         r = deref(self.__op.responses.get('default', None)) if r == None else r
 
         if raw != None:
-            if not self.__status:
+            if self.__status == None:
                 raise Exception('Update status code before assigning raw data')
 
             if r.schema:
