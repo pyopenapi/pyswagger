@@ -350,10 +350,12 @@ prim_obj_map = {
     # int
     ('integer', 'int32'): create_int,
     ('integer', 'int64'): create_int,
+    ('integer', None): create_int,
 
     # float
     ('number', 'float'): create_float,
     ('number', 'double'): create_float,
+    ('number', None): create_float,
 
     # str
     ('string', ''): create_str,
