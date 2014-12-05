@@ -184,7 +184,7 @@ class Model(dict):
 
         # init model as dict
         for k, v in six.iteritems(obj.properties):
-            to_update = val.get(k, None)
+            to_update = val.pop(k, None)
 
             # update discriminator with model's name
             if obj.discriminator and obj.discriminator == k:
@@ -194,8 +194,16 @@ class Model(dict):
             if to_update == None:
                 if obj.required and k in obj.required:
                     raise ValueError('Model:[' + str(obj.name) + '], require:[' + str(k) + ']')
+            else:
+                self[k] = prim_factory(v, to_update)
 
-            self[k] = prim_factory(v, to_update)
+        if obj.additionalProperties == True:
+            # just keep everything
+            self.update(val)
+        elif obj.additionalProperties not in (None, False):
+            for k, v in six.iteritems(val):
+                if v != None:
+                    self[k] = prim_factory(obj.additionalProperties, v)
 
         return val
 
@@ -405,7 +413,7 @@ def prim_factory(obj, val, ctx=None):
                 ret = t(obj, val)
         else:
             raise ValueError('obj.type should be str, not {0}'.format(type(o.type)))
-    elif obj.properties and len(obj.properties):
+    elif len(obj.properties) or obj.additionalProperties:
         ret = Model(obj)
         val = ret.apply_with(obj, val, ctx)
 
