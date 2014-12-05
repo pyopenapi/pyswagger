@@ -61,6 +61,7 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
 
         ('allOf', []),
         ('properties', None),
+        ('additionalProperties', None),
 
         ('discriminator', None),
         ('readOnly', None),

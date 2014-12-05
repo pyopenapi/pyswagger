@@ -40,6 +40,8 @@ setattr(SchemaContext, '__swagger_child__', [
     # for details
     ('items', None, SchemaContext),
     ('properties', ContainerType.dict_, SchemaContext),
+    # TODO: solution for properties with 2 possible types
+    ('additionalProperties', None, SchemaContext),
     ('allOf', ContainerType.list_, SchemaContext),
 ])
 
