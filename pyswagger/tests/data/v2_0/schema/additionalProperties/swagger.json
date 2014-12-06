@@ -1,0 +1,31 @@
+{
+   "swagger":"2.0",
+   "host":"http://test.com",
+   "basePath":"/v1",
+   "paths":{
+
+   },
+   "definitions":{
+      "Category":{
+         "properties":{
+            "id":{
+               "type":"integer",
+               "format":"int64"
+            },
+            "name":{
+               "type":"string"
+            }
+         }
+      },
+      "add_prop":{
+         "properties":{
+            "name_of_map":{
+               "type":"string"
+            }
+         },
+         "additionalProperties":{
+            "$ref":"#/definitions/Category"
+         }
+      }
+   }
+}
