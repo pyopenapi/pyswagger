@@ -56,6 +56,10 @@ class Context(object):
     def __reset_obj(self):
         self._obj = {}
 
+    @classmethod
+    def is_produced(kls, obj):
+        return isinstance(obj, kls.__swagger_ref_object__)
+
     def __exit__(self, exc_type, exc_value, traceback):
         """ When exiting parsing context, doing two things
         - create the object corresponding to this parsing context.
@@ -166,10 +170,10 @@ class BaseObj(object):
             if obj == None:
                 return
 
-            if isinstance(obj, cls.__swagger_ref_object__):
+            if cls.is_produced(obj):
                 obj._parent__ = self
             else:
-                raise TypeError('Object is not instance of {0} but {1}'.format(cls.__swagger_ref_object__, type(obj)))
+                raise ValueError('Object is not instance of {0} but {1}'.format(cls.__swagger_ref_object__.__name__, obj.__class__.__name__))
 
         # set self as childrent's parent
         for name, ct, ctx in ctx.__swagger_child__:
