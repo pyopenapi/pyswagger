@@ -26,6 +26,14 @@
          "additionalProperties":{
             "$ref":"#/definitions/Category"
          }
+      },
+      "add_prop_bool":{
+          "properties":{
+              "name":{
+                  "type":"string"
+              }
+          },
+          "additionalProperties":true
       }
    }
 }

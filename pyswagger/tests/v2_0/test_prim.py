@@ -232,3 +232,19 @@ class AdditionalPropertiesTestCase(unittest.TestCase):
         self.assertEqual(m.category3.id, 3)
         self.assertEqual(m.category3.name, 'fish')
 
+    def test_with_bool(self):
+        d = self.app.resolve('#/definitions/add_prop_bool')
+        m = primitives.prim_factory(
+            d,
+            dict(
+                name='test_bool',
+                category1=1,
+                category2='test_qoo'
+            )
+        )
+
+        self.assertTrue(isinstance(m, primitives.Model))
+        self.assertEqual(m.name, 'test_bool')
+        self.assertEqual(m.category1, 1)
+        self.assertEqual(m.category2, 'test_qoo')
+

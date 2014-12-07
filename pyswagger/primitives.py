@@ -186,7 +186,6 @@ class Model(dict):
                 self[k] = prim_factory(pobj, v)
             # TODO: patternProperties here
             elif obj.additionalProperties == True:
-                # TODO: test case once parser part is done.
                 self[k] = v
             elif obj.additionalProperties not in (None, False):
                 self[k] = prim_factory(obj.additionalProperties, v)
