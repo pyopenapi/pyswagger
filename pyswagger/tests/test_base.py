@@ -164,3 +164,22 @@ class SwaggerBaseTestCase(unittest.TestCase):
         else:
             self.fail('ValueError not raised')
 
+    def test_produce(self):
+        """ test produce function """
+        class TestBoolContext(base.Context):
+            __swagger_ref_object__ = TestObj
+            __swagger_child__ = [
+                ('a', None, ChildContext),
+            ]
+
+            def produce(self):
+                return True
+
+        tmp = {'t': {}}
+        obj = {'a': {}}
+        with TestBoolContext(tmp, 't') as ctx:
+            ctx.parse(obj)
+
+        self.assertTrue(isinstance(tmp['t'], bool))
+        self.assertEqual(tmp['t'], True)
+
