@@ -166,10 +166,6 @@ def from_iso8601(s):
         tzinfo=tz
     )
 
-def none_count(d):
-    """ count none value in dict """
-    return six.moves.reduce(lambda x, y: x + 1 if y == None else x, d.values(), 0)
-
 def import_string(name):
     """ import module
     """

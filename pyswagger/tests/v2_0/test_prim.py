@@ -2,6 +2,7 @@ from pyswagger import SwaggerApp, primitives
 from ..utils import get_test_data_folder
 from pyswagger.spec.v2_0 import objects
 from pyswagger.utils import jp_compose
+import os
 import unittest
 import datetime
 import six
@@ -12,7 +13,7 @@ class SchemaTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which='schema'))
+        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'model')))
 
     def test_model_tag(self):
         """ test basic model """
@@ -153,7 +154,7 @@ class HeaderTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which='schema'))
+        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'model')))
 
     def test_simple_array(self):
         """ header in array """
@@ -194,4 +195,72 @@ class HeaderTestCase(unittest.TestCase):
                 ]
             ]
         )), '1|2,3|4,5|6 7|8,9|10 11|12,13|14')
+
+
+class AdditionalPropertiesTestCase(unittest.TestCase):
+    """ test case for additionalProperties """
+
+    @classmethod
+    def setUpClass(kls):
+        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'additionalProperties')))
+
+    def test_with_schema(self):
+        m = primitives.prim_factory(
+            self.app.resolve('#/definitions/add_prop'),
+            dict(
+                name_of_map='test',
+                category1=dict(
+                    id=1,
+                    name='cat'
+                ),
+                category2=dict(
+                    id=2,
+                    name='dog'
+                ),
+                category3=dict(
+                    id=3,
+                    name='fish'
+                )
+            ))
+
+        self.assertTrue(isinstance(m, primitives.Model))
+        self.assertEqual(m.name_of_map, 'test')
+        self.assertEqual(m.category1.id, 1)
+        self.assertEqual(m.category1.name, 'cat')
+        self.assertEqual(m.category2.id, 2)
+        self.assertEqual(m.category2.name, 'dog')
+        self.assertEqual(m.category3.id, 3)
+        self.assertEqual(m.category3.name, 'fish')
+
+    def test_with_bool(self):
+        d = self.app.resolve('#/definitions/add_prop_bool')
+        m = primitives.prim_factory(
+            d,
+            dict(
+                name='test_bool',
+                category1=1,
+                category2='test_qoo'
+            )
+        )
+
+        self.assertTrue(isinstance(m, primitives.Model))
+        self.assertEqual(m.name, 'test_bool')
+        self.assertEqual(m.category1, 1)
+        self.assertEqual(m.category2, 'test_qoo')
+
+    def test_with_bool_false(self):
+        d = self.app.resolve('#/definitions/add_prop_false')
+        m = primitives.prim_factory(
+            d,
+            dict(
+                name='test_bool',
+                category1=1,
+                category2='test_qoo'
+            )
+        )
+
+        self.assertTrue(isinstance(m, primitives.Model))
+        self.assertEqual(m.name, 'test_bool')
+        self.assertTrue('category1' not in m)
+        self.assertTrue('category2' not in m)
 

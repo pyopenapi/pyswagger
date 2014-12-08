@@ -126,3 +126,60 @@ class SwaggerBaseTestCase(unittest.TestCase):
         self.assertEqual(id(o.resolve(['a'])), id(o.resolve('a')))
         self.assertEqual(id(o.resolve(['b', '/a'])), id(o.b['/a']))
 
+    def test_is_produced(self):
+        """ test is_produced function """
+        class ChildNotOkContext(base.Context):
+            __swagger_ref_object__ = ChildObj
+
+            @classmethod
+            def is_produced(kls, obj):
+                return False
+
+        class TestOkContext(base.Context):
+            __swagger_ref_object__ = TestObj
+            __swagger_child__ = [
+                ('a', None, ChildContext)
+            ]
+
+        class TestNotOkContext(base.Context):
+            __swagger_ref_object__ = TestObj
+            __swagger_child__ = [
+                ('a', None, ChildNotOkContext)
+            ]
+
+        tmp = {'t': {}}
+        obj = {'a': {}}
+
+        with TestOkContext(tmp, 't') as ctx:
+            # should not raise
+            ctx.parse(obj)
+
+        ctx = TestNotOkContext(tmp, 't')
+        try:
+            # simulate what ContextManager does
+            ctx.parse(obj)
+            ctx.__exit__(None, None, None)
+        except ValueError as e:
+            self.failUnlessEqual(e.args, ('Object is not instance of ChildObj but ChildObj',))
+        else:
+            self.fail('ValueError not raised')
+
+    def test_produce(self):
+        """ test produce function """
+        class TestBoolContext(base.Context):
+            __swagger_ref_object__ = TestObj
+            __swagger_child__ = [
+                ('a', None, ChildContext),
+            ]
+
+            def produce(self):
+                return True
+
+        tmp = {'t': {}}
+        obj = {'a': {}}
+        with TestBoolContext(tmp, 't') as ctx:
+            ctx.parse(obj)
+
+        self.assertTrue(isinstance(tmp['t'], bool))
+        self.assertEqual(tmp['t'], True)
+

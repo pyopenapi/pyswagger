@@ -55,8 +55,8 @@ class ModelInteritanceTestCase(unittest.TestCase):
         m = resp.data
         self.assertEqual(m.id, 3)
         self.assertEqual(m.username, 'kevin')
-        self.assertEqual(m.email, None)
-        self.assertEqual(m.phone, None)
+        self.assertTrue('email' not in m)
+        self.assertTrue('phone' not in m)
         self.assertEqual(m.sub_type, 'UserWithInfo')
 
     def test_inheritance_root(self):
