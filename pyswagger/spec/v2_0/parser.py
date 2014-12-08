@@ -33,6 +33,37 @@ class SchemaContext(Context):
 
     __swagger_ref_object__ = Schema
 
+
+class AdditionalPropertiesContext(Context):
+    """ Context of additionalProperties,
+    """
+
+    @classmethod
+    def is_produced(kls, obj):
+        """
+        """
+        if isinstance(obj, bool):
+            return True
+        return SchemaContext.is_produced(obj)
+
+    def produce(self):
+        """
+        """
+        return self._obj
+
+    def parse(self, obj=None):
+        """
+        """
+        if isinstance(obj, bool):
+            self._obj = obj
+        else:
+            tmp = {'t': {}}
+            with SchemaContext(tmp, 't') as ctx:
+                ctx.parse(obj)
+
+            self._obj = tmp['t']
+
+
 # self-reference 
 setattr(SchemaContext, '__swagger_child__', [
     # items here should refer to an Schema Object.
@@ -40,6 +71,8 @@ setattr(SchemaContext, '__swagger_child__', [
     # for details
     ('items', None, SchemaContext),
     ('properties', ContainerType.dict_, SchemaContext),
+    # TODO: solution for properties with 2 possible types
+    ('additionalProperties', None, AdditionalPropertiesContext),
     ('allOf', ContainerType.list_, SchemaContext),
 ])
 

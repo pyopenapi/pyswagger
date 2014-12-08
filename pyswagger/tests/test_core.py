@@ -23,7 +23,7 @@ class SwaggerCoreTestCase(unittest.TestCase):
         data = None
         with open(os.path.join(get_test_data_folder(
                 version='2.0',
-                which='schema'
+                which=os.path.join('schema', 'model')
                 ), 'swagger.json')) as f:
             data = f.read()
 

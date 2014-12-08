@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .utils import from_iso8601, none_count, deref
+from .utils import from_iso8601, deref
 import datetime
 import functools
 import six
@@ -162,8 +162,6 @@ class Model(dict):
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setitem__
 
-    __name_key__ = '!!_name____!!'
-
     def __init__(self, o):
         """ constructor
         """
@@ -182,20 +180,28 @@ class Model(dict):
             # TODO: encoding problem...
             val = json.loads(val.decode('utf-8'))
 
-        # init model as dict
-        for k, v in six.iteritems(obj.properties):
-            to_update = val.get(k, None)
+        for k, v in six.iteritems(val):
+            if k in obj.properties:
+                pobj = obj.properties.get(k)
+                self[k] = prim_factory(pobj, v)
+            # TODO: patternProperties here
+            elif obj.additionalProperties == True:
+                self[k] = v
+            elif obj.additionalProperties not in (None, False):
+                self[k] = prim_factory(obj.additionalProperties, v)
 
-            # update discriminator with model's name
-            if obj.discriminator and obj.discriminator == k:
-                to_update = ctx['name']
+        other_prop = set(six.iterkeys(obj.properties)) - set(six.iterkeys(self))
+        for k in other_prop:
+            p = obj.properties[k]
+            if p.default != None:
+                self[k] = prim_factory(p, p.default)
 
-            # check require properties of a Model
-            if to_update == None:
-                if obj.required and k in obj.required:
-                    raise ValueError('Model:[' + str(obj.name) + '], require:[' + str(k) + ']')
+        if obj.discriminator:
+            self[obj.discriminator] = ctx['name']
 
-            self[k] = prim_factory(v, to_update)
+        not_found = set(obj.required) - set(six.iterkeys(self))
+        if len(not_found):
+            raise ValueError('requirement not meet: {0}'.format(not_found))
 
         return val
 
@@ -222,25 +228,6 @@ class Model(dict):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
-    def __str__(self):
-        raise ValueError('Can\'t convert a model to str')
-
-    def to_json(self):
-        """ convert to json string
-        
-        note: strip None values before sending on the wire
-        """
-        # only when regenerate an dict is effective enough
-        if none_count(self) * 10 / len(self.keys()) < 3:
-            return self
-
-        ret = {}
-        for k, v in six.iteritems(self):
-            if v == None:
-                continue
-            ret.update({k: v})
-        return ret
 
 
 class File(object):
@@ -405,7 +392,7 @@ def prim_factory(obj, val, ctx=None):
                 ret = t(obj, val)
         else:
             raise ValueError('obj.type should be str, not {0}'.format(type(o.type)))
-    elif obj.properties and len(obj.properties):
+    elif len(obj.properties) or obj.additionalProperties:
         ret = Model(obj)
         val = ret.apply_with(obj, val, ctx)
 

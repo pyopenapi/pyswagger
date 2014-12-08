@@ -57,10 +57,11 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
         ('$ref', None),
         ('maxProperties', None),
         ('minProperties', None),
-        ('required', None),
+        ('required', []),
 
         ('allOf', []),
-        ('properties', None),
+        ('properties', {}),
+        ('additionalProperties', True),
 
         ('discriminator', None),
         ('readOnly', None),

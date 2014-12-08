@@ -214,7 +214,7 @@ class Model(six.with_metaclass(FieldMeta, BaseObj)):
 
     __swagger_fields__ = [
         ('id', None),
-        ('required', None),
+        ('required', []),
         ('properties', None),
         ('subTypes', None),
         ('discriminator', None),
