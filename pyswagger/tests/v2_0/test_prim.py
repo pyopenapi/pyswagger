@@ -248,3 +248,19 @@ class AdditionalPropertiesTestCase(unittest.TestCase):
         self.assertEqual(m.category1, 1)
         self.assertEqual(m.category2, 'test_qoo')
 
+    def test_with_bool_false(self):
+        d = self.app.resolve('#/definitions/add_prop_false')
+        m = primitives.prim_factory(
+            d,
+            dict(
+                name='test_bool',
+                category1=1,
+                category2='test_qoo'
+            )
+        )
+
+        self.assertTrue(isinstance(m, primitives.Model))
+        self.assertEqual(m.name, 'test_bool')
+        self.assertTrue('category1' not in m)
+        self.assertTrue('category2' not in m)
+
