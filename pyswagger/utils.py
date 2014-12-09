@@ -216,6 +216,8 @@ def jp_split(s):
     return [_decode(ss) for ss in s.split('/')]
 
 def deref(obj):
+    """ dereference $ref
+    """
     cur = obj
     while cur and getattr(cur, 'ref_obj', None) != None:
         cur = cur.ref_obj

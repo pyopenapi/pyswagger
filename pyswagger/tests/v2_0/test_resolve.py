@@ -17,12 +17,17 @@ class ResolvePathItemTestCase(unittest.TestCase):
 
     def test_path_item(self):                                                      
         """ make sure PathItem is correctly merged """
-        a = self.app.resolve(utils.jp_compose('/a', '#/paths'))                        
+        a = self.app.resolve(utils.jp_compose('/a', '#/paths'))
 
-        self.assertTrue(isinstance(a, objects.PathItem))     
+        self.assertTrue(isinstance(a, objects.PathItem))
         self.assertTrue(a.get.operationId, 'a.get')
         self.assertTrue(a.put.description, 'c.put')
         self.assertTrue(a.post.description, 'd.post')
+
+        b = self.app.resolve(utils.jp_compose('/b', '#/paths'))
+        self.assertTrue(b.get.operationId, 'b.get')
+        self.assertTrue(b.put.description, 'c.put')
+        self.assertTrue(b.post.description, 'd.post')
 
 
 class ResolveTestCase(unittest.TestCase):
