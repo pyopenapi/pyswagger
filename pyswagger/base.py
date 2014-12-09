@@ -3,6 +3,7 @@ from .utils import jp_compose
 import six
 import weakref
 import copy
+import functools
 
 
 class ContainerType:
@@ -18,13 +19,43 @@ class ContainerType:
     # dict of list container, like: {'xx': [], 'xx': [], ...}
     dict_of_list_ = 3
 
+def container_apply(ct, v, f, fd=None, fdl=None):
+    """
+    """
+    ret = None
+    if v == None:
+        return ret
+
+    if ct == None:
+        ret = f(ct, v)
+    elif ct == ContainerType.list_:
+        ret = []
+        for vv in v:
+            ret.append(f(ct, vv))
+    elif ct == ContainerType.dict_:
+        ret = {}
+        for k, vv in six.iteritems(v):
+            ret[k] = fd(ct, vv, k) if fd else f(ct, vv)
+    elif ct == ContainerType.dict_of_list_:
+        ret = {}
+        for k, vv in six.iteritems(v):
+            if fdl:
+                fdl(ct, vv, k)
+            ret[k] = []
+            for vvv in vv:
+                ret[k].append(fd(ct, vvv, k) if fd else f(ct, vvv))
+    else:
+        raise ValueError('Unknown ContainerType: {0}'.format(ct))
+
+    return ret
+
 
 class Context(object):
     """ Base of all parsing contexts """
 
     # required fields, a list of strings
     __swagger_required__ = []
-    
+
     # parsing context of children fields,
     # a list of tuple (field-name, container-type, parsing-context)
     __swagger_child__ = []
@@ -95,12 +126,26 @@ class Context(object):
         if not isinstance(obj, dict):
             raise ValueError('invalid obj passed: ' + str(type(obj)))
 
+        def _apply(x, kk, ct, v):
+            if key not in self._obj:
+                self._obj[kk] = {} if ct == None else []
+            with x(self._obj, kk) as ctx:
+                ctx.parse(obj=v)
+
+        def _apply_dict(x, kk, ct, v, k):
+            if k not in self._obj[kk]:
+                self._obj[kk][k] = {} if ct == ContainerType.dict_ else []
+            with x(self._obj[kk], k) as ctx:
+                ctx.parse(obj=v)
+
+        def _apply_dict_before_list(kk, ct, v, k):
+            self._obj[kk][k] = []
+
         if hasattr(self, '__swagger_child__'):
             # to nested objects
             for key, ct, ctx_kls in self.__swagger_child__:
                 items = obj.get(key, None)
 
-                # make all containers to something not None
                 if ct == ContainerType.list_:
                     self._obj[key] = []
                 elif ct:
@@ -109,26 +154,11 @@ class Context(object):
                 if items == None:
                     continue
 
-                # deep into children
-                if ct == None:
-                    self._obj[key] = {}
-                    with ctx_kls(self._obj, key) as ctx:
-                        ctx.parse(obj=items)
-                elif ct == ContainerType.list_:
-                    for item in items:
-                        with ctx_kls(self._obj, key) as ctx:
-                            ctx.parse(obj=item)
-                elif ct == ContainerType.dict_:
-                    for k, v in six.iteritems(items):
-                        self._obj[key][k] = {}
-                        with ctx_kls(self._obj[key], k) as ctx:
-                            ctx.parse(obj=v)
-                elif ct == ContainerType.dict_of_list_:
-                    for k, v in six.iteritems(items):
-                        self._obj[key][k] = []
-                        for vv in v:
-                            with ctx_kls(self._obj[key], k) as ctx:
-                                ctx.parse(obj=vv)
+                container_apply(ct, items,
+                    functools.partial(_apply, ctx_kls, key),
+                    functools.partial(_apply_dict, ctx_kls, key),
+                    functools.partial(_apply_dict_before_list, key)
+                )
 
         # update _obj with obj
         if self._obj != None:
@@ -173,7 +203,7 @@ class BaseObj(object):
     def _assign_parent(self, ctx):
         """ parent assignment, internal usage only
         """
-        def _assign(cls, obj):
+        def _assign(cls, _, obj):
             if obj == None:
                 return
 
@@ -189,22 +219,7 @@ class BaseObj(object):
             if obj == None:
                 continue
 
-            # iterate through children by ContainerType
-            if ct == None:
-                _assign(ctx, obj)
-            elif ct == ContainerType.list_:
-                for v in obj:
-                    _assign(ctx, v)
-            elif ct == ContainerType.dict_:
-                for v in obj.values():
-                    _assign(ctx, v)
-            elif ct == ContainerType.dict_of_list_:
-                for v in obj.values():
-                    for vv in v:
-                        _assign(ctx, vv)
-            else:
-                raise ValueError('Unknown ContainerType: {0}'.format(ct))
-
+            container_apply(ct, obj, functools.partial(_assign, ctx))
 
     def get_private_name(self, f):
         """ get private protected name of an attribute
