@@ -318,7 +318,7 @@ class SwaggerApp(object):
     def s(self, p, b=_shortcut_[sc_path]):
         """ shortcut to access Objects
         """
-        return self.resolve(utils.jp_compose(p, base=b))
+        return self.resolve(utils.jp_compose('/' + p if not p.startswith('/') else p, base=b))
 
 
 class SwaggerSecurity(object):
