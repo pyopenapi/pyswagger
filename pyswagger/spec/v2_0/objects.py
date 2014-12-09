@@ -170,7 +170,8 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
         ('schemes', []),
         ('parameters', None),
         ('responses', None),
-        ('deprecated', None),
+        ('deprecated', False),
+        ('description', None),
         ('security', None),
 
         # for pyswagger

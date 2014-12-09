@@ -21,8 +21,8 @@ class ResolvePathItemTestCase(unittest.TestCase):
 
         self.assertTrue(isinstance(a, objects.PathItem))     
         self.assertTrue(a.get.operationId, 'a.get')
-        self.assertTrue(a.put.operationId, 'c.put')
-        self.assertTrue(a.post.operationId, 'd.post')
+        self.assertTrue(a.put.description, 'c.put')
+        self.assertTrue(a.post.description, 'd.post')
 
 
 class ResolveTestCase(unittest.TestCase):

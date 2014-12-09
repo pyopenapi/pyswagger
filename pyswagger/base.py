@@ -1,9 +1,9 @@
 from __future__ import absolute_import
 from .utils import jp_compose
 import six
-import weakref
 import copy
 import functools
+import weakref
 
 
 class ContainerType:
@@ -260,19 +260,38 @@ class BaseObj(object):
 
         return obj
 
-    def merge(self, other):
+    def merge(self, other, ctx):
         """ merge properties from other object,
         only merge from 'not None' to 'None'.
         """
-        for name, _ in self.__swagger_fields__:
+        def _produce_new_obj(x, ct, v):
+            return x(None, None).produce().merge(v, x)
+
+        for name, default in self.__swagger_fields__:
             v = getattr(other, name)
-            if v != None and getattr(self, name) == None:
-                if isinstance(v, weakref.ProxyTypes):
-                    self.update_field(name, v)
-                elif isinstance(v, BaseObj):
-                    self.update_field(name, weakref.proxy(v))
-                else:
-                    self.update_field(name, v)
+            if v == default or getattr(self, name) != default:
+                continue
+
+            childs = [c for c in ctx.__swagger_child__ if c[0] == name]
+            if len(childs) == 0:
+                # we don't need to make a copy,
+                # since everything under SwaggerApp should be
+                # readonly.
+                self.update_field(name, v)
+                continue
+
+            ct, cctx = childs[0][1], childs[0][2]
+            self.update_field(name,
+                container_apply(
+                    ct, v, 
+                    functools.partial(_produce_new_obj, cctx)
+            ))
+
+        # make sure parent is correctly assigned.
+        self._assign_parent(ctx)
+
+        # allow cascade calling
+        return self
 
     @property
     def _parent_(self):

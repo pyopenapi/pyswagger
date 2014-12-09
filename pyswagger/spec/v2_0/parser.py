@@ -1,5 +1,10 @@
 from __future__ import absolute_import
-from ...base import Context, ContainerType
+from ...base import (
+    Context,
+    ContainerType,
+    BaseObj,
+    NullContext
+    )
 from .objects import (
     Schema,
     Swagger,
@@ -38,6 +43,14 @@ class AdditionalPropertiesContext(Context):
     """ Context of additionalProperties,
     """
 
+    class _TmpObj(BaseObj):
+        def merge(self, other, _):
+            if isinstance(other, bool):
+                return other
+
+            ret = Schema(NullContext())
+            return ret.merge(other, SchemaContext)
+
     @classmethod
     def is_produced(kls, obj):
         """
@@ -49,12 +62,17 @@ class AdditionalPropertiesContext(Context):
     def produce(self):
         """
         """
-        return self._obj
+        if self._obj != None:
+            return self._obj
+        else:
+            return AdditionalPropertiesContext._TmpObj(self)
 
     def parse(self, obj=None):
         """
         """
-        if isinstance(obj, bool):
+        if obj == None:
+            self._obj = True
+        elif isinstance(obj, bool):
             self._obj = obj
         else:
             tmp = {'t': {}}

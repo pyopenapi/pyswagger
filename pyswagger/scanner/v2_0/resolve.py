@@ -1,5 +1,8 @@
 from __future__ import absolute_import
 from ...scan import Dispatcher
+from ...spec.v2_0.parser import (
+    PathItemContext
+    )
 from ...spec.v2_0.objects import (
     Schema,
     Parameter,
@@ -33,7 +36,7 @@ def _resolve(obj, app, prefix):
 
     obj.update_field('ref_obj', ro)
 
-def _merge(obj, app, prefix):
+def _merge(obj, app, prefix, ctx):
     """ resolve $ref as ref_obj, and merge ref_obj to self.
     This operation should be carried in a cascade manner.
     """
@@ -48,7 +51,7 @@ def _merge(obj, app, prefix):
 
     while (len(to_resolve)):
         o = to_resolve.pop()
-        o.merge(o.ref_obj)
+        o.merge(o.ref_obj, ctx)
 
 
 class Resolve(object):
@@ -75,6 +78,6 @@ class Resolve(object):
         # $ref in PathItem is 'merge', not 'replace'
         # we need to merge properties of others if missing
         # in current object.
-        _merge(obj, app, '#/paths')
+        _merge(obj, app, '#/paths', PathItemContext)
 
 

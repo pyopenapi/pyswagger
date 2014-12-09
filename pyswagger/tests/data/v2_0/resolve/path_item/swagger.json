@@ -27,7 +27,7 @@
       },
       "/c":{
          "put":{
-            "operationId":"c.put",
+            "description":"c.put",
             "responses":{
                "default":{
                   "description":"void"
@@ -38,7 +38,7 @@
       },
       "/d":{
          "post":{
-            "operationId":"d.post",
+            "description":"d.post",
             "responses":{
                "default":{
                   "description":"void"
