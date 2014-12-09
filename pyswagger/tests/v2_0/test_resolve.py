@@ -1,21 +1,21 @@
-from pyswagger import SwaggerApp, utils                                        
-from pyswagger.spec.v2_0 import objects                                        
-from ..utils import get_test_data_folder                                       
-import unittest                                                                
-import os                                                                      
+from pyswagger import SwaggerApp, utils
+from pyswagger.spec.v2_0 import objects
+from ..utils import get_test_data_folder
+import unittest
+import os
 
 
-class ResolvePathItemTestCase(unittest.TestCase):                              
-    """ test for PathItem $ref """                                                 
+class ResolvePathItemTestCase(unittest.TestCase):
+    """ test for PathItem $ref """
 
-    @classmethod                                                                   
-    def setUpClass(kls):                                                           
-        kls.app = SwaggerApp._create_(get_test_data_folder(                            
-            version='2.0',                                                                 
-            which=os.path.join('resolve', 'path_item')                                     
-        ))                                                                             
+    @classmethod
+    def setUpClass(kls):
+        kls.app = SwaggerApp._create_(get_test_data_folder(
+            version='2.0',
+            which=os.path.join('resolve', 'path_item')
+        ))
 
-    def test_path_item(self):                                                      
+    def test_path_item(self):
         """ make sure PathItem is correctly merged """
         a = self.app.resolve(utils.jp_compose('/a', '#/paths'))
 
@@ -35,10 +35,10 @@ class ResolveTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(                            
-            version='2.0',                                                                 
-            which=os.path.join('resolve', 'other')                                     
-        ))                                                                             
+        kls.app = SwaggerApp._create_(get_test_data_folder(
+            version='2.0',
+            which=os.path.join('resolve', 'other')
+        ))
 
     def test_schema(self):
         """ make sure $ref to Schema works """
