@@ -1,0 +1,22 @@
+{
+   "swagger":"2.0",
+   "host":"test.com",
+   "basePath":"/v1",
+   "paths":{
+
+   },
+   "definitions":{
+      "s1":{
+         "$ref":"#/definitions/s2"
+      },
+      "s2":{
+         "$ref":"#/definitions/s3"
+      },
+      "s3":{
+         "$ref":"#/definitions/s4"
+      },
+      "s4":{
+         "type":"string"
+      }
+   }
+}

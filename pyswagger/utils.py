@@ -216,8 +216,10 @@ def jp_split(s):
     return [_decode(ss) for ss in s.split('/')]
 
 def deref(obj):
-    o = getattr(obj, 'ref_obj', None) if obj else None
-    return o if o else obj
+    cur = obj
+    while cur and getattr(cur, 'ref_obj', None) != None:
+        cur = cur.ref_obj
+    return cur if cur else obj
 
 def get_dict_as_tuple(d):
     """ get the first item in dict,

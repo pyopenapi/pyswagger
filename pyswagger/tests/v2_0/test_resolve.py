@@ -58,3 +58,19 @@ class ResolveTestCase(unittest.TestCase):
         self.assertRaises(ValueError, self.app.resolve, None)
         self.assertRaises(ValueError, self.app.resolve, '')
 
+
+class DerefTestCase(unittest.TestCase):
+    """ test for pyswagger.utils.deref """
+
+    @classmethod
+    def setUpClass(kls):
+        kls.app = SwaggerApp._create_(get_test_data_folder(
+            version='2.0',
+            which=os.path.join('resolve', 'deref')
+        ))
+
+    def test_deref(self):
+        od = utils.deref(self.app.resolve('#/definitions/s1'))
+
+        self.assertEqual(id(od), id(self.app.resolve('#/definitions/s4')))
+
