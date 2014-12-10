@@ -1,6 +1,7 @@
 from pyswagger import utils
 from datetime import datetime
 import unittest
+import functools
 
 
 class SwaggerUtilsTestCase(unittest.TestCase):
@@ -92,4 +93,121 @@ class SwaggerUtilsTestCase(unittest.TestCase):
     def test_path2url(self):
         """ test path2url """
         self.assertEqual(utils.path2url('/opt/local/a.json'), 'file:///opt/local/a.json')
+
+
+class WalkTestCase(unittest.TestCase):
+    """ test for walk """
+
+    @staticmethod
+    def _out(conf, idx):
+        return conf[idx]
+
+    def test_self_cycle(self):
+        conf = {
+            0: [0]
+        }
+
+        cyc, _ = utils.walk(
+            0, functools.partial(WalkTestCase._out, conf)
+        )
+        self.assertEqual(cyc, [[0, 0]])
+
+    def test_1_long_cycle(self):
+        conf = {
+            0: [1],
+            1: [2],
+            2: [3],
+            3: [4],
+            4: [5],
+            5: [1]
+        }
+
+        cyc = []
+        visited = []
+        for i in range(6):
+            _cyc, visited = utils.walk(
+                i,
+                functools.partial(WalkTestCase._out, conf),
+                visited
+            )
+            cyc.extend(_cyc)
+
+        self.assertEqual(cyc, [[1, 2, 3, 4, 5, 1]])
+
+    def test_multiple_cycles(self):
+        conf = {
+            0: [6],
+            1: [6],
+            2: [0],
+            3: [1],
+            4: [4],
+            5: [3],
+            6: [3],
+            7: [4],
+            8: [0]
+        }
+
+        cyc = []
+        visited = []
+        for i in range(9):
+            _cyc, visited = utils.walk(
+                i,
+                functools.partial(WalkTestCase._out, conf),
+                visited
+            )
+            cyc.extend(_cyc)
+
+        self.assertEqual(cyc, [
+            [6, 3, 1, 6],
+            [4, 4]
+            ])
+
+    def test_cycles_share_border(self):
+        conf = {
+            0: [1],
+            1: [2],
+            2: [3],
+            3: [0, 5],
+            4: [2],
+            5: [4]
+        }
+
+        cyc = []
+        visited = []
+        for i in range(6):
+            _cyc, visited = utils.walk(
+                i,
+                functools.partial(WalkTestCase._out, conf),
+                visited
+            )
+            cyc.extend(_cyc)
+
+        self.assertEqual(cyc, [
+            [0, 1, 2, 3, 0],
+            [2, 3, 5, 4, 2]
+            ])
+
+    def test_no_cycle(self):
+        conf = {
+            0: [1, 2],
+            1: [2, 3],
+            2: [3, 4],
+            3: [4, 5],
+            4: [5, 6],
+            5: [6, 7],
+            6: [7],
+            7: []
+        }
+
+        cyc = []
+        visited = []
+        for i in range(8):
+            _cyc, visited = utils.walk(
+                i,
+                functools.partial(WalkTestCase._out, conf),
+                visited
+            )
+            cyc.extend(_cyc)
+
+        self.assertEqual(cyc, [])
 

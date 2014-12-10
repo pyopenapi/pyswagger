@@ -260,3 +260,37 @@ def get_swagger_version(obj):
         # should be an instance of BaseObj
         return obj.swaggerVersion if hasattr(obj, 'swaggerVersion') else obj.swagger
 
+def walk(start, ofn, visited=None):
+    """ Non recursive DFS to detect cycles
+    """
+    visited = visited if visited else []
+    ctx = {}
+    stk = []
+    stk.append(start)
+
+    cyc = []
+    while len(stk):
+        top = stk[-1]
+
+        if top in visited:
+            stk.pop()
+            continue
+
+        if top not in ctx:
+            ctx.update({top:list(set(ofn(top)))})
+
+        ctx[top] = [v for v in ctx[top] if v not in visited]
+
+        if len(ctx[top]):
+            n = ctx[top][0]
+            if n in stk:
+                cyc.append(stk[stk.index(n):]+[n])
+                ctx[top].pop(0)
+            else:
+                stk.append(n)
+        else:
+            visited.append(top)
+            stk.pop()
+
+    return cyc, visited
+
