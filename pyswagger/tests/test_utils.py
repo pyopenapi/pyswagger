@@ -107,7 +107,7 @@ class WalkTestCase(unittest.TestCase):
             0: [0]
         }
 
-        cyc, _ = utils.walk(
+        cyc = utils.walk(
             0, functools.partial(WalkTestCase._out, conf)
         )
         self.assertEqual(cyc, [[0, 0]])
@@ -123,14 +123,12 @@ class WalkTestCase(unittest.TestCase):
         }
 
         cyc = []
-        visited = []
         for i in range(6):
-            _cyc, visited = utils.walk(
+            cyc = utils.walk(
                 i,
                 functools.partial(WalkTestCase._out, conf),
-                visited
+                cyc
             )
-            cyc.extend(_cyc)
 
         self.assertEqual(cyc, [[1, 2, 3, 4, 5, 1]])
 
@@ -148,17 +146,15 @@ class WalkTestCase(unittest.TestCase):
         }
 
         cyc = []
-        visited = []
         for i in range(9):
-            _cyc, visited = utils.walk(
+            cyc = utils.walk(
                 i,
                 functools.partial(WalkTestCase._out, conf),
-                visited
+                cyc
             )
-            cyc.extend(_cyc)
 
         self.assertEqual(cyc, [
-            [6, 3, 1, 6],
+            [1, 6, 3, 1],
             [4, 4]
             ])
 
@@ -173,14 +169,12 @@ class WalkTestCase(unittest.TestCase):
         }
 
         cyc = []
-        visited = []
         for i in range(6):
-            _cyc, visited = utils.walk(
+            cyc = utils.walk(
                 i,
                 functools.partial(WalkTestCase._out, conf),
-                visited
+                cyc
             )
-            cyc.extend(_cyc)
 
         self.assertEqual(cyc, [
             [0, 1, 2, 3, 0],
@@ -200,14 +194,40 @@ class WalkTestCase(unittest.TestCase):
         }
 
         cyc = []
-        visited = []
         for i in range(8):
-            _cyc, visited = utils.walk(
+            cyc = utils.walk(
                 i,
                 functools.partial(WalkTestCase._out, conf),
-                visited
+                cyc
             )
-            cyc.extend(_cyc)
 
         self.assertEqual(cyc, [])
+
+    def test_multiple_cycles_2(self):
+        conf = {
+            0: [1, 4],
+            1: [2],
+            2: [0, 3],
+            3: [4, 5],
+            4: [1, 2],
+            5: [4]
+        }
+
+        cyc = []
+        for i in range(6):
+            cyc = utils.walk(
+                i,
+                functools.partial(WalkTestCase._out, conf),
+                cyc
+            )
+
+        self.assertEqual(sorted(cyc), sorted([
+            [0, 1, 2, 0],
+            [0, 4, 1, 2, 0],
+            [0, 4, 2, 0],
+            [1, 2, 3, 4, 1],
+            [1, 2, 3, 5, 4, 1],
+            [2, 3, 5, 4, 2],
+            [2, 3 ,4, 2]
+            ]))
 

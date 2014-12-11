@@ -260,37 +260,41 @@ def get_swagger_version(obj):
         # should be an instance of BaseObj
         return obj.swaggerVersion if hasattr(obj, 'swaggerVersion') else obj.swagger
 
-def walk(start, ofn, visited=None):
+def walk(start, ofn, cyc=None):
     """ Non recursive DFS to detect cycles
-    """
-    visited = visited if visited else []
-    ctx = {}
-    stk = []
-    stk.append(start)
 
-    cyc = []
+    :param start: start vertex in graph
+    :param ofn: function to get the list of outgoing edges of a vertex
+    :param cyc: list of existing cycles, cycles are represented in a list started with minimum vertex.
+    :return: cycles
+    :rtype: list of lists
+    """
+    ctx, stk = {}, [start]
+    cyc = [] if cyc == None else cyc
+
     while len(stk):
         top = stk[-1]
 
-        if top in visited:
-            stk.pop()
-            continue
-
         if top not in ctx:
-            ctx.update({top:list(set(ofn(top)))})
-
-        ctx[top] = [v for v in ctx[top] if v not in visited]
+            ctx.update({top:list(ofn(top))})
 
         if len(ctx[top]):
             n = ctx[top][0]
             if n in stk:
-                cyc.append(stk[stk.index(n):]+[n])
+                nc = stk[stk.index(n):]
+                ni = nc.index(min(nc))
+                nc = nc[ni:] + nc[:ni] + [min(nc)]
+                if nc not in cyc:
+                    cyc.append(nc)
+
                 ctx[top].pop(0)
             else:
                 stk.append(n)
         else:
-            visited.append(top)
+            ctx.pop(top)
             stk.pop()
+            if len(stk):
+                ctx[stk[-1]].remove(top)
 
-    return cyc, visited
+    return cyc
 
