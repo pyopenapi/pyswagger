@@ -94,6 +94,27 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         """ test path2url """
         self.assertEqual(utils.path2url('/opt/local/a.json'), 'file:///opt/local/a.json')
 
+    def test_jr_split(self):
+        """ test jr_split """
+        self.assertEqual(utils.jr_split(
+            'http://test.com/api/swagger.json#/definitions/s1'), (
+            'http://test.com/api/swagger.json', '#/definitions/s1'))
+        self.assertEqual(utils.jr_split(
+            'http://test/com/api/'), (
+            'http://test/com/api/', ''))
+        self.assertEqual(utils.jr_split(
+            '#/definitions/s1'), (
+            '', '#/definitions/s1'))
+        self.assertEqual(utils.jr_split(
+            '/user/tmp/local/ttt'), (
+            'file:///user/tmp/local/ttt', ''))
+        self.assertEqual(utils.jr_split(
+            '/user/tmp/local/ttt/'), (
+            'file:///user/tmp/local/ttt/', ''))
+        self.assertEqual(utils.jr_split(
+            'user'), (
+            'file:///user', ''))
+
 
 class WalkTestCase(unittest.TestCase):
     """ test for walk """
