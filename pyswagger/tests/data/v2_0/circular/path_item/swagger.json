@@ -1,0 +1,19 @@
+{
+   "swagger":"2.0",
+   "host":"test.com",
+   "basePath":"/v1",
+   "paths":{
+      "/p1":{
+         "$ref":"#/paths/~1p2"
+      },
+      "/p2":{
+         "$ref":"#/paths/~1p3"
+      },
+      "/p3":{
+         "$ref":"#/paths/~1p4"
+      },
+      "/p4":{
+         "$ref":"#/paths/~1p1"
+      }
+   }
+}

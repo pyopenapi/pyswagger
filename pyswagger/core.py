@@ -3,7 +3,7 @@ from .getter import UrlGetter, LocalGetter
 from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
 from .scan import Scanner
-from .scanner import TypeReduce
+from .scanner import TypeReduce, CycleDetector
 from .scanner.v1_2 import Upgrade
 from .scanner.v2_0 import AssignParent, Resolve, PatchObject
 from pyswagger import utils
@@ -179,11 +179,11 @@ class SwaggerApp(object):
 
         return v.errs
 
-    def __prepare_obj(self, url):
+    def __prepare_obj(self, url, strict):
         """
         """
         s = Scanner(self)
-        self.__validate(url=url)
+        self.validate(url=url, strict=strict)
 
         obj = self.__url2obj[url]
         if self.version == '1.2':
@@ -235,39 +235,44 @@ class SwaggerApp(object):
 
         return app
 
-    def validate(self, strict=True):
+    def validate(self, url=None, strict=True):
         """ check if this Swagger API valid or not.
 
         :param bool strict: when in strict mode, exception would be raised if not valid.
         :return: validation errors
         :rtype: list of tuple(where, type, msg).
         """
-        errs = self.__validate()
+        errs = self.__validate(url)
         if strict and len(errs):
             raise ValueError('this Swagger App contains error: {0}.'.format(len(errs)))
 
         return errs
 
-    def prepare(self):
+    def prepare(self, strict=True):
         """ preparation for loaded json
         """
 
-        self.__prepare_obj(url=self.__root_url)
+        self.__prepare_obj(url=self.__root_url, strict=strict)
         self.__root = self.__url2obj[self.__root_url]
 
         s = Scanner(self)
 
         # reducer for Operation 
         tr = TypeReduce()
-        s.scan(root=self.__root, route=[tr])
+        cy = CycleDetector()
+        s.scan(root=self.__root, route=[tr, cy])
 
         # 'op' -- shortcut for Operation with tag and operaionId
         self.__op = utils.ScopeDict(tr.op)
         # 'm' -- shortcut for model in Swagger 1.2
         self.__m = utils.ScopeDict(self.__root.definitions)
 
+        # cycle detection
+        if len(cy.cycles['schema']) > 0 and strict:
+            raise ValueError('Cycles detected in Schema Object: {0}'.format(cy.cycles['schema']))
+
     @classmethod
-    def create(kls, url, getter=None):
+    def create(kls, url, strict=True, getter=None):
         """ factory of SwaggerApp
 
         :param str url: url of path of Swagger API definition

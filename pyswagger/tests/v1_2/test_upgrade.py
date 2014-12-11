@@ -18,7 +18,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
 
         self.assertEqual(s.swagger, '2.0')
         self.assertEqual(s.host, 'petstore.swagger.wordnik.com')
-        self.assertEqual(s.basePath, '/api')
+        self.assertEqual(s.basePath, '')
         self.assertEqual(s.info.version, '1.0.0')
         self.assertEqual(s.schemes, ['http', 'https'])
         self.assertEqual(s.consumes, [])
@@ -34,25 +34,25 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
 
         p = self.app.root.paths
         self.assertEqual(sorted(p.keys()), sorted([
-            '/user/createWithArray',
-            '/store/order',
-            '/user/login',
-            '/user',
-            '/pet',
-            '/pet/findByTags',
-            '/pet/findByStatus',
-            '/store/order/{orderId}',
-            '/user/logout',
-            '/pet/uploadImage',
-            '/user/createWithList',
-            '/user/{username}',
-            '/pet/{petId}'
+            '/api/user/createWithArray',
+            '/api/store/order',
+            '/api/user/login',
+            '/api/user',
+            '/api/pet',
+            '/api/pet/findByTags',
+            '/api/pet/findByStatus',
+            '/api/store/order/{orderId}',
+            '/api/user/logout',
+            '/api/pet/uploadImage',
+            '/api/user/createWithList',
+            '/api/user/{username}',
+            '/api/pet/{petId}'
         ]))
 
     def test_operation(self):
         """ Operation -> Operation
         """
-        p = self.app.root.paths['/pet/{petId}']
+        p = self.app.root.paths['/api/pet/{petId}']
 
         # getPetById
         o = p.get
@@ -75,7 +75,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         self.assertEqual(getattr(r.schema.items, '$ref'), '#/definitions/pet!##!Pet')
 
         # createUser
-        o = self.app.root.paths['/user'].post
+        o = self.app.root.paths['/api/user'].post
         self.assertEqual(o.tags, ['user'])
         self.assertEqual(o.operationId, 'createUser')
 
@@ -98,20 +98,20 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         """ Parameter -> Parameter
         """
         # body
-        o = self.app.root.paths['/pet/{petId}'].patch
+        o = self.app.root.paths['/api/pet/{petId}'].patch
         p = [p for p in o.parameters if getattr(p, 'in') == 'body'][0]
         self.assertEqual(getattr(p, 'in'), 'body')
         self.assertEqual(p.required, True)
         self.assertEqual(getattr(p.schema, '$ref'), '#/definitions/pet!##!Pet')
 
         # form
-        o = self.app.root.paths['/pet/uploadImage'].post
+        o = self.app.root.paths['/api/pet/uploadImage'].post
         p = [p for p in o.parameters if getattr(p, 'in') == 'formData' and p.type == 'string'][0]
         self.assertEqual(p.name, 'additionalMetadata')
         self.assertEqual(p.required, False)
  
         # file
-        o = self.app.root.paths['/pet/uploadImage'].post
+        o = self.app.root.paths['/api/pet/uploadImage'].post
         p = [p for p in o.parameters if getattr(p, 'in') == 'formData' and p.type == 'file'][0]
         self.assertEqual(p.name, 'file')
         self.assertEqual(p.required, False)
@@ -180,4 +180,16 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
             self.failUnlessEqual(e.args, ('Non primitive type is not allowed for Items',))
         else:
             self.fail('ValueError not raised')
+
+
+class ModelSubtypesTestCase(unittest.TestCase):
+    """ test for upgrade /data/v1_2/model_subtypes """
+
+    @classmethod
+    def setUpClass(kls):
+        kls.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='model_subtypes'))
+
+    def test_path_item(self):
+        paths = self.app.resolve('#/paths')
+        self.assertEqual(sorted(list(paths.keys())), sorted(['/api/user', '/api/user/{username}']))
 

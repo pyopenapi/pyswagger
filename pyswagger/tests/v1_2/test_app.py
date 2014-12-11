@@ -128,8 +128,8 @@ class SwaggerAppTestCase(unittest.TestCase):
         self.assertRaises(ValueError, self.app.resolve, '//')
 
         self.assertTrue(isinstance(self.app.resolve('#/definitions/user!##!User'), Schema))
-        self.assertTrue(isinstance(self.app.resolve('#/paths/~1user~1{username}/put'), Operation))
-        self.assertEqual(self.app.resolve('#/paths/~1store~1order/post/produces'), ['application/json'])
+        self.assertTrue(isinstance(self.app.resolve('#/paths/~1api~1user~1{username}/put'), Operation))
+        self.assertEqual(self.app.resolve('#/paths/~1api~1store~1order/post/produces'), ['application/json'])
         self.assertEqual(self.app.resolve('#/host'), 'petstore.swagger.wordnik.com')
 
     def test_scope_dict(self):
