@@ -250,6 +250,26 @@ def path2url(p):
         'file:', six.moves.urllib.request.pathname2url(p)
     )
 
+def normalize_url(url):
+    """ Normalize url
+    """
+    # TODO: test case
+    if not url:
+        return url
+
+    p = six.moves.urllib.parse.urlparse(url)
+    if p.scheme == "":
+        if p.netloc == "" and p.path != "":
+            # it should be a file path
+            url = path2url(url)
+        else:
+            raise ValueError('url should be a http-url or file path -- ' + url)
+
+    return url
+
+def is_file_url(url):
+    return url.startswith('file://')
+
 def get_swagger_version(obj):
     """ get swagger version from loaded json """
 
