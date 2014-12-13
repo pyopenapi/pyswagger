@@ -227,6 +227,7 @@ def jr_split(s):
 def deref(obj):
     """ dereference $ref
     """
+    # TODO: cycle detection
     cur = obj
     while cur and getattr(cur, 'ref_obj', None) != None:
         cur = cur.ref_obj
@@ -267,14 +268,25 @@ def normalize_url(url):
         return url
 
     p = six.moves.urllib.parse.urlparse(url)
-    if p.scheme == "":
-        if p.netloc == "" and p.path != "":
+    if p.scheme == '':
+        if p.netloc == '' and p.path != '':
             # it should be a file path
             url = path2url(url)
         else:
             raise ValueError('url should be a http-url or file path -- ' + url)
 
     return url
+
+def jp_prefix(jp, prefix):
+    """ implicit reference of JSON-pointer
+    """
+    # TODO: test case
+    if jp == None:
+        return jp
+    p = six.moves.urllib.parse.urlparse(jp)
+    if p.scheme == '' and jp.find('#') == -1:
+        return jp_compose(jp, base=prefix)
+    return jp
 
 def is_file_url(url):
     return url.startswith('file://')

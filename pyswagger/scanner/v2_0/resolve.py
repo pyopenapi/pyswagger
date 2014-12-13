@@ -9,10 +9,9 @@ from ...spec.v2_0.objects import (
     Response,
     PathItem,
     )
-from ...utils import jp_compose
+from ...utils import jp_prefix
 
 
-# TODO: cyclic detection
 # TODO: $ref to external docs
 
 def is_resolved(obj):
@@ -23,11 +22,7 @@ def _resolve(obj, app, prefix):
         return
 
     r = getattr(obj, '$ref')
-
-    try:
-        ro = app.resolve(r)
-    except Exception:
-        ro = app.resolve(jp_compose(r, base=prefix)) 
+    ro = app.resolve(jp_prefix(r, prefix))
 
     if not ro:
         raise ReferenceError('Unable to resolve: {0}'.format(r))
@@ -80,4 +75,4 @@ class Resolve(object):
         # in current object.
         _merge(obj, app, '#/paths', PathItemContext)
 
-
+        # TODO: fix merged Operation's url
