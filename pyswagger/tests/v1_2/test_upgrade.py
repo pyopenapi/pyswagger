@@ -2,6 +2,22 @@ from pyswagger import SwaggerApp
 from ..utils import get_test_data_folder
 import unittest
 import os
+import six
+
+
+folder = get_test_data_folder(
+    version='1.2',
+    which='wordnik'
+)
+
+def _pf(s):
+    return six.moves.urllib.parse.urlunparse((
+        'file',
+        '',
+        folder,
+        '',
+        '',
+        s))
 
 
 class Swagger_Upgrade_TestCase(unittest.TestCase):
@@ -9,7 +25,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik'))
+        kls.app = SwaggerApp._create_(folder)
 
     def test_resource_list(self):
         """ ResourceList -> Swagger
@@ -72,7 +88,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         r = o.responses['default']
         self.assertEqual(r.headers, {})
         self.assertEqual(r.schema.type, 'array')
-        self.assertEqual(getattr(r.schema.items, '$ref'), '#/definitions/pet!##!Pet')
+        self.assertEqual(getattr(r.schema.items, '$ref'), _pf('#/definitions/pet!##!Pet'))
 
         # createUser
         o = self.app.root.paths['/api/user'].post
@@ -102,7 +118,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         p = [p for p in o.parameters if getattr(p, 'in') == 'body'][0]
         self.assertEqual(getattr(p, 'in'), 'body')
         self.assertEqual(p.required, True)
-        self.assertEqual(getattr(p.schema, '$ref'), '#/definitions/pet!##!Pet')
+        self.assertEqual(getattr(p.schema, '$ref'), _pf('#/definitions/pet!##!Pet'))
 
         # form
         o = self.app.root.paths['/api/pet/uploadImage'].post
@@ -144,7 +160,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         self.assertEqual(p.maximum, 100)
 
         p = d.properties['category']
-        self.assertEqual(getattr(p, '$ref'), '#/definitions/pet!##!Category')
+        self.assertEqual(getattr(p, '$ref'), _pf('#/definitions/pet!##!Category'))
 
         p = d.properties['photoUrls']
         self.assertEqual(p.type, 'array')
@@ -152,7 +168,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
 
         p = d.properties['tags']
         self.assertEqual(p.type, 'array')
-        self.assertEqual(getattr(p.items, '$ref'), '#/definitions/pet!##!Tag')
+        self.assertEqual(getattr(p.items, '$ref'), _pf('#/definitions/pet!##!Tag'))
 
         p = d.properties['status']
         self.assertEqual(p.type, 'string')

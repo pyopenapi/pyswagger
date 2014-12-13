@@ -26,7 +26,7 @@ class SwaggerApp(object):
         sc_path: '#/paths'
     }
 
-    def __init__(self, app_cache=None, url_load_hook=None):
+    def __init__(self, url=None, app_cache=None, url_load_hook=None):
         """ constructor
         """
         self.__root = None
@@ -36,6 +36,7 @@ class SwaggerApp(object):
         self.__op = None
         self.__m = None
         self.__schemes = []
+        self.__url=url
 
         # a map from url to SwaggerApp
         self.__app_cache = {} if app_cache == None else app_cache
@@ -102,6 +103,12 @@ class SwaggerApp(object):
         return self.__schemes
 
     @property
+    def url(self):
+        """
+        """
+        return self.__url
+
+    @property
     def _app_cache(self):
         """ internal usage
         """
@@ -116,6 +123,9 @@ class SwaggerApp(object):
 
         if not getter:
             # apply hook when use this url to load
+            # note that we didn't cache SwaggerApp with this local_url
+
+            # TODO: test case
             local_url = url if not self.__url_load_hook else self.__url_load_hook(url)
 
             getter = UrlGetter
@@ -179,6 +189,9 @@ class SwaggerApp(object):
     def _prepare_obj(self, strict=True):
         """
         """
+        if self.__root:
+            return
+
         s = Scanner(self)
         self.validate(strict=strict)
 
@@ -201,7 +214,8 @@ class SwaggerApp(object):
         if self.__root.schemes and len(self.__root.schemes) > 0:
             self.__schemes = self.__root.schemes
 
-        s.scan(root=self.__root, route=[Resolve(), PatchObject()])
+        s.scan(root=self.__root, route=[Resolve()])
+        s.scan(root=self.__root, route=[PatchObject()])
 
     @classmethod
     def load(kls, url, getter=None, app_cache=None, url_load_hook=None):
@@ -217,7 +231,7 @@ class SwaggerApp(object):
         """
 
         url = utils.normalize_url(url)
-        app = kls(app_cache, url_load_hook)
+        app = kls(url, app_cache, url_load_hook)
 
         app._load_json(url, getter)
 

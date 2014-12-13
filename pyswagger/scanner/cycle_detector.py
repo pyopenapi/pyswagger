@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from ..utils import jp_prefix, walk
+from ..utils import normalize_jr, walk
 from ..scan import Dispatcher
 from ..spec.v2_0.objects import (
     Schema,
@@ -11,7 +11,7 @@ import functools
 import six
 
 def _out(app, prefix, path):
-    obj = app.resolve(jp_prefix(path, prefix))
+    obj = app.resolve(normalize_jr(path, prefix))
     r = getattr(obj, '$ref')
     return [r] if r else []
 
@@ -37,7 +37,7 @@ def _schema_out_obj(obj, out=None):
     return out
 
 def _schema_out(app, path):
-    obj = app.resolve(jp_prefix(path, '#/definitions'))
+    obj = app.resolve(normalize_jr(path, '#/definitions'))
     return [] if obj == None else _schema_out_obj(obj)
 
 

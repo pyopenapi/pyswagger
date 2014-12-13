@@ -9,10 +9,8 @@ from ...spec.v2_0.objects import (
     Response,
     PathItem,
     )
-from ...utils import jp_prefix
+from ...utils import normalize_jr
 
-
-# TODO: $ref to external docs
 
 def is_resolved(obj):
     return getattr(obj, '$ref') == None or obj.ref_obj != None
@@ -22,7 +20,7 @@ def _resolve(obj, app, prefix):
         return
 
     r = getattr(obj, '$ref')
-    ro = app.resolve(jp_prefix(r, prefix))
+    ro = app.resolve(normalize_jr(r, prefix))
 
     if not ro:
         raise ReferenceError('Unable to resolve: {0}'.format(r))
@@ -30,6 +28,7 @@ def _resolve(obj, app, prefix):
         raise TypeError('Referenced Type mismatch: {0}'.format(r))
 
     obj.update_field('ref_obj', ro)
+    obj.update_field('$ref', normalize_jr(r, prefix, app.url))
 
 def _merge(obj, app, prefix, ctx):
     """ resolve $ref as ref_obj, and merge ref_obj to self.
@@ -75,4 +74,3 @@ class Resolve(object):
         # in current object.
         _merge(obj, app, '#/paths', PathItemContext)
 
-        # TODO: fix merged Operation's url

@@ -277,16 +277,35 @@ def normalize_url(url):
 
     return url
 
-def jp_prefix(jp, prefix):
-    """ implicit reference of JSON-pointer
+def normalize_jr(jr, prefix, url=None):
+    """ normalize JSON reference, also fix
+    implicit reference of JSON pointer.
+    input:
+    - User
+    - #/definitions/User
+    - http://test.com/swagger.json#/definitions/User
+    output:
+    - http://test.com/swagger.json#/definitions/User
     """
     # TODO: test case
-    if jp == None:
-        return jp
-    p = six.moves.urllib.parse.urlparse(jp)
-    if p.scheme == '' and jp.find('#') == -1:
-        return jp_compose(jp, base=prefix)
-    return jp
+    if jr == None:
+        return jr
+
+    p = six.moves.urllib.parse.urlparse(jr)
+    if p.scheme != '':
+        return jr
+
+    # it's a JSON reference without url
+
+    # fix implicit reference
+    jr = jp_compose(jr, base=prefix) if jr.find('#') == -1 else jr
+
+    # prepend url
+    if url:
+        p = six.moves.urllib.parse.urlparse(url)
+        jr = six.moves.urllib.parse.urlunparse(p[:5]+(jr,))
+
+    return jr
 
 def is_file_url(url):
     return url.startswith('file://')
@@ -322,6 +341,11 @@ def walk(start, ofn, cyc=None):
         if len(ctx[top]):
             n = ctx[top][0]
             if n in stk:
+                # cycles found,
+                # normalize the representation of cycles,
+                # start from the smallest vertex, ex.
+                # 4 -> 5 -> 2 -> 7 -> 9 would produce
+                # (2, 7, 9, 4, 5)
                 nc = stk[stk.index(n):]
                 ni = nc.index(min(nc))
                 nc = nc[ni:] + nc[:ni] + [min(nc)]
