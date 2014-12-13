@@ -132,6 +132,8 @@ class SwaggerAppTestCase(unittest.TestCase):
         self.assertEqual(self.app.resolve('#/paths/~1api~1store~1order/post/produces'), ['application/json'])
         self.assertEqual(self.app.resolve('#/host'), 'petstore.swagger.wordnik.com')
 
+        # TODO: resolve with URL part
+
     def test_scope_dict(self):
         """ ScopeDict is a syntactic suger
         to access scoped named object, ex. Operation, Model

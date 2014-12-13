@@ -26,7 +26,7 @@ class SwaggerApp(object):
         sc_path: '#/paths'
     }
 
-    def __init__(self):
+    def __init__(self, app_cache=None, url_load_hook=None):
         """ constructor
         """
         self.__root = None
@@ -36,7 +36,13 @@ class SwaggerApp(object):
         self.__op = None
         self.__m = None
         self.__schemes = []
-        self._url2app = {}
+
+        # a map from url to SwaggerApp
+        self.__app_cache = {} if app_cache == None else app_cache
+
+        # things to make unittest easier,
+        # all urls to load json would go through this hook
+        self.__url_load_hook = url_load_hook
 
         # TODO: allow init App-wised SCOPE_SEPARATOR
 
@@ -93,12 +99,25 @@ class SwaggerApp(object):
         """
         return self.__schemes
 
+    @property
+    def _app_cache(self):
+        """ internal usage
+        """
+        return self.__app_cache
+
     def _load_json(self, url, getter=None, parser=None):
         """
         """
+        if url in self.__app_cache:
+            # look into cache first
+            return
+
         if not getter:
+            # apply hook when use this url to load
+            local_url = url if not self.__url_load_hook else self.__url_load_hook(url)
+
             getter = UrlGetter
-            p = six.moves.urllib.parse.urlparse(url)
+            p = six.moves.urllib.parse.urlparse(local_url)
             if p.scheme == 'file' and p.path:
                 getter = LocalGetter(p.path)
 
@@ -106,11 +125,7 @@ class SwaggerApp(object):
                 # default initialization is passing the url
                 # you can override this behavior by passing an
                 # initialized getter object.
-                getter = getter(url)
-
-        if url in self._url2app:
-            # look into cache first
-            return self._url2app[url].raw
+                getter = getter(local_url)
 
         # get root document to check its swagger version.
         obj, _ = six.advance_iterator(getter)
@@ -129,21 +144,17 @@ class SwaggerApp(object):
             with parser(tmp, '_tmp_') as ctx:
                 ctx.parse(obj)
 
-        self._url2app[url] = self
+        self.__app_cache[url] = weakref.proxy(self) # avoid circular reference
         self.__version = utils.get_swagger_version(tmp['_tmp_'])
         self.__raw = tmp['_tmp_']
 
-    def _validate(self, url=None):
+    def _validate(self):
         """ check if this Swagger API valid or not.
 
         :param bool strict: when in strict mode, exception would be raised if not valid.
         :return: validation errors
         :rtype: list of tuple(where, type, msg).
         """
-        if url:
-            if url not in self._url2app:
-                raise ValueError('This SwaggerApp is not loaded yet: {0}'.format(url))
-            return self._url2app[url]._validate()
 
         v_mod = utils.import_string('.'.join([
             'pyswagger',
@@ -163,16 +174,11 @@ class SwaggerApp(object):
         s.scan(route=[v], root=self.__raw)
         return v.errs
 
-    def _prepare_obj(self, url=None, strict=True):
+    def _prepare_obj(self, strict=True):
         """
         """
         s = Scanner(self)
-        self.validate(url=url, strict=strict)
-
-        if url:
-            if url not in self._url2app:
-                raise ValueError('This SwaggerApp is not loaded yet: {0}'.format(url))
-            return self._url2app[url]._prepare_obj(url=None, strict=strict)
+        self.validate(strict=strict)
 
         if self.version == '1.2':
             converter = Upgrade()
@@ -187,6 +193,7 @@ class SwaggerApp(object):
         elif self.version == '2.0':
             self.__root = self.raw
         else:
+            # TODO: partial object would go to this place.
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
 
         if self.__root.schemes and len(self.__root.schemes) > 0:
@@ -195,7 +202,7 @@ class SwaggerApp(object):
         s.scan(root=self.__root, route=[Resolve(), PatchObject()])
 
     @classmethod
-    def load(kls, url, getter=None):
+    def load(kls, url, getter=None, app_cache=None, url_load_hook=None):
         """ load json as a raw SwaggerApp
 
         :param str url: url of path of Swagger API definition
@@ -206,8 +213,9 @@ class SwaggerApp(object):
         :raises ValueError: if url is wrong
         :raises NotImplementedError: the swagger version is not supported.
         """
+
         url = utils.normalize_url(url)
-        app = kls()
+        app = kls(app_cache, url_load_hook)
 
         app._load_json(url, getter)
 
@@ -218,24 +226,25 @@ class SwaggerApp(object):
 
         return app
 
-    def validate(self, url=None, strict=True):
+    def validate(self, strict=True):
         """ check if this Swagger API valid or not.
 
         :param bool strict: when in strict mode, exception would be raised if not valid.
         :return: validation errors
         :rtype: list of tuple(where, type, msg).
         """
-        errs = self._validate(utils.normalize_url(url))
+
+        errs = self._validate()
         if strict and len(errs):
             raise ValueError('this Swagger App contains error: {0}.'.format(len(errs)))
 
         return errs
 
-    def prepare(self, url=None, strict=True):
+    def prepare(self, strict=True):
         """ preparation for loaded json
         """
-        url = utils.normalize_url(url)
-        self._prepare_obj(url=url, strict=strict)
+
+        self._prepare_obj(strict=strict)
 
         # reducer for Operation 
         s = Scanner(self)
@@ -253,7 +262,7 @@ class SwaggerApp(object):
             raise ValueError('Cycles detected in Schema Object: {0}'.format(cy.cycles['schema']))
 
     @classmethod
-    def create(kls, url, strict=True, getter=None):
+    def create(kls, url, strict=True):
         """ factory of SwaggerApp
 
         :param str url: url of path of Swagger API definition
@@ -264,9 +273,8 @@ class SwaggerApp(object):
         :raises ValueError: if url is wrong
         :raises NotImplementedError: the swagger version is not supported.
         """
-
-        app = kls.load(url, getter)
-        app.prepare(url)
+        app = kls.load(url)
+        app.prepare(strict=strict)
 
         return app
 
@@ -275,27 +283,33 @@ class SwaggerApp(object):
     """
     _create_ = create
 
-    def resolve(self, path):
+    def resolve(self, jref):
         """ reference resolver
 
-        :param str path: a JSON Reference, refer to http://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03 for details.
+        :param str jref: a JSON Reference, refer to http://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03 for details.
         :return: the referenced object, wrapped by weakref.ProxyType
         :rtype: weakref.ProxyType
         :raises ValueError: if path is not valid
         """
-        if path == None or len(path) == 0:
+
+        if jref == None or len(jref) == 0:
             raise ValueError('Empty Path is not allowed')
 
-        if not path.startswith('#'):
-            raise ValueError('Invalid Path, root element should be \'#\', but [{0}]'.format(path))
+        url, jp = utils.jr_split(jref)
+        if url:
+            if url not in self.__app_cache:
+                # This loaded SwaggerApp would be kept in app_cache.
+                app = SwaggerApp.load(url, app_cache=self.__app_cache, url_load_hook=self.__url_load_hook)
+                app.prepare()
+            return self.__app_cache[url].resolve(jp)
 
-        if path.endswith('/'):
-            path = path[:-1]
+        if not jp.startswith('#'):
+            raise ValueError('Invalid Path, root element should be \'#\', but [{0}]'.format(jref))
 
-        obj = self.root.resolve(utils.jp_split(path)[1:]) # heading element is #, mapping to self.root
+        obj = self.root.resolve(utils.jp_split(jp)[1:]) # heading element is #, mapping to self.root
 
         if obj == None:
-            raise ValueError('Unable to resolve path, [{0}]'.format(path))
+            raise ValueError('Unable to resolve path, [{0}]'.format(jref))
 
         if isinstance(obj, (six.string_types, int, list, dict)):
             return obj
