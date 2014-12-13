@@ -39,6 +39,8 @@ class SwaggerApp(object):
 
         # a map from url to SwaggerApp
         self.__app_cache = {} if app_cache == None else app_cache
+        # keep a string reference to SwaggerApp when resolve
+        self.__strong_refs = []
 
         # things to make unittest easier,
         # all urls to load json would go through this hook
@@ -301,6 +303,11 @@ class SwaggerApp(object):
                 # This loaded SwaggerApp would be kept in app_cache.
                 app = SwaggerApp.load(url, app_cache=self.__app_cache, url_load_hook=self.__url_load_hook)
                 app.prepare()
+
+                # nothing but only keeping a strong reference of
+                # loaded SwaggerApp.
+                self.__strong_refs.append(app)
+
             return self.__app_cache[url].resolve(jp)
 
         if not jp.startswith('#'):
