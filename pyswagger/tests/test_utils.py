@@ -114,6 +114,9 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.jr_split(
             'user'), (
             'file:///user', ''))
+        self.assertEqual(utils.jr_split(
+            '#'), (
+            '', '#'))
 
 
 class WalkTestCase(unittest.TestCase):

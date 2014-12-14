@@ -218,6 +218,9 @@ def jp_split(s):
 def jr_split(s):
     """ split a json-reference into (url, json-pointer)
     """
+    if s == '#':
+        return ('', '#')
+
     p = six.moves.urllib.parse.urlparse(s)
     return (
         normalize_url(six.moves.urllib.parse.urlunparse(p[:5]+('',))),
@@ -315,7 +318,11 @@ def get_swagger_version(obj):
 
     # TODO: test case
     if isinstance(obj, dict):
-        return obj['swaggerVersion'] if 'swaggerVersion' in obj else obj['swagger']
+        if 'swaggerVersion' in obj:
+            return obj['swaggerVersion']
+        elif 'swagger' in obj:
+            return obj['swagger']
+        return None
     else:
         # should be an instance of BaseObj
         return obj.swaggerVersion if hasattr(obj, 'swaggerVersion') else obj.swagger
