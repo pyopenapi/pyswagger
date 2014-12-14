@@ -186,6 +186,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     def __call__(self, **k):
         # prepare parameter set
         params = dict(header={}, query=[], path={}, body={}, formData=[], file={})
+        names = []
         def _convert_parameter(p):
             v = k.get(p.name, p.default)
             if v == None and p.required:
@@ -204,9 +205,15 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
             else:
                 params[i][p.name] = str(c) if i != 'body' else c
 
-        # TODO: check for unknown parameter
+            names.append(p.name)
+
         for p in self.parameters:
             _convert_parameter(deref(p))
+
+        # check for unknown parameter
+        unknown = set(six.iterkeys(k)) - set(names)
+        if len(unknown) > 0:
+            raise ValueError('Unknown parameters: {0}'.format(unknown))
 
         return \
         io.SwaggerRequest(op=self, params=params), io.SwaggerResponse(self)
