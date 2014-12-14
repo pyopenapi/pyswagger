@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .utils import from_iso8601, deref
+from .utils import from_iso8601, deref, CycleGuard
 import datetime
 import functools
 import six
@@ -335,6 +335,11 @@ prim_obj_map = {
     ('string', ''): create_str,
     ('string', None): create_str,
 
+    # TODO: add validation for email, uuid
+    # TODO: add convertion of uuid from python's one
+    ('string', 'email'): create_str,
+    ('string', 'uuid'): create_str,
+
     ('string', 'byte'): Byte,
     ('string', 'date'): Date,
     ('string', 'date-time'): Datetime,
@@ -346,8 +351,6 @@ prim_obj_map = {
     # file
     ('file', ''): File,
     ('file', None): File,
-
-    # TODO: add support for email, uuid
 };
 
 
@@ -377,6 +380,11 @@ def prim_factory(obj, val, ctx=None):
     ctx = {} if ctx == None else ctx
     if 'name' not in ctx and hasattr(obj, 'name'):
         ctx['name'] = obj.name
+    if 'guard' not in ctx:
+        ctx['guard'] = CycleGuard()
+
+    # cycle guard
+    ctx['guard'].update(obj)
 
     ret = None
     if obj.type:

@@ -151,7 +151,6 @@ class Upgrade(object):
         o.update_field('responses', {})
         resp = objects.Response(NullContext())
         if obj.type != 'void':
-            # TODO: add test case
             resp.update_field('schema', convert_schema_from_datatype(obj, scope))
         o.responses['default'] = resp
 

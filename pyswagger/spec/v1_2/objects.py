@@ -49,7 +49,6 @@ class DataTypeObj(BaseObj_v1_2):
         else:
             setattr(self, self.get_private_name('items'), None)
 
-        # TODO: duplicate code in BaseObj.__init__
         for name, default in DataTypeObj.__swagger_fields__:
             # almost every data field is not required.
             setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))

@@ -121,6 +121,37 @@ class SwaggerUtilsTestCase(unittest.TestCase):
             '//'), (
             '', '#'))
 
+    def test_cycle_guard(self):
+        def my_id(obj):
+            return obj
+
+        c = utils.CycleGuard(identity_hook=my_id)
+        c.update(1)
+        self.assertRaises(ValueError, c.update, 1)
+
+    def test_normalize_url(self):
+        self.assertEqual(utils.normalize_url(None), None)
+        self.assertEqual(utils.normalize_url(''), '')
+        self.assertEqual(utils.normalize_url('http://test.com/a/q.php?q=100'), 'http://test.com/a/q.php?q=100')
+        self.assertEqual(utils.normalize_url('/tmp/local/test/'), 'file:///tmp/local/test/')
+        self.assertEqual(utils.normalize_url('/tmp/local/test'), 'file:///tmp/local/test')
+        self.assertEqual(utils.normalize_url('/tmp/local/test in space.txt'), 'file:///tmp/local/test%20in%20space.txt')
+
+    def test_normalize_jr(self):
+        self.assertEqual(utils.normalize_jr(None, ''), None)
+        self.assertEqual(utils.normalize_jr('User', '#/definitions'), '#/definitions/User')
+        self.assertEqual(utils.normalize_jr('User', '#/definitions', 'http://test.com/api'), 'http://test.com/api#/definitions/User')
+        self.assertEqual(utils.normalize_jr('#/definitions/User', '#/definitions', 'http://test.com/api'), 'http://test.com/api#/definitions/User')
+        self.assertEqual(utils.normalize_jr(
+            'http://test.com/api#/definitions/User', ''),
+            'http://test.com/api#/definitions/User'
+        )
+
+    def test_get_swagger_version(self):
+        self.assertEqual(utils.get_swagger_version({'swaggerVersion': '1.2'}), '1.2')
+        self.assertEqual(utils.get_swagger_version({'swagger': '2.0'}), '2.0')
+        self.assertEqual(utils.get_swagger_version({'qq': '20.0'}), None)
+
 
 class WalkTestCase(unittest.TestCase):
     """ test for walk """

@@ -76,6 +76,21 @@ class ScopeDict(dict):
             raise e
 
 
+class CycleGuard(object):
+    """ Guard for cycle detection
+    """
+
+    def __init__(self, identity_hook=id):
+        self.__visited = []
+        self.__hook = identity_hook
+
+    def update(self, obj):
+        i = self.__hook(obj)
+        if i in self.__visited:
+            raise ValueError('Cycle detected: {0}'.format(obj.__repr__()))
+        self.__visited.append(i)
+
+
 class FixedTZ(datetime.tzinfo):
     """ tzinfo implementation without consideration of
     daylight-saving-time.
@@ -227,11 +242,13 @@ def jr_split(s):
 def deref(obj):
     """ dereference $ref
     """
-    # TODO: cycle detection
-    cur = obj
+    cur, guard = obj, CycleGuard()
     while cur and getattr(cur, 'ref_obj', None) != None:
+        # cycle guard
+        guard.update(cur)
+
         cur = cur.ref_obj
-    return cur if cur else obj
+    return cur
 
 def get_dict_as_tuple(d):
     """ get the first item in dict,
@@ -263,7 +280,6 @@ def path2url(p):
 def normalize_url(url):
     """ Normalize url
     """
-    # TODO: test case
     if not url:
         return url
 
@@ -287,7 +303,7 @@ def normalize_jr(jr, prefix, url=None):
     output:
     - http://test.com/swagger.json#/definitions/User
     """
-    # TODO: test case
+
     if jr == None:
         return jr
 
@@ -303,7 +319,8 @@ def normalize_jr(jr, prefix, url=None):
     # prepend url
     if url:
         p = six.moves.urllib.parse.urlparse(url)
-        jr = six.moves.urllib.parse.urlunparse(p[:5]+(jr,))
+        # remember to remove the heading '#'
+        jr = six.moves.urllib.parse.urlunparse(p[:5]+(jr[1:],))
 
     return jr
 
@@ -313,7 +330,6 @@ def is_file_url(url):
 def get_swagger_version(obj):
     """ get swagger version from loaded json """
 
-    # TODO: test case
     if isinstance(obj, dict):
         if 'swaggerVersion' in obj:
             return obj['swaggerVersion']
@@ -366,4 +382,5 @@ def walk(start, ofn, cyc=None):
                 ctx[stk[-1]].remove(top)
 
     return cyc
+
 

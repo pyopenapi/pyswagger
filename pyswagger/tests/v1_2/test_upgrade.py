@@ -88,7 +88,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         r = o.responses['default']
         self.assertEqual(r.headers, {})
         self.assertEqual(r.schema.type, 'array')
-        self.assertEqual(getattr(r.schema.items, '$ref'), _pf('#/definitions/pet!##!Pet'))
+        self.assertEqual(getattr(r.schema.items, '$ref'), _pf('/definitions/pet!##!Pet'))
 
         # createUser
         o = self.app.root.paths['/api/user'].post
@@ -118,7 +118,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         p = [p for p in o.parameters if getattr(p, 'in') == 'body'][0]
         self.assertEqual(getattr(p, 'in'), 'body')
         self.assertEqual(p.required, True)
-        self.assertEqual(getattr(p.schema, '$ref'), _pf('#/definitions/pet!##!Pet'))
+        self.assertEqual(getattr(p.schema, '$ref'), _pf('/definitions/pet!##!Pet'))
 
         # form
         o = self.app.root.paths['/api/pet/uploadImage'].post
@@ -155,12 +155,11 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         p = d.properties['id']
         self.assertEqual(p.type, 'integer')
         self.assertEqual(p.format, 'int64')
-        # TODO: fix this, in Swagger 2.0, type won't be wrong.
         self.assertEqual(p.minimum, 0)
         self.assertEqual(p.maximum, 100)
 
         p = d.properties['category']
-        self.assertEqual(getattr(p, '$ref'), _pf('#/definitions/pet!##!Category'))
+        self.assertEqual(getattr(p, '$ref'), _pf('/definitions/pet!##!Category'))
 
         p = d.properties['photoUrls']
         self.assertEqual(p.type, 'array')
@@ -168,7 +167,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
 
         p = d.properties['tags']
         self.assertEqual(p.type, 'array')
-        self.assertEqual(getattr(p.items, '$ref'), _pf('#/definitions/pet!##!Tag'))
+        self.assertEqual(getattr(p.items, '$ref'), _pf('/definitions/pet!##!Tag'))
 
         p = d.properties['status']
         self.assertEqual(p.type, 'string')

@@ -1,54 +1,73 @@
 {
-    "swagger":"2.0",
-    "host":"http://test.com",
-    "basePath":"/v1",
-    "paths":{
+   "swagger":"2.0",
+   "host":"http://test.com",
+   "basePath":"/v1",
+   "paths":{
       "/t":{
-        "get":{
-          "parameters":[
-            {
-              "name":"p1",
-              "in":"header",
-              "type":"array",
-              "items":{
-                "type":"integer",
-                "format":"int64"
-              },
-              "collectionFormat":"csv"
-            },
-            {
-              "name":"p2",
-              "in":"header",
-              "type":"integer",
-              "format":"int32",
-              "maximum":100,
-              "exclusiveMaximum":true,
-              "minimum":0,
-              "exclusiveMinimum":false
-            },
-            {
-              "name":"p3",
-              "in":"header",
-              "type":"array",
-              "items":{
-                "type":"array",
-                "items":{
+         "get":{
+            "parameters":[
+               {
+                  "name":"p1",
+                  "in":"header",
                   "type":"array",
                   "items":{
-                    "type":"integer",
-                    "format":"int64"
+                     "type":"integer",
+                     "format":"int64"
                   },
-                  "collectionFormat":"pipes"
-                },
-                "collectionFormat":"csv"
-              },
-              "collectionFormat":"ssv"
-            }
-          ]
-        }
+                  "collectionFormat":"csv"
+               },
+               {
+                  "name":"p2",
+                  "in":"header",
+                  "type":"integer",
+                  "format":"int32",
+                  "maximum":100,
+                  "exclusiveMaximum":true,
+                  "minimum":0,
+                  "exclusiveMinimum":false
+               },
+               {
+                  "name":"p3",
+                  "in":"header",
+                  "type":"array",
+                  "items":{
+                     "type":"array",
+                     "items":{
+                        "type":"array",
+                        "items":{
+                           "type":"integer",
+                           "format":"int64"
+                        },
+                        "collectionFormat":"pipes"
+                     },
+                     "collectionFormat":"csv"
+                  },
+                  "collectionFormat":"ssv"
+               }
+            ]
+         },
+         "put":{
+            "parameters":[
+               {
+                  "name":"p1",
+                  "in":"query",
+                  "type":"string"
+               },
+               {
+                  "name":"p2",
+                  "in":"query",
+                  "type":"string"
+               },
+               {
+                  "name":"p3",
+                  "in":"query",
+                  "type":"string"
+               }
+            ]
+         }
       }
-    },
-    "definitions":{
+   },
+   "definitions":{
       "Category":{
          "properties":{
             "id":{
@@ -171,8 +190,12 @@
       },
       "Employee":{
          "allOf":[
-            {"$ref":"User"},
-            {"$ref":"Skill"}
+            {
+               "$ref":"User"
+            },
+            {
+               "$ref":"Skill"
+            }
          ]
       },
       "Boss":{
@@ -182,8 +205,12 @@
             }
          },
          "allOf":[
-            {"$ref":"User"},
-            {"$ref":"Skill"}
+            {
+               "$ref":"User"
+            },
+            {
+               "$ref":"Skill"
+            }
          ]
       },
       "int":{
@@ -191,12 +218,12 @@
          "format":"int32",
          "allOf":[
             {
-                "maximum":200,
-                "exclusiveMaximum":true
+               "maximum":200,
+               "exclusiveMaximum":true
             },
             {
-                "minimum":100,
-                "exclusiveMinimum":false
+               "minimum":100,
+               "exclusiveMinimum":false
             }
          ]
       },
@@ -204,7 +231,9 @@
          "type":"number",
          "format":"float",
          "allOf":[
-            {"multipleOf":5}
+            {
+               "multipleOf":5
+            }
          ]
       },
       "byte":{
@@ -221,8 +250,11 @@
       },
       "str_enum":{
          "type":"string",
-         "enum":["red", "blue", "green"]
+         "enum":[
+            "red",
+            "blue",
+            "green"
+         ]
       }
    }
 }
-

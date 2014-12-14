@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import SwaggerApp, utils, primitives
 from ..utils import get_test_data_folder
 from ...scanner import CycleDetector 
 from ...scan import Scanner
@@ -39,11 +39,11 @@ class CircularRefTestCase(unittest.TestCase):
         c = CycleDetector()
         s.scan(root=app.raw, route=[c])
         self.assertEqual(sorted(c.cycles['path_item']), sorted([[
-            _pf('#/paths/~1p1'),
-            _pf('#/paths/~1p2'),
-            _pf('#/paths/~1p3'),
-            _pf('#/paths/~1p4'),
-            _pf('#/paths/~1p1')
+            _pf('/paths/~1p1'),
+            _pf('/paths/~1p2'),
+            _pf('/paths/~1p3'),
+            _pf('/paths/~1p4'),
+            _pf('/paths/~1p1')
         ]]))
 
     def test_schema(self):
@@ -70,11 +70,33 @@ class CircularRefTestCase(unittest.TestCase):
         s.scan(root=app.raw, route=[c])
         self.maxDiff = None
         self.assertEqual(sorted(c.cycles['schema']), sorted([
-            [_pf('#/definitions/s10'), _pf('#/definitions/s11'), _pf('#/definitions/s9'), _pf('#/definitions/s10')],
-            [_pf('#/definitions/s5'), _pf('#/definitions/s5')],
-            [_pf('#/definitions/s1'), _pf('#/definitions/s2'), _pf('#/definitions/s3'), _pf('#/definitions/s4'), _pf('#/definitions/s1')],
-            [_pf('#/definitions/s12'), _pf('#/definitions/s13'), _pf('#/definitions/s12')],
-            [_pf('#/definitions/s6'), _pf('#/definitions/s7'), _pf('#/definitions/s6')],
-            [_pf('#/definitions/s14'), _pf('#/definitions/s15'), _pf('#/definitions/s14')]
+            [_pf('/definitions/s10'), _pf('/definitions/s11'), _pf('/definitions/s9'), _pf('/definitions/s10')],
+            [_pf('/definitions/s5'), _pf('/definitions/s5')],
+            [_pf('/definitions/s1'), _pf('/definitions/s2'), _pf('/definitions/s3'), _pf('/definitions/s4'), _pf('/definitions/s1')],
+            [_pf('/definitions/s12'), _pf('/definitions/s13'), _pf('/definitions/s12')],
+            [_pf('/definitions/s6'), _pf('/definitions/s7'), _pf('/definitions/s6')],
+            [_pf('/definitions/s14'), _pf('/definitions/s15'), _pf('/definitions/s14')]
         ]))
 
+    def test_deref(self):
+        app = SwaggerApp.create(get_test_data_folder(
+            version='2.0',
+            which=os.path.join('circular', 'schema'),
+            ),
+            strict=False
+        )
+
+        s = app.resolve('#/definitions/s1')
+        self.assertRaises(ValueError, utils.deref, s)
+
+    def test_primfactory(self):
+        app = SwaggerApp.create(get_test_data_folder(
+            version='2.0',
+            which=os.path.join('circular', 'schema'),
+            ),
+            strict=False
+        )
+
+        s = app.resolve('#/definitions/s1')
+        self.assertRaises(ValueError, primitives.prim_factory, s, {})
+ 

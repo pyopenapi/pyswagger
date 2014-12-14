@@ -264,3 +264,15 @@ class AdditionalPropertiesTestCase(unittest.TestCase):
         self.assertTrue('category1' not in m)
         self.assertTrue('category2' not in m)
 
+
+class ParameterTestCase(unittest.TestCase):
+    """ test for Parameter object """
+
+    @classmethod
+    def setUpClass(kls):
+        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'model')))
+
+    def test_unknown(self):
+        p = self.app.resolve('#/paths/~1t/put')
+        self.assertRaises(ValueError, p, p1='tom', p2='mary', p3='qoo', p4='unknown') 
+
