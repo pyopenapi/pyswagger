@@ -218,13 +218,10 @@ def jp_split(s):
 def jr_split(s):
     """ split a json-reference into (url, json-pointer)
     """
-    if s == '#':
-        return ('', '#')
-
     p = six.moves.urllib.parse.urlparse(s)
     return (
         normalize_url(six.moves.urllib.parse.urlunparse(p[:5]+('',))),
-        '#'+p.fragment if p.fragment else ''
+        '#'+p.fragment if p.fragment else '#'
     )
 
 def deref(obj):

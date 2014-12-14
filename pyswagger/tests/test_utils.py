@@ -101,19 +101,19 @@ class SwaggerUtilsTestCase(unittest.TestCase):
             'http://test.com/api/swagger.json', '#/definitions/s1'))
         self.assertEqual(utils.jr_split(
             'http://test/com/api/'), (
-            'http://test/com/api/', ''))
+            'http://test/com/api/', '#'))
         self.assertEqual(utils.jr_split(
             '#/definitions/s1'), (
             '', '#/definitions/s1'))
         self.assertEqual(utils.jr_split(
             '/user/tmp/local/ttt'), (
-            'file:///user/tmp/local/ttt', ''))
+            'file:///user/tmp/local/ttt', '#'))
         self.assertEqual(utils.jr_split(
             '/user/tmp/local/ttt/'), (
-            'file:///user/tmp/local/ttt/', ''))
+            'file:///user/tmp/local/ttt/', '#'))
         self.assertEqual(utils.jr_split(
             'user'), (
-            'file:///user', ''))
+            'file:///user', '#'))
         self.assertEqual(utils.jr_split(
             '#'), (
             '', '#'))
