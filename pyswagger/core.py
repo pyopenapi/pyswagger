@@ -211,7 +211,6 @@ class SwaggerApp(object):
         elif self.version == '2.0':
             self.__root = self.raw
         else:
-            # TODO: partial object would go to this place.
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
 
         if hasattr(self.__root, 'schemes') and self.__root.schemes:
