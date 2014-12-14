@@ -227,11 +227,16 @@ def jr_split(s):
 def deref(obj):
     """ dereference $ref
     """
-    # TODO: cycle detection
-    cur = obj
+    cur, visited = obj, []
     while cur and getattr(cur, 'ref_obj', None) != None:
+        # cycle guard
+        i = id(cur)
+        if i in visited:
+            raise ValueError('cycle detected in deref: {0}'.format(cur.__repr__()))
+
+        visited.append(i)
         cur = cur.ref_obj
-    return cur if cur else obj
+    return cur
 
 def get_dict_as_tuple(d):
     """ get the first item in dict,

@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import SwaggerApp, utils, primitives
 from ..utils import get_test_data_folder
 from ...scanner import CycleDetector 
 from ...scan import Scanner
@@ -78,3 +78,25 @@ class CircularRefTestCase(unittest.TestCase):
             [_pf('#/definitions/s14'), _pf('#/definitions/s15'), _pf('#/definitions/s14')]
         ]))
 
+    def test_deref(self):
+        app = SwaggerApp.create(get_test_data_folder(
+            version='2.0',
+            which=os.path.join('circular', 'schema'),
+            ),
+            strict=False
+        )
+
+        s = app.resolve('#/definitions/s1')
+        self.assertRaises(ValueError, utils.deref, s)
+
+    def test_primfactory(self):
+        app = SwaggerApp.create(get_test_data_folder(
+            version='2.0',
+            which=os.path.join('circular', 'schema'),
+            ),
+            strict=False
+        )
+
+        s = app.resolve('#/definitions/s1')
+        self.assertRaises(ValueError, primitives.prim_factory, s, {})
+ 
