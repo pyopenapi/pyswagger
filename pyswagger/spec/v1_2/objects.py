@@ -4,7 +4,11 @@ import six
 import copy
 
 
-class Items(six.with_metaclass(FieldMeta, BaseObj)):
+class BaseObj_v1_2(BaseObj):
+    __swagger_version__ = '1.2'
+
+
+class Items(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Items Object
     """
     __swagger_fields__ = [
@@ -20,7 +24,7 @@ class ItemsContext(Context):
     __swagger_ref_object__ = Items
 
 
-class DataTypeObj(BaseObj):
+class DataTypeObj(BaseObj_v1_2):
     """ Data Type Fields
     """
     __swagger_fields__ = [
@@ -52,7 +56,7 @@ class DataTypeObj(BaseObj):
 
         super(DataTypeObj, self).__init__(ctx)
 
-class Scope(six.with_metaclass(FieldMeta, BaseObj)):
+class Scope(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Scope Object
     """
 
@@ -61,7 +65,7 @@ class Scope(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class LoginEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
+class LoginEndpoint(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ LoginEndpoint Object
     """
 
@@ -70,7 +74,7 @@ class LoginEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class Implicit(six.with_metaclass(FieldMeta, BaseObj)):
+class Implicit(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Implicit Object
     """
 
@@ -80,7 +84,7 @@ class Implicit(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class TokenRequestEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
+class TokenRequestEndpoint(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ TokenRequestEndpoint Object
     """
 
@@ -91,7 +95,7 @@ class TokenRequestEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class TokenEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
+class TokenEndpoint(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ TokenEndpoint Object
     """
 
@@ -101,7 +105,7 @@ class TokenEndpoint(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class AuthorizationCode(six.with_metaclass(FieldMeta, BaseObj)):
+class AuthorizationCode(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ AuthorizationCode Object
     """
 
@@ -111,7 +115,7 @@ class AuthorizationCode(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class GrantType(six.with_metaclass(FieldMeta, BaseObj)):
+class GrantType(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ GrantType Object
     """
 
@@ -121,7 +125,7 @@ class GrantType(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class Authorizations(six.with_metaclass(FieldMeta, BaseObj)):
+class Authorizations(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Authorizations Object
     """
 
@@ -130,7 +134,7 @@ class Authorizations(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class Authorization(six.with_metaclass(FieldMeta, BaseObj)):
+class Authorization(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Authorization Object
     """
 
@@ -146,7 +150,7 @@ class Authorization(six.with_metaclass(FieldMeta, BaseObj)):
         return path.split('/', 3)[2]
 
 
-class ResponseMessage(six.with_metaclass(FieldMeta, BaseObj)):
+class ResponseMessage(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ ResponseMessage Object
     """
 
@@ -191,7 +195,7 @@ class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
         return self.nickname
 
 
-class Api(six.with_metaclass(FieldMeta, BaseObj)):
+class Api(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Api Object
     """
 
@@ -208,7 +212,7 @@ class Property(six.with_metaclass(FieldMeta, DataTypeObj)):
     __swagger_fields__ = []
 
 
-class Model(six.with_metaclass(FieldMeta, BaseObj)):
+class Model(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Model Object
     """
 
@@ -227,7 +231,7 @@ class Model(six.with_metaclass(FieldMeta, BaseObj)):
         return self.id
 
 
-class Resource(six.with_metaclass(FieldMeta, BaseObj)):
+class Resource(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Resource Object
     """
 
@@ -270,7 +274,7 @@ class Resource(six.with_metaclass(FieldMeta, BaseObj)):
         return path.split('/', 3)[2]
 
 
-class Info(six.with_metaclass(FieldMeta, BaseObj)):
+class Info(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Info Object
     """
 
@@ -284,7 +288,7 @@ class Info(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class ResourceList(six.with_metaclass(FieldMeta, BaseObj)):
+class ResourceList(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Resource List Object
     """
     __swagger_fields__ = [

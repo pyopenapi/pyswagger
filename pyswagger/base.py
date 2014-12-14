@@ -180,6 +180,10 @@ class BaseObj(object):
     # - tuple(string, default-value): a field name with default value
     __swagger_fields__ = []
 
+
+    # Swagger Version this object belonging to
+    __swagger_version__ = None
+
     def __init__(self, ctx):
         """ constructor
 
