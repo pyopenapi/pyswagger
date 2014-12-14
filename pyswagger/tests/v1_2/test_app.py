@@ -146,13 +146,16 @@ class SwaggerAppTestCase(unittest.TestCase):
         self.assertEqual(self.app.resolve('#/host'), 'petstore.swagger.wordnik.com')
 
         # resolve with URL part
+        # refer to 
+        #      http://stackoverflow.com/questions/10246116/python-dereferencing-weakproxy 
+        # for how to dereferencing weakref
         self.assertEqual(
-            id(self.app.resolve('#/definitions/user!##!User')),
-            id(self.app.resolve('file:///wordnik#/definitions/user!##!User'))
+            self.app.resolve('#/definitions/user!##!User').__repr__(),
+            self.app.resolve('file:///wordnik#/definitions/user!##!User').__repr__()
         )
         self.assertEqual(
-           id(self.app.resolve('#/paths/~1api~1user~1{username}/put')),
-           id(self.app.resolve('file:///wordnik#/paths/~1api~1user~1{username}/put'))
+           self.app.resolve('#/paths/~1api~1user~1{username}/put').__repr__(),
+           self.app.resolve('file:///wordnik#/paths/~1api~1user~1{username}/put').__repr__()
         )
 
     def test_scope_dict(self):
