@@ -215,9 +215,23 @@ def jp_split(s):
 
     return [_decode(ss) for ss in s.split('/')]
 
+def jr_split(s):
+    """ split a json-reference into (url, json-pointer)
+    """
+    p = six.moves.urllib.parse.urlparse(s)
+    return (
+        normalize_url(six.moves.urllib.parse.urlunparse(p[:5]+('',))),
+        '#'+p.fragment if p.fragment else '#'
+    )
+
 def deref(obj):
-    o = getattr(obj, 'ref_obj', None) if obj else None
-    return o if o else obj
+    """ dereference $ref
+    """
+    # TODO: cycle detection
+    cur = obj
+    while cur and getattr(cur, 'ref_obj', None) != None:
+        cur = cur.ref_obj
+    return cur if cur else obj
 
 def get_dict_as_tuple(d):
     """ get the first item in dict,
@@ -238,4 +252,118 @@ def nv_tuple_list_replace(l, v):
 
     if not _found:
         l.append(v)
+
+def path2url(p):
+    """ Return file:// URL from a filename.
+    """
+    return six.moves.urllib.parse.urljoin(
+        'file:', six.moves.urllib.request.pathname2url(p)
+    )
+
+def normalize_url(url):
+    """ Normalize url
+    """
+    # TODO: test case
+    if not url:
+        return url
+
+    p = six.moves.urllib.parse.urlparse(url)
+    if p.scheme == '':
+        if p.netloc == '' and p.path != '':
+            # it should be a file path
+            url = path2url(url)
+        else:
+            raise ValueError('url should be a http-url or file path -- ' + url)
+
+    return url
+
+def normalize_jr(jr, prefix, url=None):
+    """ normalize JSON reference, also fix
+    implicit reference of JSON pointer.
+    input:
+    - User
+    - #/definitions/User
+    - http://test.com/swagger.json#/definitions/User
+    output:
+    - http://test.com/swagger.json#/definitions/User
+    """
+    # TODO: test case
+    if jr == None:
+        return jr
+
+    p = six.moves.urllib.parse.urlparse(jr)
+    if p.scheme != '':
+        return jr
+
+    # it's a JSON reference without url
+
+    # fix implicit reference
+    jr = jp_compose(jr, base=prefix) if jr.find('#') == -1 else jr
+
+    # prepend url
+    if url:
+        p = six.moves.urllib.parse.urlparse(url)
+        jr = six.moves.urllib.parse.urlunparse(p[:5]+(jr,))
+
+    return jr
+
+def is_file_url(url):
+    return url.startswith('file://')
+
+def get_swagger_version(obj):
+    """ get swagger version from loaded json """
+
+    # TODO: test case
+    if isinstance(obj, dict):
+        if 'swaggerVersion' in obj:
+            return obj['swaggerVersion']
+        elif 'swagger' in obj:
+            return obj['swagger']
+        return None
+    else:
+        # should be an instance of BaseObj
+        return obj.swaggerVersion if hasattr(obj, 'swaggerVersion') else obj.swagger
+
+def walk(start, ofn, cyc=None):
+    """ Non recursive DFS to detect cycles
+
+    :param start: start vertex in graph
+    :param ofn: function to get the list of outgoing edges of a vertex
+    :param cyc: list of existing cycles, cycles are represented in a list started with minimum vertex.
+    :return: cycles
+    :rtype: list of lists
+    """
+    ctx, stk = {}, [start]
+    cyc = [] if cyc == None else cyc
+
+    while len(stk):
+        top = stk[-1]
+
+        if top not in ctx:
+            ctx.update({top:list(ofn(top))})
+
+        if len(ctx[top]):
+            n = ctx[top][0]
+            if n in stk:
+                # cycles found,
+                # normalize the representation of cycles,
+                # start from the smallest vertex, ex.
+                # 4 -> 5 -> 2 -> 7 -> 9 would produce
+                # (2, 7, 9, 4, 5)
+                nc = stk[stk.index(n):]
+                ni = nc.index(min(nc))
+                nc = nc[ni:] + nc[:ni] + [min(nc)]
+                if nc not in cyc:
+                    cyc.append(nc)
+
+                ctx[top].pop(0)
+            else:
+                stk.append(n)
+        else:
+            ctx.pop(top)
+            stk.pop()
+            if len(stk):
+                ctx[stk[-1]].remove(top)
+
+    return cyc
 

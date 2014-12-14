@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from pyswagger import base
 import unittest
-import weakref
 import six
 
 
@@ -87,32 +86,89 @@ class SwaggerBaseTestCase(unittest.TestCase):
 
     def test_merge(self):
         """ test merge function """
-        tmp = {'t': {}}
-        obj1 = {'a': [{}, {}, {}], 'd': {}, 'f': ''}
-        obj2 = {'a': [{}]}
-        o3 = TestObj(base.NullContext())
 
-        with TestContext(tmp, 't') as ctx:
+        class MergeObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+            __swagger_fields__ = [
+                ('ma', None),
+                ('mb', None),
+                ('mc', {})
+            ]
+
+        class MergeContext(base.Context):
+            __swagger_child__ = [
+                ('ma', None, TestContext),
+                ('mb', None, TestContext),
+                ('mc', base.ContainerType.dict_, TestContext)
+            ]
+            __swagger_ref_object__ = MergeObj
+
+
+        tmp = {'t': {}}
+        obj2 = {'mb':{'a':[{}, {}, {}]}}
+        obj1 = {
+            'ma':{'a':[{}, {}, {}, {}]},
+            'mb':{'a':[{}, {}]},
+            'mc':{'/a': {'a': [{}], 'b': {'bb': {}}, 'c': {'cc': [{}]}, 'd': {}}}
+        }
+        o3 = MergeObj(base.NullContext())
+
+        with MergeContext(tmp, 't') as ctx:
             ctx.parse(obj1)
         o1 = tmp['t']
 
-        with TestContext(tmp, 't') as ctx:
+        with MergeContext(tmp, 't') as ctx:
             ctx.parse(obj2)
         o2 = tmp['t']
 
-        self.assertTrue(len(o2.a), 1)
-        self.assertEqual(o2.d, None)
-        self.assertEqual(o2.f, None)
+        def _chk(o_from, o_to):
+            # existing children are not affected
+            self.assertTrue(len(o_to.mb.a), 3)
+            # non-existing children are fully copied3
+            self.assertEqual(len(o_to.ma.a), 4)
+            self.assertNotEqual(id(o_to.ma), id(o_from.ma))
+            # make sure complex children are copied
+            self.assertNotEqual(id(o_to.mc), id(o_from.mc))
+            self.assertEqual(len(o_to.mc['/a'].a), 1)
+            self.assertTrue(isinstance(o_to.mc['/a'].b['bb'], ChildObj))
+            self.assertNotEqual(id(o_to.mc['/a'].b['bb']), id(o_from.mc['/a'].b['bb']))
+            self.assertTrue(isinstance(o_to.mc['/a'].c['cc'][0], ChildObj))
+            self.assertNotEqual(id(o_to.mc['/a'].c['cc'][0]), id(o_from.mc['/a'].c['cc'][0]))
+            self.assertTrue(o_to.mc['/a'].d, ChildObj)
+            self.assertNotEqual(id(o_to.mc['/a'].d), id(o1.mc['/a'].d))
 
-        o2.merge(o1)
-        self.assertTrue(len(o2.a), 1)
-        self.assertEqual(o2.f, '')
-        self.assertTrue(isinstance(o2.d, ChildObj))
-        self.assertTrue(isinstance(o2.d, weakref.ProxyTypes))
+        def _chk_parent(o_from, o_to):
+            for v in o_to.ma.a:
+                self.assertEqual(id(v._parent_), id(o_to.ma))
+                self.assertNotEqual(id(v._parent_), id(o_from.ma))
 
-        o3.merge(o2)
-        self.assertEqual(id(o2.d), id(o3.d))
-        self.assertTrue(isinstance(o3.d, weakref.ProxyTypes))
+            self.assertEqual(id(o_to.ma._parent_), id(o_to))
+            self.assertEqual(id(o_to.mb._parent_), id(o_to))
+            self.assertEqual(id(o_to.mc['/a']._parent_), id(o_to))
+            self.assertEqual(id(o_to.mc['/a'].a[0]._parent_), id(o_to.mc['/a']))
+            self.assertEqual(id(o_to.mc['/a'].b['bb']._parent_), id(o_to.mc['/a']))
+            self.assertEqual(id(o_to.mc['/a'].c['cc'][0]._parent_), id(o_to.mc['/a']))
+
+        self.assertEqual(o2.ma, None)
+        self.assertTrue(isinstance(o2.mb, TestObj))
+        self.assertTrue(len(o2.mb.a), 3)
+        self.assertEqual(len(o2.mc), 0)
+
+        id_mb = id(o2.mb)
+
+        o2.merge(o1, MergeContext)
+        self.assertNotEqual(id(o2.mb), id(o1.mb))
+        self.assertEqual(id(o2.mb), id_mb)
+
+        # cascade merge
+        o3.merge(o2, MergeContext)
+
+        _chk(o1, o2)
+        _chk(o2, o3)
+        _chk(o1, o3)
+
+        _chk_parent(o1, o2)
+        _chk_parent(o2, o3)
+        _chk_parent(o1, o3)
 
     def test_resolve(self):
         """ test resolve function """

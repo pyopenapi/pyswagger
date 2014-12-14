@@ -34,7 +34,6 @@ class Getter(six.Iterator):
         # find urls to retrieve from resource listing file
         if name == '':
             urls = self.__find_urls(obj)
-            # TODO: not worked in DictGetter
             self.urls.extend(zip(
                 map(lambda u: self.base_path + u, urls),
                 map(lambda u: u[1:], urls)
@@ -68,11 +67,11 @@ class Getter(six.Iterator):
         return urls
 
 
-class FileGetter(Getter):
+class LocalGetter(Getter):
     """ default getter implmenetation for local resource file
     """
     def __init__(self, path):
-        super(FileGetter, self).__init__(path)
+        super(LocalGetter, self).__init__(path)
 
         for n in const.SWAGGER_FILE_NAMES:
             if self.base_path.endswith(n):
@@ -99,11 +98,11 @@ class FileGetter(Getter):
         return ret
 
 
-class HttpGetter(Getter):
+class UrlGetter(Getter):
     """ default getter implementation for remote resource file
     """
     def __init__(self, path):
-        super(HttpGetter, self).__init__(path)
+        super(UrlGetter, self).__init__(path)
         if self.base_path.endswith('/'):
             self.base_path = self.base_path[:-1]
         self.urls = [(path, '')]

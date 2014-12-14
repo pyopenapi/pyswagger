@@ -6,7 +6,11 @@ import six
 import copy
 
 
-class BaseSchema(BaseObj):
+class BaseObj_v2_0(BaseObj):
+    __swagger_version__ = '2.0'
+
+
+class BaseSchema(BaseObj_v2_0):
     """ Base type for Items, Schema, Parameter, Header
     """
 
@@ -64,6 +68,7 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
         ('additionalProperties', True),
 
         ('discriminator', None),
+        # TODO: readonly not handled
         ('readOnly', None),
 
         # pyswagger only
@@ -75,7 +80,7 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
         return primitives.prim_factory(self, v)
 
 
-class Swagger(six.with_metaclass(FieldMeta, BaseObj)):
+class Swagger(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Swagger Object
     """
 
@@ -97,7 +102,7 @@ class Swagger(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class Info(six.with_metaclass(FieldMeta, BaseObj)):
+class Info(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Info Object
     """
 
@@ -113,6 +118,7 @@ class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
     __swagger_fields__ = [
         # Reference Object
         ('$ref', None),
+        # TODO: test case
 
         ('name', None),
         ('in', None),
@@ -142,13 +148,14 @@ class Header(six.with_metaclass(FieldMeta, BaseSchema)):
     ]
 
 
-class Response(six.with_metaclass(FieldMeta, BaseObj)):
+class Response(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Response Object
     """
 
     __swagger_fields__ = [
         # Reference Object
         ('$ref', None),
+        # TODO: test case
 
         ('schema', None),
         ('headers', {}),
@@ -158,7 +165,7 @@ class Response(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class Operation(six.with_metaclass(FieldMeta, BaseObj)):
+class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Operation Object
     """
 
@@ -170,7 +177,8 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
         ('schemes', []),
         ('parameters', None),
         ('responses', None),
-        ('deprecated', None),
+        ('deprecated', False),
+        ('description', None),
         ('security', None),
 
         # for pyswagger
@@ -207,7 +215,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj)):
         io.SwaggerRequest(op=self, params=params), io.SwaggerResponse(self)
 
 
-class PathItem(six.with_metaclass(FieldMeta, BaseObj)):
+class PathItem(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Path Item Object
     """
 
@@ -229,7 +237,7 @@ class PathItem(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class SecurityScheme(six.with_metaclass(FieldMeta, BaseObj)):
+class SecurityScheme(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Security Scheme Object
     """
 
@@ -244,7 +252,7 @@ class SecurityScheme(six.with_metaclass(FieldMeta, BaseObj)):
     ]
 
 
-class Tag(six.with_metaclass(FieldMeta, BaseObj)):
+class Tag(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Tag Object
     """
 

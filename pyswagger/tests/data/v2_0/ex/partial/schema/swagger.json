@@ -1,0 +1,6 @@
+{
+   "type":"array",
+   "items":{
+      "$ref":"file:///root/swagger.json#/definitions/s3"
+   }
+}

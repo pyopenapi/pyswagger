@@ -279,11 +279,12 @@ class Upgrade(object):
         if len(common_path) > 0:
             p = six.moves.urllib.parse.urlparse(common_path)
             self.__swagger.update_field('host', p.netloc)
-            self.__swagger.update_field('basePath', p.path)
 
+            new_common_path = six.moves.urllib.parse.urlunparse((
+                p.scheme, p.netloc, '', '', '', ''))
             new_path = {}
             for k in self.__swagger.paths.keys():
-                new_path[k[len(common_path):]] = self.__swagger.paths[k]
+                new_path[k[len(new_common_path):]] = self.__swagger.paths[k]
             self.__swagger.update_field('paths', new_path)
 
         return self.__swagger
