@@ -35,7 +35,6 @@ class BaseSchema(BaseObj_v2_0):
 
     def __init__(self, ctx):
         # __swagger_fields__ would be overriden by child class.
-        # TODO: duplicated code in BaseObj.__init__
         for name, default in BaseSchema.__swagger_fields__:
             setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
 

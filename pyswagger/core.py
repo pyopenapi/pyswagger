@@ -125,7 +125,6 @@ class SwaggerApp(object):
             # apply hook when use this url to load
             # note that we didn't cache SwaggerApp with this local_url
 
-            # TODO: test case
             local_url = url if not self.__url_load_hook else self.__url_load_hook(url)
 
             getter = UrlGetter

@@ -80,8 +80,6 @@ class CycleGuard(object):
     """ Guard for cycle detection
     """
 
-    # TODO: test case
-
     def __init__(self, identity_hook=id):
         self.__visited = []
         self.__hook = identity_hook
@@ -282,7 +280,6 @@ def path2url(p):
 def normalize_url(url):
     """ Normalize url
     """
-    # TODO: test case
     if not url:
         return url
 
@@ -306,7 +303,7 @@ def normalize_jr(jr, prefix, url=None):
     output:
     - http://test.com/swagger.json#/definitions/User
     """
-    # TODO: test case
+
     if jr == None:
         return jr
 
@@ -322,7 +319,8 @@ def normalize_jr(jr, prefix, url=None):
     # prepend url
     if url:
         p = six.moves.urllib.parse.urlparse(url)
-        jr = six.moves.urllib.parse.urlunparse(p[:5]+(jr,))
+        # remember to remove the heading '#'
+        jr = six.moves.urllib.parse.urlunparse(p[:5]+(jr[1:],))
 
     return jr
 
@@ -332,7 +330,6 @@ def is_file_url(url):
 def get_swagger_version(obj):
     """ get swagger version from loaded json """
 
-    # TODO: test case
     if isinstance(obj, dict):
         if 'swaggerVersion' in obj:
             return obj['swaggerVersion']
