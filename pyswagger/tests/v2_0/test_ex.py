@@ -3,7 +3,6 @@ from ..utils import get_test_data_folder
 import unittest
 import os
 import six
-import weakref
 
 
 folder = get_test_data_folder(version='2.0', which='ex')
@@ -28,7 +27,7 @@ class ExternalDocumentTestCase(unittest.TestCase):
         global folder
 
         kls.app = SwaggerApp.load(
-            url='root',
+            url='file:///root/swagger.json',
             url_load_hook=_hook
         )
         kls.app.prepare()
@@ -38,13 +37,13 @@ class ExternalDocumentTestCase(unittest.TestCase):
         is the same as resolve with JSON pointer.
         """
         p = self.app.resolve('#/paths/~1full')
-        p_ = self.app.resolve('file:///root#/paths/~1full')
+        p_ = self.app.resolve('file:///root/swagger.json#/paths/~1full')
         # refer to 
         #      http://stackoverflow.com/questions/10246116/python-dereferencing-weakproxy 
         # for how to dereferencing weakref
         self.assertEqual(p.__repr__(), p_.__repr__())
 
-    def test_path_item(self):
+    def test_full_path_item(self):
         """ make sure PathItem is correctly merged
         """
         p = self.app.resolve('#/paths/~1full')
@@ -57,12 +56,37 @@ class ExternalDocumentTestCase(unittest.TestCase):
         self.assertTrue('default' in another_p.get.responses)
         self.assertTrue('404' in another_p.get.responses)
 
-    def test_path_item_url(self):
+    def test_full_path_item_url(self):
         """ make sure url is correctly patched
         """
         p = self.app.resolve('#/paths/~1full')
         self.assertEqual(p.get.url, 'test.com/v1/full')
 
-        another_p = self.app.resolve('file:///full/swagger.json#/paths/~1user')
-        self.assertEqual(another_p.get.url, 'test1.com/v2/user')
+        original_p = self.app.resolve('file:///full/swagger.json#/paths/~1user')
+        self.assertEqual(original_p.get.url, 'test1.com/v2/user')
+
+    def test_partial_path_item(self):
+        """ make sure partial swagger.json with PathItem
+        loaded correctly.
+        """
+        p = self.app.resolve('#/paths/~1partial')
+        self.assertEqual(p.get.url, 'test.com/v1/partial')
+
+        original_p = self.app.resolve('file:///partial/path_item/swagger.json')        
+        self.assertEqual(original_p.get.url, None)
+
+    def test_partial_schema(self):
+        """  make sure partial swagger.json with Schema
+        loaded correctly.
+        """
+        p = self.app.resolve('#/definitions/s4')
+        original_p = self.app.resolve('file:///partial/schema/swagger.json')
+
+        # refer to 
+        #      http://stackoverflow.com/questions/10246116/python-dereferencing-weakproxy 
+        # for how to dereferencing weakref
+        self.assertEqual(p.items.ref_obj.__repr__(), original_p.__repr__())
+
+        p_ = self.app.resolve('#/definitions/s3')
+        self.assertEqual(p_.__repr__(), original_p.items.ref_obj.__repr__())
 

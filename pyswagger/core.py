@@ -142,22 +142,25 @@ class SwaggerApp(object):
         # get root document to check its swagger version.
         obj, _ = six.advance_iterator(getter)
         tmp = {'_tmp_': {}}
-        if not parser:
-            if utils.get_swagger_version(obj) == '1.2':
-                # swagger 1.2
-                with ResourceListContext(tmp, '_tmp_') as ctx:
-                    ctx.parse(getter, obj)
-            else:
-                # swagger 2.0
-                with SwaggerContext(tmp, '_tmp_') as ctx:
-                    ctx.parse(obj)
-        else:
-            raise NotImplementedError()
+        version = utils.get_swagger_version(obj)
+        if version == '1.2':
+            # swagger 1.2
+            with ResourceListContext(tmp, '_tmp_') as ctx:
+                ctx.parse(getter, obj)
+        elif version == '2.0':
+            # swagger 2.0
+            with SwaggerContext(tmp, '_tmp_') as ctx:
+                ctx.parse(obj)
+        elif version == None and parser:
             with parser(tmp, '_tmp_') as ctx:
                 ctx.parse(obj)
 
+            version = tmp['_tmp_'].__swagger_version__ if hasattr(tmp['_tmp_'], '__swagger_version__') else version
+        else:
+            raise NotImplementedError('Unsupported Swagger Version: {0} from {1}'.format(version, url))
+
         self.__app_cache[url] = weakref.proxy(self) # avoid circular reference
-        self.__version = utils.get_swagger_version(tmp['_tmp_'])
+        self.__version = version
         self.__raw = tmp['_tmp_']
 
     def _validate(self):
@@ -211,14 +214,15 @@ class SwaggerApp(object):
             # TODO: partial object would go to this place.
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
 
-        if self.__root.schemes and len(self.__root.schemes) > 0:
-            self.__schemes = self.__root.schemes
+        if hasattr(self.__root, 'schemes') and self.__root.schemes:
+            if len(self.__root.schemes) > 0:
+                self.__schemes = self.__root.schemes
 
         s.scan(root=self.__root, route=[Resolve()])
         s.scan(root=self.__root, route=[PatchObject()])
 
     @classmethod
-    def load(kls, url, getter=None, app_cache=None, url_load_hook=None):
+    def load(kls, url, getter=None, parser=None, app_cache=None, url_load_hook=None):
         """ load json as a raw SwaggerApp
 
         :param str url: url of path of Swagger API definition
@@ -233,7 +237,7 @@ class SwaggerApp(object):
         url = utils.normalize_url(url)
         app = kls(url, app_cache, url_load_hook)
 
-        app._load_json(url, getter)
+        app._load_json(url, getter, parser)
 
         # update schem if any
         p = six.moves.urllib.parse.urlparse(url)
@@ -271,7 +275,10 @@ class SwaggerApp(object):
         # 'op' -- shortcut for Operation with tag and operaionId
         self.__op = utils.ScopeDict(tr.op)
         # 'm' -- shortcut for model in Swagger 1.2
-        self.__m = utils.ScopeDict(self.__root.definitions)
+        if hasattr(self.__root, 'definitions'):
+            self.__m = utils.ScopeDict(self.__root.definitions)
+        else:
+            self.__m = utils.ScopeDict({})
 
         # cycle detection
         if len(cy.cycles['schema']) > 0 and strict:
@@ -299,7 +306,7 @@ class SwaggerApp(object):
     """
     _create_ = create
 
-    def resolve(self, jref):
+    def resolve(self, jref, parser=None):
         """ reference resolver
 
         :param str jref: a JSON Reference, refer to http://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03 for details.
@@ -315,7 +322,7 @@ class SwaggerApp(object):
         if url:
             if url not in self.__app_cache:
                 # This loaded SwaggerApp would be kept in app_cache.
-                app = SwaggerApp.load(url, app_cache=self.__app_cache, url_load_hook=self.__url_load_hook)
+                app = SwaggerApp.load(url, parser=parser, app_cache=self.__app_cache, url_load_hook=self.__url_load_hook)
                 app.prepare()
 
                 # nothing but only keeping a strong reference of

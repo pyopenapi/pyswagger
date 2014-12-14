@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ...scan import Dispatcher
-from ...spec.v2_0.objects import PathItem, Operation, Schema
+from ...spec.v2_0.objects import PathItem, Operation, Schema, Swagger
 from ...spec.v2_0.parser import PathItemContext
 from ...utils import jp_split, scope_split
 
@@ -18,17 +18,19 @@ class PatchObject(object):
     def _operation(self, path, obj, app):
         """
         """
-        # produces/consumes
-        obj.update_field('produces', app.root.produces if len(obj.produces) == 0 else obj.produces)
-        obj.update_field('consumes', app.root.consumes if len(obj.consumes) == 0 else obj.consumes)
+        if isinstance(app.root, Swagger):
+            # produces/consumes
+            obj.update_field('produces', app.root.produces if len(obj.produces) == 0 else obj.produces)
+            obj.update_field('consumes', app.root.consumes if len(obj.consumes) == 0 else obj.consumes)
 
         # combine parameters from PathItem
-        for p in obj._parent_.parameters:
-            for pp in obj.parameters:
-                if p.name == pp.name:
-                    break
-            else:
-                obj.parameters.append(p)
+        if obj._parent_:
+            for p in obj._parent_.parameters:
+                for pp in obj.parameters:
+                    if p.name == pp.name:
+                        break
+                else:
+                    obj.parameters.append(p)
 
         # schemes
         obj.update_field('schemes', app.schemes if len(obj.schemes) == 0 else obj.schemes)
@@ -37,7 +39,11 @@ class PatchObject(object):
     def _path_item(self, path, obj, app):
         """
         """
-        url = app.root.host + (app.root.basePath or '') + jp_split(path)[-1]
+        if isinstance(app.root, Swagger):
+            url = app.root.host + (app.root.basePath or '') + jp_split(path)[-1]
+        else:
+            url = None
+
         for c in PathItemContext.__swagger_child__:
             o = getattr(obj, c[0])
             if isinstance(o, Operation):

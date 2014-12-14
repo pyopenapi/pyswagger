@@ -15,6 +15,9 @@
    "paths":{
       "/full":{
          "$ref":"file:///full/swagger.json#/paths/~1user"
+      },
+      "/partial":{
+         "$ref":"file:///partial/path_item/swagger.json"
       }
    },
    "definitions":{
@@ -23,6 +26,15 @@
       },
       "s2":{
          "$ref":"file:///full/swagger.json#/definitions/fs2"
+      },
+      "s3":{
+         "type":"string"
+      },
+      "s4":{
+         "type":"array",
+         "items":{
+            "$ref":"file:///partial/schema/swagger.json"
+         }
       }
    }
 }

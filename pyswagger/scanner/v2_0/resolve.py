@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from ...scan import Dispatcher
 from ...spec.v2_0.parser import (
+    SchemaContext,
+    ParameterContext,
+    ResponseContext,
     PathItemContext
     )
 from ...spec.v2_0.objects import (
@@ -15,12 +18,12 @@ from ...utils import normalize_jr
 def is_resolved(obj):
     return getattr(obj, '$ref') == None or obj.ref_obj != None
 
-def _resolve(obj, app, prefix):
+def _resolve(obj, app, prefix, parser):
     if is_resolved(obj):
         return
 
     r = getattr(obj, '$ref')
-    ro = app.resolve(normalize_jr(r, prefix))
+    ro = app.resolve(normalize_jr(r, prefix), parser)
 
     if not ro:
         raise ReferenceError('Unable to resolve: {0}'.format(r))
@@ -38,7 +41,7 @@ def _merge(obj, app, prefix, ctx):
     cur = obj
     to_resolve = []
     while not is_resolved(cur):
-        _resolve(cur, app, prefix)
+        _resolve(cur, app, prefix, ctx)
 
         to_resolve.append(cur)
         cur = cur.ref_obj if cur.ref_obj else cur
@@ -56,15 +59,15 @@ class Resolve(object):
 
     @Disp.register([Schema])
     def _schema(self, _, obj, app):
-        _resolve(obj, app, '#/definitions')
+        _resolve(obj, app, '#/definitions', SchemaContext)
 
     @Disp.register([Parameter])
     def _parameter(self, _, obj, app):
-        _resolve(obj, app, '#/parameters')
+        _resolve(obj, app, '#/parameters', ParameterContext)
 
     @Disp.register([Response])
     def _response(self, _, obj, app):
-        _resolve(obj, app, '#/responses')
+        _resolve(obj, app, '#/responses', ResponseContext)
 
     @Disp.register([PathItem])
     def _path_item(self, _, obj, app):

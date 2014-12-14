@@ -125,7 +125,6 @@ class SwaggerAppTestCase(unittest.TestCase):
         """ test ref function """
         self.assertRaises(ValueError, self.app.resolve, None)
         self.assertRaises(ValueError, self.app.resolve, '')
-        self.assertRaises(ValueError, self.app.resolve, '//')
 
         self.assertTrue(isinstance(self.app.resolve('#/definitions/user!##!User'), Schema))
         self.assertTrue(isinstance(self.app.resolve('#/paths/~1api~1user~1{username}/put'), Operation))

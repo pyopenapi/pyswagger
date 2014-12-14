@@ -1,0 +1,12 @@
+{
+   "get":{
+      "response":{
+         "description":"path_item, get, response"
+      }
+   },
+   "put":{
+      "response":{
+         "description":"path_item, put, response"
+      }
+   }
+}
