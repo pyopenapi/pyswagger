@@ -155,7 +155,6 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         p = d.properties['id']
         self.assertEqual(p.type, 'integer')
         self.assertEqual(p.format, 'int64')
-        # TODO: fix this, in Swagger 2.0, type won't be wrong.
         self.assertEqual(p.minimum, 0)
         self.assertEqual(p.maximum, 100)
 

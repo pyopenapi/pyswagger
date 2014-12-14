@@ -118,7 +118,6 @@ class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
     __swagger_fields__ = [
         # Reference Object
         ('$ref', None),
-        # TODO: test case
 
         ('name', None),
         ('in', None),
@@ -155,7 +154,6 @@ class Response(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     __swagger_fields__ = [
         # Reference Object
         ('$ref', None),
-        # TODO: test case
 
         ('schema', None),
         ('headers', {}),
