@@ -7,6 +7,7 @@ from pyswagger.spec.v2_0.objects import (
 import unittest
 import httpretty
 import os
+import six
 
 
 class HTTPGetterTestCase(unittest.TestCase):
@@ -119,7 +120,20 @@ class SwaggerAppTestCase(unittest.TestCase):
     """ test case for SwaggerApp """
 
     def setUp(self):
-        self.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik'))
+        folder = get_test_data_folder(
+            version='1.2',
+        )
+
+        def _hook(url):
+            p = six.moves.urllib.parse.urlparse(url)
+            if p.scheme != 'file':
+                return url
+
+            path = os.path.join(folder, p.path if not p.path.startswith('/') else p.path[1:])
+            return six.moves.urllib.parse.urlunparse(p[:2]+(path,)+p[3:])
+
+        self.app = SwaggerApp.load('wordnik', url_load_hook=_hook)
+        self.app.prepare()
 
     def test_ref(self):
         """ test ref function """
@@ -131,7 +145,15 @@ class SwaggerAppTestCase(unittest.TestCase):
         self.assertEqual(self.app.resolve('#/paths/~1api~1store~1order/post/produces'), ['application/json'])
         self.assertEqual(self.app.resolve('#/host'), 'petstore.swagger.wordnik.com')
 
-        # TODO: resolve with URL part
+        # resolve with URL part
+        self.assertEqual(
+            id(self.app.resolve('#/definitions/user!##!User')),
+            id(self.app.resolve('file:///wordnik#/definitions/user!##!User'))
+        )
+        self.assertEqual(
+           id(self.app.resolve('#/paths/~1api~1user~1{username}/put')),
+           id(self.app.resolve('file:///wordnik#/paths/~1api~1user~1{username}/put'))
+        )
 
     def test_scope_dict(self):
         """ ScopeDict is a syntactic suger
