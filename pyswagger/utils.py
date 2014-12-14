@@ -76,6 +76,23 @@ class ScopeDict(dict):
             raise e
 
 
+class CycleGuard(object):
+    """ Guard for cycle detection
+    """
+
+    # TODO: test case
+
+    def __init__(self, identity_hook=id):
+        self.__visited = []
+        self.__hook = identity_hook
+
+    def update(self, obj):
+        i = self.__hook(obj)
+        if i in self.__visited:
+            raise ValueError('Cycle detected: {0}'.format(obj.__repr__()))
+        self.__visited.append(i)
+
+
 class FixedTZ(datetime.tzinfo):
     """ tzinfo implementation without consideration of
     daylight-saving-time.
@@ -227,14 +244,11 @@ def jr_split(s):
 def deref(obj):
     """ dereference $ref
     """
-    cur, visited = obj, []
+    cur, guard = obj, CycleGuard()
     while cur and getattr(cur, 'ref_obj', None) != None:
         # cycle guard
-        i = id(cur)
-        if i in visited:
-            raise ValueError('cycle detected in deref: {0}'.format(cur.__repr__()))
+        guard.update(cur)
 
-        visited.append(i)
         cur = cur.ref_obj
     return cur
 
@@ -371,4 +385,5 @@ def walk(start, ofn, cyc=None):
                 ctx[stk[-1]].remove(top)
 
     return cyc
+
 

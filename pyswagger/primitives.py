@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .utils import from_iso8601, deref
+from .utils import from_iso8601, deref, CycleGuard
 import datetime
 import functools
 import six
@@ -377,14 +377,11 @@ def prim_factory(obj, val, ctx=None):
     ctx = {} if ctx == None else ctx
     if 'name' not in ctx and hasattr(obj, 'name'):
         ctx['name'] = obj.name
-    if 'visited' not in ctx:
-        ctx['visisted'] = []
+    if 'guard' not in ctx:
+        ctx['guard'] = CycleGuard()
 
     # cycle guard
-    i = id(obj)
-    if i in ctx['visited']:
-        raise ValueError('cycle detected in prim_factory: {0}'.format(obj.__repr__()))
-    ctx['visited'].append(i)
+    ctx['guard'].update(obj)
 
     ret = None
     if obj.type:
