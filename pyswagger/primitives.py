@@ -335,6 +335,11 @@ prim_obj_map = {
     ('string', ''): create_str,
     ('string', None): create_str,
 
+    # TODO: add validation for email, uuid
+    # TODO: add convertion of uuid from python's one
+    ('string', 'email'): create_str,
+    ('string', 'uuid'): create_str,
+
     ('string', 'byte'): Byte,
     ('string', 'date'): Date,
     ('string', 'date-time'): Datetime,
@@ -346,8 +351,6 @@ prim_obj_map = {
     # file
     ('file', ''): File,
     ('file', None): File,
-
-    # TODO: add support for email, uuid
 };
 
 
