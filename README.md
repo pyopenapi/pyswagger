@@ -24,6 +24,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 
 ##Features
 - support Swagger **1.2**, **2.0** on python **2.6**, **2.7**, **3.3**, **3.4**
+- support $ref to **External Document**, multiple swagger.json will be organized into a group of SwaggerApp. And external document with self-describing resource is also supported (refer to [issue](https://github.com/swagger-api/swagger-spec/issues/219)).
 - type safe, input/output are converted to python types according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in Swagger. You don't need to touch any json schema when using pyswagger. Limitations like **minimum/maximum** or **enum** are also checked. **Model inheritance** also supported.
 - provide function **SwaggerApp.validate** to check validity of the loaded API definition according to spec.
 - builtin client implementation based on various http clients in python.
@@ -64,6 +65,10 @@ client.request(
   app.op['addPet'](body=pet_Tom),
   opt={'url_netloc': 'localhost:9001'}
   )
+  
+# new ways to get Operation object corresponding to 'getPetById'
+pet = client.request(app.resolve(jp_compose('/pet/{petId}', base='#/paths')).get(petId=1).data
+assert pet.id == 1
 ```
 ##Installation
 We support pip installtion.
@@ -86,6 +91,16 @@ SwaggerApp.op['user', 'getById'] # call getById in user resource
 SwaggerApp.op['pet', 'getById']  # call getById in pet resource
 ```
 **SwaggerApp.validate(strict=True)** provides validation against the loaded Swagger API definition. When passing _strict=True_, an exception would be raised if validation failed. It returns a list of errors in tuple: _(where, type, msg)_.
+
+**SwaggerApp.resolve(JSON_Reference)** is a new way to access objects. For example, to access a Schema object 'User':
+```python
+app.resolve('#/definitions/User')
+```
+This function accepts a [JSON Reference](http://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03), which is composed by an url and a [JSON Pointer](http://tools.ietf.org/html/rfc6901), they are standard way to access a Swagger document. Since a JSON reference contains an url, this means you can access any external document when you need:
+```python
+app.resolve('http://another_site.com/apis/swagger.json#/definitions/User')
+```
+pyswagger will load that swagger.json, create a new SwaggerApp, and group it with the SwaggerApp you kept (**app** in code above). Internally, when pyswagger encounter some $ref directs to external documents, we just silently handle it in the same way.
 
 ###SwaggerClient
 You also need **SwaggerClient(security=None)** to access API, this layer wraps the difference between those http libraries in python. where **security**(optional) is SwaggerSecuritysw, which helps to handle authorizations of each request.
