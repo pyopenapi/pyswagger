@@ -6,7 +6,7 @@ from .scan import Scanner
 from .scanner import TypeReduce, CycleDetector
 from .scanner.v1_2 import Upgrade
 from .scanner.v2_0 import AssignParent, Resolve, PatchObject
-from pyswagger import utils
+from pyswagger import utils, errs
 import inspect
 import base64
 import six
@@ -23,11 +23,15 @@ class SwaggerApp(object):
     sc_path = 1
 
     _shortcut_ = {
-        sc_path: '#/paths'
+        sc_path: ('/', '#/paths')
     }
 
     def __init__(self, url=None, app_cache=None, url_load_hook=None):
         """ constructor
+
+        :param url str: url of swagger.json
+        :param dict app_cache: a url map shared by SwaggerApp(s), mapping from url to SwaggerApp
+        :param func url_load_hook: a way to redirect url to a accessible place. for self testing.
         """
         self.__root = None
         self.__raw = None
@@ -51,54 +55,65 @@ class SwaggerApp(object):
 
     @property
     def root(self):
-        # TODO: fix the comment
         """ schema representation of Swagger API, its structure may
         be different from different version of Swagger.
 
-        There is 'schema' object in swagger 2.0, that's why I change this
+        There is 'Schema' object in swagger 2.0, that's why I change this
         property name from 'schema' to 'root'.
 
-        :type: pyswagger.obj.Swagger
+        :type: pyswagger.spec.v2_0.objects.Swagger
         """
         return self.__root
 
     @property
     def raw(self):
-        # TODO: fix the comment
-        """ raw objects for original version of spec, indexed by
-        version string.
+        """ raw objects for original version of loaded resources.
+        When loaded json is the latest version we supported, this property is the same as SwaggerApp.root
 
-        ex. to access raw objects representation of swagger 1.2, pass '1.2'
-        as a key to this dict
-
-        :type: dict
+        :type: ex. when loading Swagger 1.2, the type is pyswagger.spec.v1_2.objects.ResourceList
         """
         return self.__raw
 
     @property
     def op(self):
-        """ list of Operations, organized by utilsScopeDict
+        """ list of Operations, organized by utils.ScopeDict
 
-        :type: utils.ScopeDict of Operations
+        In Swagger 2.0, Operation(s) can be organized with Tags and Operation.operationId.
+        ex. if there is an operation with tag:['user', 'security'] and operationId:get_one,
+        here is the combination of keys to access it:
+        - .op['user', 'get_one']
+        - .op['security', 'get_one']
+        - .op['get_one']
+
+        :type: pyswagger.utils.ScopeDict of pyswagger.spec.v2_0.objects.Operation
         """
         return self.__op
 
     @property
     def m(self):
-        """ backward compatible, convert
-        SwaggerApp.d to utils.ScopeDict
+        """ backward compatible to access Swagger.definitions in Swagger 2.0,
+        and Resource.Model in Swagger 1.2.
+
+        ex. a Model:user in Resource:Users, access it by .m['Users', 'user'].
+        For Schema object in Swagger 2.0, just access it by it key in json.
+
+        :type: pyswagger.utils.ScopeDict
         """
         return self.__m
 
     @property
     def version(self):
-        """
+        """ original version of loaded json
+
+        :type: str
         """
         return self.__version
 
     @property
     def schemes(self):
-        """
+        """ supported schemes, refer to Swagger.schemes in Swagger 2.0 for details
+
+        :type: list of str, ex. ['http', 'https']
         """
         return self.__schemes
 
@@ -226,6 +241,10 @@ class SwaggerApp(object):
         :param str url: url of path of Swagger API definition
         :param getter: customized Getter
         :type getter: sub class/instance of Getter
+        :param parser: the parser to parse the loaded json.
+        :type parser: pyswagger.base.Context
+        :param dict app_cache: the cache shared by related SwaggerApp
+        :param func url_load_hook: hook to patch the url to load json
         :return: the created SwaggerApp object
         :rtype: SwaggerApp
         :raises ValueError: if url is wrong
@@ -252,14 +271,16 @@ class SwaggerApp(object):
         :rtype: list of tuple(where, type, msg).
         """
 
-        errs = self._validate()
-        if strict and len(errs):
-            raise ValueError('this Swagger App contains error: {0}.'.format(len(errs)))
+        result = self._validate()
+        if strict and len(result):
+            raise errs.ValidationError('this Swagger App contains error: {0}.'.format(len(result)))
 
-        return errs
+        return result
 
     def prepare(self, strict=True):
         """ preparation for loaded json
+
+        :param bool strict: when in strict mode, exception would be raised if not valid.
         """
 
         self._prepare_obj(strict=strict)
@@ -280,15 +301,14 @@ class SwaggerApp(object):
 
         # cycle detection
         if len(cy.cycles['schema']) > 0 and strict:
-            raise ValueError('Cycles detected in Schema Object: {0}'.format(cy.cycles['schema']))
+            raise errs.CycleDetectionError('Cycles detected in Schema Object: {0}'.format(cy.cycles['schema']))
 
     @classmethod
     def create(kls, url, strict=True):
         """ factory of SwaggerApp
 
         :param str url: url of path of Swagger API definition
-        :param getter: customized Getter
-        :type getter: sub class/instance of Getter
+        :param bool strict: when in strict mode, exception would be raised if not valid.
         :return: the created SwaggerApp object
         :rtype: SwaggerApp
         :raises ValueError: if url is wrong
@@ -305,9 +325,11 @@ class SwaggerApp(object):
     _create_ = create
 
     def resolve(self, jref, parser=None):
-        """ reference resolver
+        """ JSON reference resolver
 
         :param str jref: a JSON Reference, refer to http://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03 for details.
+        :param parser: the parser corresponding to target object.
+        :type parser: pyswagger.base.Context
         :return: the referenced object, wrapped by weakref.ProxyType
         :rtype: weakref.ProxyType
         :raises ValueError: if path is not valid
@@ -342,10 +364,18 @@ class SwaggerApp(object):
         return weakref.proxy(obj)
 
     def s(self, p, b=_shortcut_[sc_path]):
-        """ shortcut to access Objects
-        """
-        return self.resolve(utils.jp_compose('/' + p if not p.startswith('/') else p, base=b))
+        """ shortcut of SwaggerApp.resolve.
+        We provide a default base for '#/paths'. ex. to access '#/paths/~1user/get',
+        just call SwaggerApp.s('user/get')
 
+        :param str p: path relative to base
+        :param tuple b: a tuple (expected_prefix, base) to represent a 'base'
+        """
+
+        if b[0]:
+            return self.resolve(utils.jp_compose(b[0] + p if not p.startswith(b[0]) else p, base=b[1]))
+        else:
+            return self.resolve(utils.jp_compose(p, base=b[1]))
 
 class SwaggerSecurity(object):
     """ security handler
@@ -419,6 +449,10 @@ class BaseClient(object):
     .. code-block:: python
 
         class MyClient(BaseClient):
+
+            # declare supported schemes here
+            __schemes__ = ['http', 'https']
+
             def request(self, req_and_resp, opt):
                 # passing to parent for default patching behavior,
                 # applying authorizations, ...etc.
@@ -431,7 +465,7 @@ class BaseClient(object):
                 return resp
     """
 
-    # TODO: comments
+    # supported schemes, ex. ['http', 'https', 'ws', 'ftp']
     __schemes__ = set()
 
     def __init__(self, security=None):
@@ -444,7 +478,9 @@ class BaseClient(object):
         self.__security = security
 
     def prepare_schemes(self, req):
-        """
+        """ make sure this client support schemes required by current request
+
+        :param pyswagger.io.SwaggerRequest req: current request object
         """
         ret = self.__schemes__ & set(req.schemes)
         if len(ret) == 0:

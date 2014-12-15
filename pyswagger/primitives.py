@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from .utils import from_iso8601, deref, CycleGuard
+from pyswagger import errs
 import datetime
 import functools
 import six
@@ -113,9 +114,9 @@ class Array(list):
 
         # init array as list
         if obj.minItems and len(self) < obj.minItems:
-            raise ValueError('Array should be more than {0}, not {1}'.format(o.minItems, len(self)))
+            raise errs.ValidationError('Array should be more than {0}, not {1}'.format(o.minItems, len(self)))
         if obj.maxItems and len(self) > obj.maxItems:
-            raise ValueError('Array should be less than {0}, not {1}'.format(o.maxItems, len(self)))
+            raise errs.ValidationError('Array should be less than {0}, not {1}'.format(o.maxItems, len(self)))
 
         self.__collection_format = getattr(obj, 'collectionFormat', 'csv')
         return val
@@ -142,7 +143,7 @@ class Array(list):
         elif self.__collection_format == 'pipes':
             return _conv('|')
         else:
-            raise ValueError('Unsupported collection format when converting to str: {0}'.format(self.__collection_format))
+            raise errs.SchemaError('Unsupported collection format when converting to str: {0}'.format(self.__collection_format))
 
     def to_url(self):
         """ special function for handling 'multi',
@@ -284,26 +285,26 @@ def apply_with(ret, obj):
             to_raise = vv <= n if _eq else vv < n
 
         if to_raise:
-            raise ValueError('condition failed: {0}, v:{1} compared to o:{2}'.format('maximum' if is_max else 'minimum', vv, n))
+            raise errs.ValidationError('condition failed: {0}, v:{1} compared to o:{2}'.format('maximum' if is_max else 'minimum', vv, n))
 
     if isinstance(ret, six.integer_types):
         _comp_(ret, obj, False)
         _comp_(ret, obj, True)
     elif isinstance(ret, six.string_types):
         if obj.enum and ret not in obj.enum:
-            raise ValueError('{0} is not a valid enum for {1}'.format(ret, str(obj.enum)))
+            raise errs.ValidationError('{0} is not a valid enum for {1}'.format(ret, str(obj.enum)))
         if obj.maxLength and len(ret) > obj.maxLength:
-            raise ValueError('[{0}] is longer than {1} characters'.format(ret, str(obj.maxLength)))
+            raise errs.ValidationError('[{0}] is longer than {1} characters'.format(ret, str(obj.maxLength)))
         if obj.minLength and len(ret) < obj.minLength:
-            raise ValueError('[{0}] is shoter than {1} characters'.format(ret, str(obj.minLength)))
+            raise errs.ValidationError('[{0}] is shoter than {1} characters'.format(ret, str(obj.minLength)))
         # TODO: handle pattern
     elif isinstance(ret, float):
         _comp_(ret, obj, False)
         _comp_(ret, obj, True)
         if obj.multipleOf and ret % obj.multipleOf != 0:
-            raise ValueError('{0} should be multiple of {1}'.format(ret, obj.multipleOf))
+            raise errs.ValidationError('{0} should be multiple of {1}'.format(ret, obj.multipleOf))
     else:
-        raise ValueError('Unknown Type: {0}'.format(type(ret)))
+        raise errs.ValidationError('Unknown Type: {0}'.format(type(ret)))
 
 
 def create_int(obj, v):
@@ -399,7 +400,7 @@ def prim_factory(obj, val, ctx=None):
 
                 ret = t(obj, val)
         else:
-            raise ValueError('obj.type should be str, not {0}'.format(type(o.type)))
+            raise errs.SchemaError('obj.type should be str, not {0}'.format(type(o.type)))
     elif len(obj.properties) or obj.additionalProperties:
         ret = Model(obj)
         val = ret.apply_with(obj, val, ctx)

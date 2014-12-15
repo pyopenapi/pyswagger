@@ -1,4 +1,4 @@
-from pyswagger import utils
+from pyswagger import utils, errs
 from datetime import datetime
 import unittest
 import functools
@@ -127,7 +127,7 @@ class SwaggerUtilsTestCase(unittest.TestCase):
 
         c = utils.CycleGuard(identity_hook=my_id)
         c.update(1)
-        self.assertRaises(ValueError, c.update, 1)
+        self.assertRaises(errs.CycleDetectionError, c.update, 1)
 
     def test_normalize_url(self):
         self.assertEqual(utils.normalize_url(None), None)

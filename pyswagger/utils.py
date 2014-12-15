@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from .const import SCOPE_SEPARATOR
+from .errs import CycleDetectionError
 import six
 import imp
 import sys
@@ -87,7 +88,7 @@ class CycleGuard(object):
     def update(self, obj):
         i = self.__hook(obj)
         if i in self.__visited:
-            raise ValueError('Cycle detected: {0}'.format(obj.__repr__()))
+            raise CycleDetectionError('Cycle detected: {0}'.format(obj.__repr__()))
         self.__visited.append(i)
 
 

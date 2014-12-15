@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp, primitives
+from pyswagger import SwaggerApp, primitives, errs
 from ..utils import get_test_data_folder
 from pyswagger.spec.v2_0 import objects
 from pyswagger.utils import jp_compose
@@ -97,21 +97,21 @@ class SchemaTestCase(unittest.TestCase):
         """
         i = self.app.resolve("#/definitions/int")
 
-        self.assertRaises(ValueError, i._prim_, 200)
-        self.assertRaises(ValueError, i._prim_, 99)
+        self.assertRaises(errs.ValidationError, i._prim_, 200)
+        self.assertRaises(errs.ValidationError, i._prim_, 99)
 
     def test_num_multiple_of(self):
         """ test multipleOf """
         i = self.app.resolve("#/definitions/num_multipleOf")
 
-        self.assertRaises(ValueError, i._prim_, 4)
+        self.assertRaises(errs.ValidationError, i._prim_, 4)
         i._prim_(5) # should raise nothing
 
     def test_str_enum(self):
         """ test str enum """
         e = self.app.resolve("#/definitions/str_enum")
 
-        self.assertRaises(ValueError, e._prim_, "yellow")
+        self.assertRaises(errs.ValidationError, e._prim_, "yellow")
         e._prim_("green") # should raise nothing
 
     def test_byte(self):
@@ -170,8 +170,8 @@ class HeaderTestCase(unittest.TestCase):
         p2 = self.app.resolve(jp_compose(['#', 'paths', '/t', 'get', 'parameters', '1']))
         self.assertTrue(isinstance(p2, objects.Parameter))
 
-        self.assertRaises(ValueError, p2._prim_, 101)
-        self.assertRaises(ValueError, p2._prim_, -1)
+        self.assertRaises(errs.ValidationError, p2._prim_, 101)
+        self.assertRaises(errs.ValidationError, p2._prim_, -1)
 
     def test_multi_level_array(self):
         """ header in array of array """

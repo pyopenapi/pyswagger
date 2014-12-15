@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from .primitives import PrimJSONEncoder
 from .utils import deref
+from pyswagger import errs
 from uuid import uuid4
 import six
 import json
@@ -44,7 +45,7 @@ class SwaggerRequest(object):
         """
         content_type = 'application/x-www-form-urlencoded'
         if self.__op.consumes and content_type not in self.__op.consumes:
-            raise ValueError('unable to locate content-type: {0}'.format(content_type))
+            raise errs.SchemaError('unable to locate content-type: {0}'.format(content_type))
 
         return content_type, six.moves.urllib.parse.urlencode(self.__p['formData'])
 
@@ -53,7 +54,7 @@ class SwaggerRequest(object):
         """
         content_type = 'application/json'
         if self.__op.consumes and content_type not in self.__op.consumes:
-            raise ValueError('unable to locate content-type: {0}'.format(content_type))
+            raise errs.SchemaError('unable to locate content-type: {0}'.format(content_type))
 
         for v in six.itervalues(self.__p['body']):
             # according to spec, payload should be one and only,
@@ -66,7 +67,7 @@ class SwaggerRequest(object):
         """
         content_type = 'multipart/form-data'
         if self.__op.consumes and content_type not in self.__op.consumes:
-            raise ValueError('unable to locate content-type: {0}'.format(content_type))
+            raise errs.SchemaError('unable to locate content-type: {0}'.format(content_type))
 
         boundary = uuid4().hex
         content_type += '; boundary={0}'
@@ -223,7 +224,9 @@ class SwaggerRequest(object):
 
     @property
     def schemes(self):
-        """ TODO:
+        """ required schemes for current Operation.
+
+        :type: list of str
         """
         return self.__op.schemes
 

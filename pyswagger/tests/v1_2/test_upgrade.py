@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import SwaggerApp, errs
 from ..utils import get_test_data_folder
 import unittest
 import os
@@ -138,10 +138,10 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
                 version='1.2',
                 which='upgrade_parameter'
             ))
-        except ValueError as e:
+        except errs.SchemaError as e:
             self.failUnlessEqual(e.args, ("Can't have $ref in non-body Parameters",))
         else:
-            self.fail('ValueError not raised')
+            self.fail('SchemaError not raised')
 
     def test_model(self):
         """ Model -> Definition
@@ -181,20 +181,20 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
                 version='1.2',
                 which=os.path.join('upgrade_items', 'with_ref')
             ))
-        except ValueError as e:
+        except errs.SchemaError as e:
             self.failUnlessEqual(e.args, ('Can\'t have $ref for Items',))
         else:
-            self.fail('ValueError not raised')
+            self.fail('SchemaError not raised')
 
         try:
             SwaggerApp._create_(get_test_data_folder(
                 version='1.2',
                 which=os.path.join('upgrade_items', 'invalid_primitive')
             ))
-        except ValueError as e:
+        except errs.SchemaError as e:
             self.failUnlessEqual(e.args, ('Non primitive type is not allowed for Items',))
         else:
-            self.fail('ValueError not raised')
+            self.fail('SchemaError not raised')
 
 
 class ModelSubtypesTestCase(unittest.TestCase):
