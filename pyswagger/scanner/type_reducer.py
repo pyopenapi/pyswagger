@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from ..scan import Dispatcher
+from ..errs import SchemaError
 from ..spec.v2_0.objects import Operation
 from ..utils import scope_compose
 
@@ -20,7 +21,7 @@ class TypeReduce(object):
         new_scope = scope_compose(scope, name)
         if new_scope:
             if new_scope in self.op.keys():
-                raise ValueError('duplicated key found: ' + new_scope)
+                raise SchemaError('duplicated key found: ' + new_scope)
 
             self.op[new_scope] = obj
 

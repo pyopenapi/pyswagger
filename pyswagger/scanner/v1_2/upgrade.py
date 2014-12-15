@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from ...base import NullContext
 from ...scan import Dispatcher
+from ...errs import SchemaError
 from ...primitives import is_primitive
 from ...utils import scope_compose
 from ...spec.v1_2.objects import (
@@ -37,7 +38,7 @@ def convert_min_max(dst, src):
             elif src.type == 'number':
                 dst.update_field(name, float(v))
             else:
-                raise ValueError('minimum/maximum is only allowed on integer/number, not {0}'.format(src.type))
+                raise SchemaError('minimum/maximum is only allowed on integer/number, not {0}'.format(src.type))
         else:
             dst.update_field(name, None)
 
@@ -67,9 +68,9 @@ def convert_schema_from_datatype(obj, scope):
 def convert_items(o):
     item = objects.Items(NullContext())
     if getattr(o, '$ref'):
-        raise ValueError('Can\'t have $ref for Items')
+        raise SchemaError('Can\'t have $ref for Items')
     if not is_primitive(o):
-        raise ValueError('Non primitive type is not allowed for Items')
+        raise SchemaError('Non primitive type is not allowed for Items')
     item.update_field('type', o.type.lower())
     item.update_field('format', o.format)
 
@@ -205,7 +206,7 @@ class Upgrade(object):
             o.update_field('schema', convert_schema_from_datatype(obj, scope))
         else:
             if getattr(obj, '$ref'):
-                raise ValueError('Can\'t have $ref in non-body Parameters')
+                raise SchemaError('Can\'t have $ref in non-body Parameters')
 
             if obj.allowMultiple == True and obj.items == None:
                 o.update_field('type', 'array')

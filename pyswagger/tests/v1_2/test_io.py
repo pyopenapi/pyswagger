@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import SwaggerApp, errs
 from ..utils import get_test_data_folder
 from pyswagger.primitives import Model, Array
 from pyswagger.io import SwaggerRequest
@@ -195,7 +195,7 @@ class SwaggerResponse_TestCase(unittest.TestCase):
 
     def test_invalid_enum(self):
         """ invalid enum value """
-        self.assertRaises(ValueError, app.op['findPetsByStatus'], status=['wrong_enum'])
+        self.assertRaises(errs.ValidationError, app.op['findPetsByStatus'], status=['wrong_enum'])
 
     def test_default_value(self):
         """ make sure defaultValue works """
@@ -204,6 +204,6 @@ class SwaggerResponse_TestCase(unittest.TestCase):
 
     def test_min_max(self):
         """ make sure minimum/maximum works """
-        self.assertRaises(ValueError, app.op['getPetById'], petId=-100)
-        self.assertRaises(ValueError, app.op['getPetById'], petId=1000000)
+        self.assertRaises(errs.ValidationError, app.op['getPetById'], petId=-100)
+        self.assertRaises(errs.ValidationError, app.op['getPetById'], petId=1000000)
 

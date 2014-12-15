@@ -6,7 +6,7 @@ from .scan import Scanner
 from .scanner import TypeReduce, CycleDetector
 from .scanner.v1_2 import Upgrade
 from .scanner.v2_0 import AssignParent, Resolve, PatchObject
-from pyswagger import utils
+from pyswagger import utils, errs
 import inspect
 import base64
 import six
@@ -271,11 +271,11 @@ class SwaggerApp(object):
         :rtype: list of tuple(where, type, msg).
         """
 
-        errs = self._validate()
-        if strict and len(errs):
-            raise ValueError('this Swagger App contains error: {0}.'.format(len(errs)))
+        result = self._validate()
+        if strict and len(result):
+            raise errs.ValidationError('this Swagger App contains error: {0}.'.format(len(result)))
 
-        return errs
+        return result
 
     def prepare(self, strict=True):
         """ preparation for loaded json
@@ -301,7 +301,7 @@ class SwaggerApp(object):
 
         # cycle detection
         if len(cy.cycles['schema']) > 0 and strict:
-            raise ValueError('Cycles detected in Schema Object: {0}'.format(cy.cycles['schema']))
+            raise errs.CycleDetectionError('Cycles detected in Schema Object: {0}'.format(cy.cycles['schema']))
 
     @classmethod
     def create(kls, url, strict=True):
