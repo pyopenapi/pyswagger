@@ -34,14 +34,14 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 
 ##Quick Start
 ```python
-from pyswagger import SwaggerApp, SwaggerAuth
+from pyswagger import SwaggerApp, SwaggerSecurity
 from pyswagger.contrib.client.requests import Client
 
 # load Swagger resource file into SwaggerApp object
 app = SwaggerApp._create_('http://petstore.swagger.wordnik.com/api/api-docs')
 
-# init SwaggerAuth for authorization
-auth = SwaggerAuth(app)
+# init SwaggerSecurity for authorization
+auth = SwaggerSecurity(app)
 auth.update_with('simple_basic_auth', ('user', 'password')) # basic auth
 auth.update_with('simple_api_key', '12312312312312312313q') # api key
 auth.update_with('simple_oauth2', '12334546556521123fsfss') # oauth2
@@ -64,10 +64,6 @@ client.request(
   app.op['addPet'](body=pet_Tom),
   opt={'url_netloc': 'localhost:9001'}
   )
-  
-# allowMultiple parameter
-client.request(app.op['getPetsByStatus'](status='sold')) # one value
-client.request(app.op['getPetsByStatus'](status=['available', 'sold'])) # multiple value, wrapped by list.
 ```
 ##Installation
 We support pip installtion.
@@ -79,7 +75,7 @@ pip install pyswagger
 All exported API are described in following sections.
 
 ###SwaggerApp
-The initialization of pyswagger starts from **SwaggerApp.\_create_(url)**, where **url** could either be a _url_ or a _file_ path. This function returns a SwaggerApp instance, which would be used to initiate SwaggerAuth.
+The initialization of pyswagger starts from **SwaggerApp.\_create_(url)**, where **url** could either be a _url_ or a _file_ path. This function returns a SwaggerApp instance, which would be used to initiate SwaggerSecurity.
 
 **SwaggerApp.op** provides a shortcut to access Operation objects, which will produce a set of request/response for SwaggerClient to access API. The way we provide here would help to minimize the possible difference introduced by Swagger2.0 when everything is merged into one file.
 ```python
@@ -92,7 +88,7 @@ SwaggerApp.op['pet', 'getById']  # call getById in pet resource
 **SwaggerApp.validate(strict=True)** provides validation against the loaded Swagger API definition. When passing _strict=True_, an exception would be raised if validation failed. It returns a list of errors in tuple: _(where, type, msg)_.
 
 ###SwaggerClient
-You also need **SwaggerClient(auth=None)** to access API, this layer wraps the difference between those http libraries in python. where **auth**(optional) is SwaggerAuth, which helps to handle authorizations of each request.
+You also need **SwaggerClient(security=None)** to access API, this layer wraps the difference between those http libraries in python. where **security**(optional) is SwaggerSecuritysw, which helps to handle authorizations of each request.
 
 ```python
 client.request(app.op['addPet'](body=dict(id=1, name='Tom')))
@@ -124,8 +120,8 @@ The return value is a **SwaggerResponse** object, with these attributes:
 - message, corresponds to ResponseMessage object's _message_ when status matched on ResponseMessage object.
 - raw, raw data without touching.
 
-###SwaggerAuth
-Holder/Dispatcher for user-provided authorization info. Initialize this object like **SwaggerAuth(app)**, where **app** is an instance of SwaggerApp. To add authorization, call **SwaggerAuth.update\_with(name, token)**, where **name** is the name of Authorizations object in Swagger spec, and **token** is different for different kinds of authorizations:
+###SwaggerSecurity
+Holder/Dispatcher for user-provided authorization info. Initialize this object like **SwaggerSecurity(app)**, where **app** is an instance of SwaggerApp. To add authorization, call **SwaggerSecurity.update\_with(name, token)**, where **name** is the name of Authorizations object in Swagger 1.2(Security Scheme Object in Swagger 2.0) , and **token** is different for different kinds of authorizations:
 - basic authorization: (username, password)
 - api key: the api key
 - oauth2: the access\_token
@@ -151,4 +147,8 @@ python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc --cov-report=htm
 - Format of datetime on the wire?
   - should be an ISO8601 string, according to this [issue](https://github.com/wordnik/swagger-spec/issues/95).
 - How **allowMultiple** is handled?
-  - Take type integer as example, you can pass an integer or an array/tuple of integer for this parameter.
+  - Take type integer as example, you can pass ~~an integer or~~ an array/tuple of integer for this parameter. (a single value is no longer supported)
+- What do we need to take care of when upgrading from Swagger 1.2 to 2.0?
+  - **allowMultiple** is no longer supported, always passing an array even with a single value.
+  - 'different host for different resource' is no longer supported in Swagger 2.0, only one host and one basePath is allowed in one swagger.json.
+  - refer to [Migration Guide](https://github.com/swagger-api/swagger-spec/wiki/Swagger-1.2-to-2.0-Migration-Guide) from Swagger team.
