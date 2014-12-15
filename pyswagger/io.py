@@ -223,7 +223,9 @@ class SwaggerRequest(object):
 
     @property
     def schemes(self):
-        """ TODO:
+        """ required schemes for current Operation.
+
+        :type: list of str
         """
         return self.__op.schemes
 

@@ -247,6 +247,8 @@ class BaseObj(object):
 
     def resolve(self, ts):
         """ resolve a list of tokens to an child object
+
+        :param list ts: list of tokens
         """
         if isinstance(ts, six.string_types):
             ts = [ts]
@@ -267,6 +269,9 @@ class BaseObj(object):
     def merge(self, other, ctx):
         """ merge properties from other object,
         only merge from 'not None' to 'None'.
+
+        :param BaseObj other: the source object to be merged from.
+        :param Context ctx: the parsing context
         """
         def _produce_new_obj(x, ct, v):
             return x(None, None).produce().merge(v, x)
@@ -400,3 +405,4 @@ class NullContext(Context):
 
     def __init__(self):
         super(NullContext, self).__init__(None, None)
+
