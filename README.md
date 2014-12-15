@@ -30,6 +30,11 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - builtin client implementation based on various http clients in python.
   - [requests](https://github.com/kennethreitz/requests)
   - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)
+- not implemented parts, fire me a bug if you need it
+  - Swagger 2.0
+    - Schema.pattern
+    - Scheme.patternProperties
+    - Schema.readonly
 
 ---------
 
