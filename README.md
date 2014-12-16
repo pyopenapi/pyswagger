@@ -8,8 +8,11 @@ A python client for [Swagger](https://helloreverb.com/developers/swagger) enable
 try Swagger REST API by [Swagger-UI](https://github.com/wordnik/swagger-ui). However, when it's time to **unittest**
 your API, the first option you find would be [Swagger-codegen](https://github.com/wordnik/swagger-codegen), but the better option is us.
 
-**pyswagger** is much easier to use (you don't need to prepare a scala environment) and tries hard to fully supports
-[Swagger Spec](https://helloreverb.com/developers/swagger) in all aspects.
+This project is developed after [swagger-py](https://github.com/digium/swagger-py), which is a nicely implemented one, and inspired many aspects of this project. Another project is [flex](https://github.com/pipermerriam/flex), which focuses on parameter validation, try it if you can handle other parts by yourselves.
+
+For other projects related to Swagger tools in python, check [here](https://github.com/swagger-api/swagger-spec#python).
+
+**pyswagger** is much easier to use (compared to swagger-codegen, you don't need to prepare a scala environment) and tries hard to fully supports [Swagger Spec](https://helloreverb.com/developers/swagger) in all aspects.
 
 Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go through this README.
 
@@ -17,7 +20,8 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - [Quick Start](https://github.com/mission-liao/pyswagger/blob/master/README.md#quick-start)
 - [Installation](https://github.com/mission-liao/pyswagger/blob/master/README.md#installation)
 - [Reference](https://github.com/mission-liao/pyswagger/blob/master/README.md#reference)
-- [Development](https://github.com/mission-liao/pyswagger/blob/master/README.md#development)
+- [Contributors](https://github.com/mission-liao/pyswagger/blob/master/README.md#contributors)
+- [Contribution Guideline](https://github.com/mission-liao/pyswagger/blob/master/README.md#contribution-guideline)
 - [FAQ](https://github.com/mission-liao/pyswagger/blob/master/README.md#faq)
 
 ---------
@@ -35,6 +39,9 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
     - Schema.pattern
     - Scheme.patternProperties
     - Schema.readonly
+    - A scanner to validate schema
+  - A WebSocket client
+  - Pluggable primitive system, allowing to use new 'type' & 'format' in Swagger.
 
 ---------
 
@@ -92,8 +99,13 @@ The initialization of pyswagger starts from **SwaggerApp.\_create_(url)**, where
 # call an API when its nickname is unique
 SwaggerApp.op['getPetById']
 # call an API when its nickname collid with other resources
-SwaggerApp.op['user', 'getById'] # call getById in user resource
-SwaggerApp.op['pet', 'getById']  # call getById in pet resource
+SwaggerApp.op['user', 'getById'] # 'getById' in a PathItem tagged as 'user' (or a user resource in Swagger 1.2)
+SwaggerApp.op['pet', 'getById']  # 'getById' in a PathItem tagged as 'pet' (or a pet resource in Swagger 1.2)
+
+# utilize SwaggerApp.resolve to do the same thing
+SwaggerApp.resolve('#/paths/~1pet~1{petId}').get
+# instead of writing JSON pointer by yourselves, utilize utils.jp_compose
+SwaggerApp.resolve(utils.jp_compose('/pet/{petId}', base='#/paths')).get
 ```
 **SwaggerApp.validate(strict=True)** provides validation against the loaded Swagger API definition. When passing _strict=True_, an exception would be raised if validation failed. It returns a list of errors in tuple: _(where, type, msg)_.
 
@@ -101,7 +113,7 @@ SwaggerApp.op['pet', 'getById']  # call getById in pet resource
 ```python
 app.resolve('#/definitions/User')
 ```
-This function accepts a [JSON Reference](http://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03), which is composed by an url and a [JSON Pointer](http://tools.ietf.org/html/rfc6901), they are standard way to access a Swagger document. Since a JSON reference contains an url, this means you can access any external document when you need:
+This function accepts a [JSON Reference](http://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03), which is composed by an url and a [JSON Pointer](http://tools.ietf.org/html/rfc6901), it is the standard way to access a Swagger document. Since a JSON reference contains an url, this means you can access any external document when you need:
 ```python
 app.resolve('http://another_site.com/apis/swagger.json#/definitions/User')
 ```
@@ -148,7 +160,22 @@ Holder/Dispatcher for user-provided authorization info. Initialize this object l
 
 ---------
 
-##Development
+##Contributors
+- [Marcin Goliński](https://github.com/mjgolinski)
+- [Andrey Mikhailov](https://github.com/zlovred)
+
+---------
+
+##Contribution Guildeline
+report an issue:
+- issues can be reported [here](https://github.com/mission-liao/pyswagger/issues)
+- include swagger.json if possible
+- describe expected behavior, or more specific, the input/output
+
+request a merge
+- try not to decrease the coverage rate
+- test included
+
 env preparation
 ```bash
 pip install -r requirement-dev.txt
