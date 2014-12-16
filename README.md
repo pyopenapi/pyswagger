@@ -199,3 +199,4 @@ python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc --cov-report=htm
   - **allowMultiple** is no longer supported, always passing an array even with a single value.
   - 'different host for different resource' is no longer supported in Swagger 2.0, only one host and one basePath is allowed in one swagger.json.
   - refer to [Migration Guide](https://github.com/swagger-api/swagger-spec/wiki/Swagger-1.2-to-2.0-Migration-Guide) from Swagger team.
+  - The name of body parameters is no longer included in requests, refer to this [issue](https://github.com/mission-liao/pyswagger/issues/13) for details.
