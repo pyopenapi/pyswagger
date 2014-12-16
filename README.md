@@ -99,12 +99,12 @@ The initialization of pyswagger starts from **SwaggerApp.\_create_(url)**, where
 # call an API when its nickname is unique
 SwaggerApp.op['getPetById']
 # call an API when its nickname collid with other resources
-SwaggerApp.op['user', 'getById'] # 'getById' in a PathItem tagged as 'user' (or a user resource in Swagger 1.2)
-SwaggerApp.op['pet', 'getById']  # 'getById' in a PathItem tagged as 'pet' (or a pet resource in Swagger 1.2)
+SwaggerApp.op['user', 'getById'] # operationId:'getById', tags:'user' (or a user resource in Swagger 1.2)
+SwaggerApp.op['pet',  'getById'] # operationId:'getById', tags:'pet'  (or a pet resource in Swagger 1.2)
 
 # utilize SwaggerApp.resolve to do the same thing
 SwaggerApp.resolve('#/paths/~1pet~1{petId}').get
-# instead of writing JSON pointer by yourselves, utilize utils.jp_compose
+# instead of writing JSON-pointers by yourselves, utilize pyswagger.utils.jp_compose
 SwaggerApp.resolve(utils.jp_compose('/pet/{petId}', base='#/paths')).get
 ```
 **SwaggerApp.validate(strict=True)** provides validation against the loaded Swagger API definition. When passing _strict=True_, an exception would be raised if validation failed. It returns a list of errors in tuple: _(where, type, msg)_.
