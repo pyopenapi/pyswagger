@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from ...base import BaseObj, FieldMeta, Context
+from ..base import BaseObj, FieldMeta, Context
 import six
 import copy
 

@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .utils import jp_compose
+from ..utils import jp_compose
 import six
 import copy
 import functools

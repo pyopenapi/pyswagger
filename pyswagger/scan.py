@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .base import BaseObj
+from .spec.base import BaseObj
 import six
 
 

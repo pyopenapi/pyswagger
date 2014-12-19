@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from pyswagger import base
+from pyswagger.spec import base
 import unittest
 import six
 

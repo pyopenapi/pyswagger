@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from ...base import NullContext
+from ...spec.base import NullContext
 from ...scan import Dispatcher
 from ...errs import SchemaError
 from ...primitives import is_primitive
