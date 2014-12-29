@@ -255,6 +255,13 @@
             "blue",
             "green"
          ]
+      },
+      "model_bool":{
+         "properties":{
+            "bool_val":{
+               "type":"boolean"
+            }
+         }
       }
    }
 }

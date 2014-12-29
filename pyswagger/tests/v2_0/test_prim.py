@@ -148,6 +148,13 @@ class SchemaTestCase(unittest.TestCase):
         dv = d._prim_(float(0))
         self.assertEqual(dv.to_json(), "1970-01-01T00:00:00")
 
+    def test_model_bool(self):
+        """ test a model containing boolean """
+        d = self.app.resolve("#/definitions/model_bool")
+
+        dv = d._prim_(dict(bool_val=True)) 
+        # try to access it
+        self.assertEqual(dv.bool_val, True)
 
 class HeaderTestCase(unittest.TestCase):
     """ test for Header object """

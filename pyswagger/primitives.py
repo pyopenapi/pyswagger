@@ -322,6 +322,9 @@ def create_str(obj, v):
     apply_with(r, obj)
     return r
 
+def create_bool(_, v):
+    return bool(v)
+
 # refer to 4.3.1 Primitives in v1.2
 prim_obj_map = {
     # int
@@ -346,8 +349,8 @@ prim_obj_map = {
     ('string', 'date-time'): Datetime,
 
     # bool
-    ('boolean', ''): bool,
-    ('boolean', None): bool,
+    ('boolean', ''): create_bool,
+    ('boolean', None): create_bool,
 
     # file
     ('file', ''): File,
