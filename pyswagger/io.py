@@ -30,6 +30,7 @@ class SwaggerRequest(object):
         self.__op = op
         self.__p = params
         self.__url = self.__op.url
+        self.__path = self.__op.path
         self.__header = {}
 
         # update 'accept' header section
@@ -142,6 +143,9 @@ class SwaggerRequest(object):
         :rtype: SwaggerRequest
         """
 
+        # combine path parameters into path
+        self.__path = self.__path.format(**self.__p['path'])
+
         # combine path parameters into url
         self.__url = ''.join([scheme, '://', self.__url.format(**self.__p['path'])])
 
@@ -181,6 +185,22 @@ class SwaggerRequest(object):
         :type: str 
         """
         return self.__url
+
+    @property
+    def path(self):
+        """ path of this request
+
+        :type: str
+        """
+        return self.__path
+
+    @property
+    def base_path(self):
+        """ base path of this request
+
+        :type: str
+        """
+        return self.__op.base_path
 
     @property
     def query(self):

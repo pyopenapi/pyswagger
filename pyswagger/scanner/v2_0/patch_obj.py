@@ -39,14 +39,21 @@ class PatchObject(object):
     def _path_item(self, path, obj, app):
         """
         """
+        k = jp_split(path)[-1] # key to the dict containing PathItem(s)
         if isinstance(app.root, Swagger):
-            url = app.root.host + (app.root.basePath or '') + jp_split(path)[-1]
+            url = app.root.host + (app.root.basePath or '') + k
+            base_path = app.root.basePath
         else:
             url = None
+            base_path = None
 
         for c in PathItemContext.__swagger_child__:
             o = getattr(obj, c[0])
             if isinstance(o, Operation):
+                # base path
+                o.update_field('base_path', base_path)
+                # path
+                o.update_field('path', k)
                 # url
                 o.update_field('url', url)
                 # http method
