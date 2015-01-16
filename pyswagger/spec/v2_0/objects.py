@@ -181,6 +181,8 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
         # for pyswagger
         ('method', None),
         ('url', None),
+        ('path', None),
+        ('base_path', None),
     ]
 
     def __call__(self, **k):

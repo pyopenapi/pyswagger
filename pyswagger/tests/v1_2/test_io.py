@@ -19,6 +19,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         self.assertEqual(req.method, 'put')
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet')
+        self.assertEqual(req.path, '/api/pet')
+        self.assertEqual(req.base_path, '')
         self.assertEqual(req.query, [])
 
         m = req._p['body']['body']
@@ -35,6 +37,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/findByStatus')
+        self.assertEqual(req.path, '/api/pet/findByStatus')
+        self.assertEqual(req.base_path, '')
         self.assertEqual(req.method, 'get')
         self.assertEqual(req.header, {'Accept': 'application/json'})
         self.assertEqual(req.data, None)
@@ -46,6 +50,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/findByTags')
+        self.assertEqual(req.path, '/api/pet/findByTags')
+        self.assertEqual(req.base_path, '')
         self.assertEqual(req.method, 'get')
         self.assertEqual(req.header, {'Accept': 'application/json'})
         self.assertEqual(req.data, None)
@@ -57,6 +63,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/0')
+        self.assertEqual(req.path, '/api/pet/0')
+        self.assertEqual(req.base_path, '')
         self.assertEqual(req.method, 'patch')
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
 
@@ -89,6 +97,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/23')
+        self.assertEqual(req.path, '/api/pet/23')
+        self.assertEqual(req.base_path, '')
         self.assertEqual(req.method, 'post')
         self.assertEqual(req.header,{
             'Content-Type': u'application/x-www-form-urlencoded',
@@ -104,6 +114,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet')
+        self.assertEqual(req.path, '/api/pet')
+        self.assertEqual(req.base_path, '')
         self.assertEqual(req.method, 'post')
         self.assertEqual(req.header, {'Content-Type': 'application/json', 'Accept': 'application/json'})
 
@@ -126,6 +138,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/22')
+        self.assertEqual(req.path, '/api/pet/22')
         self.assertEqual(req.method, 'delete')
         self.assertEqual(req.header, {'Accept': 'application/json'})
         self.assertEqual(req.data, None)
@@ -137,6 +150,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req.prepare()
 
         self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/pet/100')
+        self.assertEqual(req.path, '/api/pet/100')
         self.assertEqual(req.method, 'get')
         self.assertEqual(req.header, {'Accept': 'application/json'})
         self.assertEqual(req.data, None)
@@ -149,6 +163,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
 
         req._patch({SwaggerRequest.opt_url_netloc: 'localhost:9001'})
         self.assertEqual(req.url, 'http://localhost:9001/api/pet/100')
+        self.assertEqual(req.path, '/api/pet/100')
 
     def test_uploadFile(self):
         """ Pet.uploadFile """

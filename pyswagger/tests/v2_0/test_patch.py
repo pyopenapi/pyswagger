@@ -69,6 +69,8 @@ class PatchObjTestCase(unittest.TestCase):
 
         self.assertEqual(p.get.method, 'get')
         self.assertEqual(p.get.url, 'test.com/v1/pc')
+        self.assertEqual(p.get.path, '/pc')
+        self.assertEqual(p.get.base_path, '/v1')
 
     def test_schema(self):
         """ test patch Schema """

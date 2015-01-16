@@ -6,6 +6,7 @@ from uuid import uuid4
 import six
 import json
 import io, codecs
+import collections
 
 
 class SwaggerRequest(object):
@@ -30,6 +31,7 @@ class SwaggerRequest(object):
         self.__op = op
         self.__p = params
         self.__url = self.__op.url
+        self.__path = self.__op.path
         self.__header = {}
 
         # update 'accept' header section
@@ -142,6 +144,9 @@ class SwaggerRequest(object):
         :rtype: SwaggerRequest
         """
 
+        # combine path parameters into path
+        self.__path = self.__path.format(**self.__p['path'])
+
         # combine path parameters into url
         self.__url = ''.join([scheme, '://', self.__url.format(**self.__p['path'])])
 
@@ -172,7 +177,7 @@ class SwaggerRequest(object):
             self.__header.update({'Content-Type': content_type})
 
         return self
-    
+
 
     @property
     def url(self):
@@ -181,6 +186,22 @@ class SwaggerRequest(object):
         :type: str 
         """
         return self.__url
+
+    @property
+    def path(self):
+        """ path of this request
+
+        :type: str
+        """
+        return self.__path
+
+    @property
+    def base_path(self):
+        """ base path of this request
+
+        :type: str
+        """
+        return self.__op.base_path
 
     @property
     def query(self):
@@ -262,6 +283,15 @@ class SwaggerResponse(object):
         self.__status = None 
         self.__header = {}
 
+    def _convert_header(self, resp, k, v):
+        if k in resp.headers:
+            v = resp.headers[k]._prim_(v)
+
+        if k in self.__header:
+            self.__header[k].append(v)
+        else:
+            self.__header[k] = [v]
+
     def apply_with(self, status=None, raw=None, header=None):
         """ update header, status code, raw datum, ...etc
 
@@ -289,14 +319,12 @@ class SwaggerResponse(object):
                 self.__data = r.schema._prim_(self.raw)
 
         if header != None:
-            for k, v in six.iteritems(header):
-                if k in r.headers:
-                    v = r.headers[k]._prim_(v)
-
-                if k in self.__header:
-                    self.__header[k].extend(v)
-                else:
-                    self.__header[k] = [v]
+            if isinstance(header, (collections.Mapping, collections.MutableMapping)):
+                for k, v in six.iteritems(header):
+                    self._convert_header(r, k, v)
+            else:
+                for k, v in header:
+                    self._convert_header(r, k, v)
 
         return self
 
