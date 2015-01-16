@@ -322,7 +322,7 @@ class SwaggerResponse(object):
             if isinstance(header, (collections.Mapping, collections.MutableMapping)):
                 for k, v in six.iteritems(header):
                     self._convert_header(r, k, v)
-            elif isinstance(header, list):
+            elif isinstance(header, (collections.Sequence, collections.MutableSequence)):
                 for k, v in header:
                     self._convert_header(r, k, v)
             else:
