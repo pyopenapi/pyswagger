@@ -4,7 +4,6 @@ from pyswagger.contrib.client.flask import FlaskTestClient
 from ...utils import create_pet_db, get_test_data_folder, pet_Mary
 from flask import Flask, json, request
 import unittest
-import StringIO
 import six
 
 
@@ -53,7 +52,7 @@ def pet_image():
         global received_file
         global received_meta
 
-        out = StringIO.StringIO()
+        out = six.BytesIO()
         request.files['file'].save(out)
         received_file = out.getvalue()
         out.close()
@@ -117,7 +116,7 @@ class FlaskTestCase(unittest.TestCase):
 
         resp = self.client.request(
             sapp.op['uploadFile'](
-                additionalMetadata='a test file', file=dict(data=six.StringIO('a test Content'), filename='test.txt')),
+                additionalMetadata='a test file', file=dict(data=six.BytesIO(six.b('a test Content')), filename='test.txt')),
         )
 
         self.assertEqual(resp.status, 200)

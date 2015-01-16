@@ -322,11 +322,9 @@ class SwaggerResponse(object):
             if isinstance(header, (collections.Mapping, collections.MutableMapping)):
                 for k, v in six.iteritems(header):
                     self._convert_header(r, k, v)
-            elif isinstance(header, (collections.Sequence, collections.MutableSequence)):
+            else:
                 for k, v in header:
                     self._convert_header(r, k, v)
-            else:
-                raise Exception('Passing a non-dict/list header to response builder: {0}'.format(str(type(header))))
 
         return self
 
