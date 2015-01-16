@@ -6,6 +6,7 @@ from uuid import uuid4
 import six
 import json
 import io, codecs
+import collections
 
 
 class SwaggerRequest(object):
@@ -176,7 +177,7 @@ class SwaggerRequest(object):
             self.__header.update({'Content-Type': content_type})
 
         return self
-    
+
 
     @property
     def url(self):
@@ -282,6 +283,15 @@ class SwaggerResponse(object):
         self.__status = None 
         self.__header = {}
 
+    def _convert_header(self, resp, k, v):
+        if k in resp.headers:
+            v = resp.headers[k]._prim_(v)
+
+        if k in self.__header:
+            self.__header[k].append(v)
+        else:
+            self.__header[k] = [v]
+
     def apply_with(self, status=None, raw=None, header=None):
         """ update header, status code, raw datum, ...etc
 
@@ -309,14 +319,14 @@ class SwaggerResponse(object):
                 self.__data = r.schema._prim_(self.raw)
 
         if header != None:
-            for k, v in six.iteritems(header):
-                if k in r.headers:
-                    v = r.headers[k]._prim_(v)
-
-                if k in self.__header:
-                    self.__header[k].extend(v)
-                else:
-                    self.__header[k] = [v]
+            if isinstance(header, (collections.Mapping, collections.MutableMapping)):
+                for k, v in six.iteritems(header):
+                    self._convert_header(r, k, v)
+            elif isinstance(header, list):
+                for k, v in header:
+                    self._convert_header(r, k, v)
+            else:
+                raise Exception('Passing a non-dict/list header to response builder: {0}'.format(str(type(header))))
 
         return self
 
