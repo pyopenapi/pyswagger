@@ -31,9 +31,10 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - support $ref to **External Document**, multiple swagger.json will be organized into a group of SwaggerApp. And external document with self-describing resource is also supported (refer to [issue](https://github.com/swagger-api/swagger-spec/issues/219)).
 - type safe, input/output are converted to python types according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in Swagger. You don't need to touch any json schema when using pyswagger. Limitations like **minimum/maximum** or **enum** are also checked. **Model inheritance** also supported.
 - provide function **SwaggerApp.validate** to check validity of the loaded API definition according to spec.
-- builtin client implementation based on various http clients in python.
+- builtin client implementation based on various http clients in python. For usage of these clients, please refer to `pyswagger.tests.contrib.client` for details
   - [requests](https://github.com/kennethreitz/requests)
   - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)
+  - [flask.testing.FlaskClient](http://flask.pocoo.org/docs/0.10/api/#flask.testing.FlaskClient)
 - not implemented parts, fire me a bug if you need it
   - Swagger 2.0
     - Schema.pattern
