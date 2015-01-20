@@ -164,6 +164,7 @@ Holder/Dispatcher for user-provided authorization info. Initialize this object l
 ##Contributors
 - [Marcin Goliński](https://github.com/mjgolinski)
 - [Andrey Mikhailov](https://github.com/zlovred)
+- [Telepenin Nikolay](https://github.com/prefer)
 
 ---------
 
