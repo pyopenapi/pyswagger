@@ -12,7 +12,7 @@ This project is developed after [swagger-py](https://github.com/digium/swagger-p
 
 For other projects related to Swagger tools in python, check [here](https://github.com/swagger-api/swagger-spec#python).
 
-**pyswagger** is much easier to use (compared to swagger-codegen, you don't need to prepare a scala environment) and tries hard to fully supports [Swagger Spec](https://helloreverb.com/developers/swagger) in all aspects.
+**pyswagger** is much easier to use (compared to swagger-codegen, you don't need to prepare a scala environment) and tries hard to **fully supports** [Swagger Spec](https://helloreverb.com/developers/swagger) in all aspects.
 
 Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go through this README.
 
@@ -118,10 +118,10 @@ This function accepts a [JSON Reference](http://tools.ietf.org/html/draft-pbryan
 ```python
 app.resolve('http://another_site.com/apis/swagger.json#/definitions/User')
 ```
-pyswagger will load that swagger.json, create a new SwaggerApp, and group it with the SwaggerApp you kept (**app** in code above). Internally, when pyswagger encounter some $ref directs to external documents, we just silently handle it in the same way.
+`pyswagger` will load that swagger.json, create a new `SwaggerApp`, and group it with the `SwaggerApp` you kept (**app** in code above). Internally, when `pyswagger` encounter some $ref directs to external documents, we just silently handle it in the same way.
 
 ###SwaggerClient
-You also need **SwaggerClient(security=None)** to access API, this layer wraps the difference between those http libraries in python. where **security**(optional) is SwaggerSecuritysw, which helps to handle authorizations of each request.
+You also need **SwaggerClient(security=None)** to access API, this layer wraps the difference between those http libraries in python. where **security**(optional) is `SwaggerSecurity`, which helps to handle authorizations of each request.
 
 ```python
 client.request(app.op['addPet'](body=dict(id=1, name='Tom')))
@@ -148,7 +148,7 @@ YouFile = {
 
 The return value is a **SwaggerResponse** object, with these attributes:
 - status
-- data, corresponds to Operation object's return value, or ResponseMessage object's _responseModel_ when its status matched.
+- data, corresponds to Operation object's return value, or `ResponseMessage` object's _responseModel_ (in Swagger 1.2, `Schema` object of `Response` object in Swagger 2.0) when its status matched.
 - header, organized in ```{key: [value1, value2...]}```
 - message, corresponds to ResponseMessage object's _message_ when status matched on ResponseMessage object.
 - raw, raw data without touching.
