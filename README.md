@@ -90,7 +90,7 @@ pip install pyswagger
 ```
 ---------
 ##Reference
-All exported API are described in following sections. [![A diagram about relations between components](https://docs.google.com/drawings/d/1DZiJgl4i9L038UJJp3kpwkWRvcNQktf5h-e4m96_C-k/pub?w=849&h=530)]
+All exported API are described in following sections. ![A diagram about relations between components](https://docs.google.com/drawings/d/1DZiJgl4i9L038UJJp3kpwkWRvcNQktf5h-e4m96_C-k/pub?w=849&h=530)
 
 ###SwaggerApp
 The initialization of pyswagger starts from **SwaggerApp.\_create_(url)**, where **url** could either be a _url_ or a _file_ path. This function returns a SwaggerApp instance, which would be used to initiate SwaggerSecurity.
