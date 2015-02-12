@@ -36,13 +36,14 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
   - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)
   - [flask.testing.FlaskClient](http://flask.pocoo.org/docs/0.10/api/#flask.testing.FlaskClient)
 - not implemented parts, fire me a bug if you need it
-  - Swagger 2.0
-    - Schema.pattern
-    - Scheme.patternProperties
-    - Schema.readonly
-    - A scanner to validate schema
-  - A WebSocket client
-  - Pluggable primitive system, allowing to use new 'type' & 'format' in Swagger.
+  - [ ] Swagger 2.0
+    - [ ] Schema.pattern
+    - [ ] Scheme.patternProperties
+    - [ ] Schema.readonly
+    - [ ] A scanner to validate schema
+  - [ ] A WebSocket client
+  - [ ] Pluggable primitive system, allowing to use new 'type' & 'format' in Swagger.
+  - [ ] integrate YAML loader: [pyyaml](https://bitbucket.org/xi/pyyaml), the downside is, we need one more dependency. (right now we only depends on 'six')
 
 ---------
 
