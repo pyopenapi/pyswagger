@@ -53,7 +53,8 @@ def convert_schema_from_datatype(obj, scope):
     s = objects.Schema(NullContext())
     update_type_and_ref(s, obj, scope)
     s.update_field('format', obj.format)
-    s.update_field('default', obj.defaultValue)
+    if obj.is_set("defaultValue"):
+        s.update_field('default', obj.defaultValue)
     convert_min_max(s, obj)
     s.update_field('uniqueItems', obj.uniqueItems)
     s.update_field('enum', obj.enum)
@@ -213,7 +214,7 @@ class Upgrade(object):
                 o.update_field('collectionFormat', 'csv')
                 o.update_field('uniqueItems', obj.uniqueItems)
                 o.update_field('items', convert_items(obj))
-                if obj.defaultValue:
+                if obj.is_set("defaultValue"):
                     o.update_field('default', [obj.defaultValue])
                 o.items.update_field('enum', obj.enum)
             else:

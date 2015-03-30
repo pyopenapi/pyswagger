@@ -186,6 +186,7 @@ class Model(dict):
                 pobj = obj.properties.get(k)
                 self[k] = prim_factory(pobj, v)
             # TODO: patternProperties here
+            # TODO: fix bug, everything would not go into additionalProperties, instead of recursive
             elif obj.additionalProperties == True:
                 self[k] = v
             elif obj.additionalProperties not in (None, False):
@@ -194,7 +195,7 @@ class Model(dict):
         other_prop = set(six.iterkeys(obj.properties)) - set(six.iterkeys(self))
         for k in other_prop:
             p = obj.properties[k]
-            if p.default != None:
+            if p.is_set("default"):
                 self[k] = prim_factory(p, p.default)
 
         if obj.discriminator:

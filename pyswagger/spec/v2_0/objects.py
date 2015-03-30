@@ -190,9 +190,17 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
         params = dict(header={}, query=[], path={}, body={}, formData=[], file={})
         names = []
         def _convert_parameter(p):
-            v = k.get(p.name, p.default)
-            if v == None and p.required:
+            if p.name not in k and not p.is_set("default") and p.required:
                 raise ValueError('requires parameter: ' + p.name)
+
+            if p.is_set("default"):
+                v = k.get(p.name, p.default)
+            else:
+                if p.name in k:
+                    v = k[p.name]
+                else:
+                    # do not provide value for parameters that use didn't specify.
+                    return
 
             c = p._prim_(v)
             i = getattr(p, 'in')

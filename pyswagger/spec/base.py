@@ -198,6 +198,8 @@ class BaseObj(object):
         if not issubclass(type(ctx), Context):
             raise TypeError('should provide args[0] as Context, not: ' + ctx.__class__.__name__)
 
+        self.__origin_keys = set([k for k in six.iterkeys(ctx._obj)])
+
         # handle fields
         for name, default in self.__swagger_fields__:
             setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
@@ -244,6 +246,7 @@ class BaseObj(object):
             raise AttributeError('{0} is not in {1}'.format(n, self.__class__.__name__))
 
         setattr(self, n, obj)
+        self.__origin_keys.add(f)
 
     def resolve(self, ts):
         """ resolve a list of tokens to an child object
@@ -301,6 +304,15 @@ class BaseObj(object):
 
         # allow cascade calling
         return self
+
+    def is_set(self, k):
+        """ check if a key is setted from Swagger API document
+
+        :param k: the key to check
+        :return: True if the key is setted. False otherwise, it means we would get value
+        from default from Field.
+        """
+        return k in self.__origin_keys
 
     @property
     def _parent_(self):
