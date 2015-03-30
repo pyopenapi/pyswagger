@@ -271,6 +271,19 @@ class AdditionalPropertiesTestCase(unittest.TestCase):
         self.assertTrue('category1' not in m)
         self.assertTrue('category2' not in m)
 
+    def test_with_allof_limitation(self):
+        """ additionalProperties would accept all keys,
+        we need to make sure nested model process those keys before
+        additionalProperties intecept all keys
+        """
+        d = self.app.resolve('#/definitions/add_prop_nested')
+        self.assertRaises(errs.ValidationError, primitives.prim_factory,
+            d,
+            dict(
+                my_int=99
+            )
+        )
+
 
 class ParameterTestCase(unittest.TestCase):
     """ test for Parameter object """

@@ -185,27 +185,52 @@ class Model(dict):
             if k in obj.properties:
                 pobj = obj.properties.get(k)
                 self[k] = prim_factory(pobj, v)
+
             # TODO: patternProperties here
             # TODO: fix bug, everything would not go into additionalProperties, instead of recursive
             elif obj.additionalProperties == True:
-                self[k] = v
+                ctx['addp'] = True
             elif obj.additionalProperties not in (None, False):
-                self[k] = prim_factory(obj.additionalProperties, v)
+                ctx['addp_schema'] = obj
 
-        other_prop = set(six.iterkeys(obj.properties)) - set(six.iterkeys(self))
+        in_obj = set(six.iterkeys(obj.properties))
+        in_self = set(six.iterkeys(self))
+
+        other_prop = in_obj - in_self
         for k in other_prop:
             p = obj.properties[k]
             if p.is_set("default"):
                 self[k] = prim_factory(p, p.default)
 
-        if obj.discriminator:
-            self[obj.discriminator] = ctx['name']
-
         not_found = set(obj.required) - set(six.iterkeys(self))
         if len(not_found):
             raise ValueError('requirement not meet: {0}'.format(not_found))
 
-        return val
+        # remove assigned properties to avoid duplicated
+        # primitive creation
+        _val = {}
+        for k in set(six.iterkeys(val)) - in_obj:
+            _val[k] = val[k]
+
+        if obj.discriminator:
+            self[obj.discriminator] = ctx['name']
+
+        return _val
+
+    def cleanup(self, val, ctx):
+        """
+        """
+        if ctx['addp'] == True:
+            for k, v in six.iteritems(val):
+                self[k] = v
+            ctx['addp'] = False
+        elif ctx['addp_schema'] != None:
+            obj = ctx['addp_schema']
+            for k, v in six.iteritems(val):
+                self[k] = prim_factory(obj.additionalProperties, v)
+            ctx['addp_schema'] = None
+
+        return {}
 
     def __eq__(self, other):
         """ equality operater, 
@@ -381,12 +406,17 @@ def prim_factory(obj, val, ctx=None):
     if val == None:
         return None
 
+    cleanup = ctx == None # it's the top-most call in recursive
     obj = deref(obj)
     ctx = {} if ctx == None else ctx
     if 'name' not in ctx and hasattr(obj, 'name'):
         ctx['name'] = obj.name
     if 'guard' not in ctx:
         ctx['guard'] = CycleGuard()
+    if 'addp_schema' not in ctx:
+        ctx['addp_schema'] = None
+    if 'addp' not in ctx:
+        ctx['addp'] = False
 
     # cycle guard
     ctx['guard'].update(obj)
@@ -442,6 +472,9 @@ def prim_factory(obj, val, ctx=None):
         if ret:
             for a in not_applied:
                 val = _apply(ret, a, val, ctx)
+
+    if ret and cleanup and hasattr(ret, 'cleanup'):
+        val = ret.cleanup(val, ctx)
 
     return ret
 

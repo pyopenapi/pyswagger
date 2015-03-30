@@ -42,6 +42,21 @@
             }
          },
          "additionalProperties":false
+      },
+      "int_limit":{
+         "properties":{
+            "my_int":{
+               "type":"integer",
+               "format":"int32",
+               "minimum":100
+            }
+         }
+      },
+      "add_prop_nested":{
+         "additionalProperties":true,
+         "allOf":[
+            {"$ref":"#/definitions/int_limit"}
+         ]
       }
    }
 }
