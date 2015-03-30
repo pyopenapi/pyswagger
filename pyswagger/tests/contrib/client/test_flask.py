@@ -4,6 +4,8 @@ from pyswagger.contrib.client.flask import FlaskTestClient
 from ...utils import create_pet_db, get_test_data_folder, pet_Mary
 from flask import Flask, json, request
 import unittest
+import pytest
+import sys
 import six
 
 
@@ -63,6 +65,7 @@ def pet_image():
 #
 # test case
 #
+@pytest.mark.skipif(sys.version_info[:2] >= (3, 4), reason='httpretty corrupt tornado.testing in python3.4')
 class FlaskTestCase(unittest.TestCase):
     """
     """
