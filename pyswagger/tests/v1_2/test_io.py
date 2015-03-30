@@ -217,6 +217,13 @@ class SwaggerResponse_TestCase(unittest.TestCase):
         req, _ = app.op['findPetsByStatus']()
         self.assertEqual(req._p['query'], [(u'status', 'available')])
 
+        # when there is no defaultValue, we should not provide a 'None'
+        req, _ = app.op['updatePetWithForm'](petId=1, name='Tom')
+        self.assertEqual(req._p['formData'], [('name', 'Tom')])
+
+        req, _ = app.op['updatePetWithForm'](petId=1)
+        self.assertEqual(req._p['formData'], [])
+
     def test_min_max(self):
         """ make sure minimum/maximum works """
         self.assertRaises(errs.ValidationError, app.op['getPetById'], petId=-100)

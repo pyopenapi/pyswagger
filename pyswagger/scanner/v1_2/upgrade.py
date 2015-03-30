@@ -53,7 +53,7 @@ def convert_schema_from_datatype(obj, scope):
     s = objects.Schema(NullContext())
     update_type_and_ref(s, obj, scope)
     s.update_field('format', obj.format)
-    if obj.is_set("defaultValue"):
+    if obj.is_set('defaultValue'):
         s.update_field('default', obj.defaultValue)
     convert_min_max(s, obj)
     s.update_field('uniqueItems', obj.uniqueItems)
@@ -220,7 +220,8 @@ class Upgrade(object):
             else:
                 o.update_field('type', obj.type.lower())
                 o.update_field('format', obj.format)
-                o.update_field('default', obj.defaultValue)
+                if obj.is_set("defaultValue"):
+                    o.update_field('default', obj.defaultValue)
                 convert_min_max(o, obj)
                 o.update_field('enum', obj.enum)
 
