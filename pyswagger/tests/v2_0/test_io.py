@@ -33,3 +33,15 @@ class SwaggerResponseTestCase(unittest.TestCase):
         self.assertEqual(resp.status, 404)
         self.assertEqual(resp.raw, r)
         self.assertTrue(isinstance(resp.data, primitives.Model))
+
+    def test_error_only_status(self):
+        """ it's legal for a Swagger without any successful status Response object.
+        in this case, users need to access response via SwaggerResponse.raw
+        """
+        resp = io.SwaggerResponse(self.app.s('/resp').post)
+
+        # make sure we are ok when no matching status and without a 'default'
+        resp.apply_with(200, 'some data')
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(resp.raw, 'some data')
+        self.assertEqual(resp.data, None)

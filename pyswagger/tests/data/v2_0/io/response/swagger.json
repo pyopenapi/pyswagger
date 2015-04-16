@@ -27,6 +27,15 @@
                   }
                }
             }
+         },
+         "post":{
+            "responses":{
+               "404":{
+                  "schema":{
+                     "$ref":"#/definitions/schema2"
+                  }
+               }
+            }
          }
       }
    },

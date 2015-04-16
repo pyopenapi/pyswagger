@@ -305,16 +305,17 @@ class SwaggerResponse(object):
         if status != None:
             self.__status = status
 
-        r = deref(self.__op.responses.get(str(self.__status), None))
-        r = deref(self.__op.responses.get('default', None)) if r == None else r
-
         if raw != None:
+            # update 'raw'
+            self.__raw = raw
+
             if self.__status == None:
                 raise Exception('Update status code before assigning raw data')
 
-            if r.schema:
-                self.__raw = raw
+            r = (deref(self.__op.responses.get(str(self.__status), None)) or
+                 deref(self.__op.responses.get('default', None)))
 
+            if r and r.schema:
                 # update data from Opeartion if succeed else from responseMessage.responseModel
                 self.__data = r.schema._prim_(self.raw)
 
