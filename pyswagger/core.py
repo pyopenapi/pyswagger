@@ -429,15 +429,16 @@ class SwaggerSecurity(object):
         if not req._security:
             return req
 
-        for k, v in six.iteritems(req._security):
-            if not k in self.__info:
-                continue
+        for s in req._security:
+            for k, v in six.iteritems(s):
+                if not k in self.__info:
+                    continue
 
-            header, cred = self.__info[k]
-            if header:
-                req._p['header'].update(cred)
-            else:
-                utils.nv_tuple_list_replace(req._p['query'], utils.get_dict_as_tuple(cred))
+                header, cred = self.__info[k]
+                if header:
+                    req._p['header'].update(cred)
+                else:
+                    utils.nv_tuple_list_replace(req._p['query'], utils.get_dict_as_tuple(cred))
 
         return req
 

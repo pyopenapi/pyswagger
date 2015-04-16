@@ -82,7 +82,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         o = p.patch
         self.assertEqual(o.produces, ['application/json', 'application/xml'])
         self.assertEqual(o.consumes, ['application/json', 'application/xml'])
-        self.assertEqual(o.security, {'oauth2': ['write:pets']})
+        self.assertEqual(o.security, [{'oauth2': ['write:pets']}])
         self.assertTrue('default' in o.responses)
 
         r = o.responses['default']
@@ -195,6 +195,11 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
             self.failUnlessEqual(e.args, ('Non primitive type is not allowed for Items',))
         else:
             self.fail('SchemaError not raised')
+
+    def test_authorizations(self):
+        """ Authorizations -> [Security Requirement]
+        """
+        
 
 
 class ModelSubtypesTestCase(unittest.TestCase):
