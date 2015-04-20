@@ -5,6 +5,8 @@ from ..utils import get_test_data_folder
 import unittest
 import httpretty
 import json
+import pytest
+import sys
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='model_subtypes')) 
@@ -14,6 +16,8 @@ u_mission = dict(id=1, username='mission', password='123123')
 uwi_mary = dict(id=2, username='mary', password='456456', email='m@a.ry', phone='123')
 uwi_kevin = dict(id=3, username='kevin')
 
+
+@pytest.mark.skipif(sys.version_info[:2] >= (3, 3), reason='httpretty corrupt in python3')
 class ModelInteritanceTestCase(unittest.TestCase):
     """ test cases for model inheritance """
 

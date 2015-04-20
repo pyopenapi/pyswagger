@@ -8,8 +8,11 @@ import unittest
 import httpretty
 import os
 import six
+import pytest
+import sys
 
 
+@pytest.mark.skipif(sys.version_info[:2] >= (3, 3), reason='httpretty corrupt in python3')
 class HTTPGetterTestCase(unittest.TestCase):
     """ test HTTPGetter """
 
