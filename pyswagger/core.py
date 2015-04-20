@@ -2,10 +2,12 @@ from __future__ import absolute_import
 from .getter import UrlGetter, LocalGetter
 from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
+from .spec.v2_0.objects import Operation
 from .scan import Scanner
 from .scanner import TypeReduce, CycleDetector
 from .scanner.v1_2 import Upgrade
-from .scanner.v2_0 import AssignParent, Resolve, PatchObject
+from .scanner.v2_0 import AssignParent, Resolve, PatchObject, YamlFixer
+from .consts import FILE_TYPE_JSON
 from pyswagger import utils, errs
 import inspect
 import base64
@@ -129,7 +131,7 @@ class SwaggerApp(object):
         """
         return self.__app_cache
 
-    def _load_json(self, url, getter=None, parser=None):
+    def _load_json(self, url, type_hint=FILE_TYPE_JSON, getter=None, parser=None):
         """
         """
         if url in self.__app_cache:
@@ -145,13 +147,13 @@ class SwaggerApp(object):
             getter = UrlGetter
             p = six.moves.urllib.parse.urlparse(local_url)
             if p.scheme == 'file' and p.path:
-                getter = LocalGetter(p.path)
+                getter = LocalGetter(p.path, type_hint)
 
-            if inspect.isclass(getter):
-                # default initialization is passing the url
-                # you can override this behavior by passing an
-                # initialized getter object.
-                getter = getter(local_url)
+        if inspect.isclass(getter):
+            # default initialization is passing the url
+            # you can override this behavior by passing an
+            # initialized getter object.
+            getter = getter(local_url, type_hint)
 
         # get root document to check its swagger version.
         obj, _ = six.advance_iterator(getter)
@@ -223,6 +225,7 @@ class SwaggerApp(object):
 
             self.__root = obj
         elif self.version == '2.0':
+            s.scan(root=self.raw, route=[YamlFixer()], leaves=[Operation])
             self.__root = self.raw
         else:
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
@@ -235,10 +238,11 @@ class SwaggerApp(object):
         s.scan(root=self.__root, route=[PatchObject()])
 
     @classmethod
-    def load(kls, url, getter=None, parser=None, app_cache=None, url_load_hook=None):
+    def load(kls, url, type_hint=FILE_TYPE_JSON, getter=None, parser=None, app_cache=None, url_load_hook=None):
         """ load json as a raw SwaggerApp
 
         :param str url: url of path of Swagger API definition
+        :param int type_hint: a hint of type of target file, default is pyswagger.consts.FILE_TYPE_JSON
         :param getter: customized Getter
         :type getter: sub class/instance of Getter
         :param parser: the parser to parse the loaded json.
@@ -254,7 +258,7 @@ class SwaggerApp(object):
         url = utils.normalize_url(url)
         app = kls(url, app_cache, url_load_hook)
 
-        app._load_json(url, getter, parser)
+        app._load_json(url, type_hint, getter, parser)
 
         # update schem if any
         p = six.moves.urllib.parse.urlparse(url)
@@ -304,17 +308,18 @@ class SwaggerApp(object):
             raise errs.CycleDetectionError('Cycles detected in Schema Object: {0}'.format(cy.cycles['schema']))
 
     @classmethod
-    def create(kls, url, strict=True):
+    def create(kls, url, type_hint=FILE_TYPE_JSON, strict=True):
         """ factory of SwaggerApp
 
         :param str url: url of path of Swagger API definition
+        :param int type_hint: a hint of type of target file, default is pyswagger.consts.FILE_TYPE_JSON
         :param bool strict: when in strict mode, exception would be raised if not valid.
         :return: the created SwaggerApp object
         :rtype: SwaggerApp
         :raises ValueError: if url is wrong
         :raises NotImplementedError: the swagger version is not supported.
         """
-        app = kls.load(url)
+        app = kls.load(url, type_hint)
         app.prepare(strict=strict)
 
         return app

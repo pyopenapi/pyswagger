@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .const import SCOPE_SEPARATOR
+from .consts import private 
 from .errs import CycleDetectionError
 import six
 import imp
@@ -8,7 +8,7 @@ import datetime
 import re
 
 #TODO: accept varg
-def scope_compose(scope, name, sep=SCOPE_SEPARATOR):
+def scope_compose(scope, name, sep=private.SCOPE_SEPARATOR):
     """ compose a new scope
 
     :param str scope: current scope
@@ -26,7 +26,7 @@ def scope_compose(scope, name, sep=SCOPE_SEPARATOR):
 
     return new_scope
 
-def scope_split(scope, sep=SCOPE_SEPARATOR):
+def scope_split(scope, sep=private.SCOPE_SEPARATOR):
     """ split a scope into names
     
     :param str scope: scope to be splitted
@@ -40,7 +40,7 @@ class ScopeDict(dict):
     """ ScopeDict
     """
     def __init__(self, *a, **k):
-        self.__sep = SCOPE_SEPARATOR
+        self.__sep = private.SCOPE_SEPARATOR
         super(ScopeDict, self).__init__(*a, **k)
 
     @property

@@ -1,9 +1,9 @@
 from __future__ import absolute_import
-from pyswagger import const
+from .consts import FILE_TYPE_JSON, FILE_TYPE_YAML, private
 import json
+import yaml
 import six
 import os
-
 
 class Getter(six.Iterator):
     """ base of getter object
@@ -12,8 +12,9 @@ class Getter(six.Iterator):
     The part to extend getter would be finalized once Swagger 2.0 is ready.
     """
 
-    def __init__(self, path):
+    def __init__(self, path, type_hint):
         self.base_path = path
+        self.type_hint = type_hint
 
     def __iter__(self):
         return self
@@ -24,12 +25,17 @@ class Getter(six.Iterator):
 
         path, name = self.urls.pop(0)
         obj = self.load(path)
-        if isinstance(obj, six.string_types):
-            obj = json.loads(obj)
-        elif isinstance(obj, six.binary_type):
-            obj = json.loads(obj.decode('utf-8'))
-        else:
+
+        # make sure data is string type
+        if isinstance(obj, six.binary_type):
+            obj = obj.decode('utf-8')
+        elif not isinstance(obj, six.string_types):
             raise ValueError('Unknown types: [{0}]'.format(str(type(obj))))
+
+        if self.type_hint == FILE_TYPE_JSON:
+            obj = json.loads(obj)
+        elif self.type_hint == FILE_TYPE_YAML:
+            obj = yaml.load(obj)
 
         # find urls to retrieve from resource listing file
         if name == '':
@@ -57,12 +63,13 @@ class Getter(six.Iterator):
         :rtype: a list of str
         """
         urls = []
-        if const.SCHEMA_APIS in obj:
-            if isinstance(obj[const.SCHEMA_APIS], list):
-                for api in obj[const.SCHEMA_APIS]:
-                    urls.append(api[const.SCHEMA_PATH])
+        if private.SCHEMA_APIS in obj:
+            # This is a Swagger 1.2 spec, need to load subsequent resource files.
+            if isinstance(obj[private.SCHEMA_APIS], list):
+                for api in obj[private.SCHEMA_APIS]:
+                    urls.append(api[private.SCHEMA_PATH])
             else:
-                raise TypeError('Invalid type of apis: ' + type(obj[const.SCHEMA_APIS]))
+                raise TypeError('Invalid type of apis: ' + type(obj[private.SCHEMA_APIS]))
 
         return urls
 
@@ -70,10 +77,10 @@ class Getter(six.Iterator):
 class LocalGetter(Getter):
     """ default getter implmenetation for local resource file
     """
-    def __init__(self, path):
-        super(LocalGetter, self).__init__(path)
+    def __init__(self, path, type_hint):
+        super(LocalGetter, self).__init__(path, type_hint)
 
-        for n in const.SWAGGER_FILE_NAMES:
+        for n in private.SWAGGER_FILE_NAMES:
             if self.base_path.endswith(n):
                 self.base_path = os.path.dirname(self.base_path)
                 self.urls = [(path, '')]
@@ -88,21 +95,22 @@ class LocalGetter(Getter):
 
     def load(self, path):
         ret = None
-        # make sure we get .json files
-        if not path.endswith(const.RESOURCE_FILE_EXT):
-            path = path + '.' + const.RESOURCE_FILE_EXT
+
+        # make sure we get .json or .yaml files
+        ext = private.EXT_MAPPING.get(self.type_hint, None)
+        if ext and not path.endswith(ext):
+            path = path + '.' + ext
 
         with open(path, 'r') as f:
             ret = f.read()
-
         return ret
 
 
 class UrlGetter(Getter):
     """ default getter implementation for remote resource file
     """
-    def __init__(self, path):
-        super(UrlGetter, self).__init__(path)
+    def __init__(self, path, type_hint):
+        super(UrlGetter, self).__init__(path, type_hint)
         if self.base_path.endswith('/'):
             self.base_path = self.base_path[:-1]
         self.urls = [(path, '')]
