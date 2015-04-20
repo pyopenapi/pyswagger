@@ -99,7 +99,7 @@ app = web.Application([
 ], debug=True)
 
 
-@pytest.mark.skipif(sys.version_info[:2] >= (3, 4), reason='httpretty corrupt tornado.testing in python3.4')
+@pytest.mark.skipif(sys.version_info[:2] >= (3, 3), reason='httpretty corrupt in python3')
 class TornadoTestCase(testing.AsyncHTTPTestCase):
     """
     """
