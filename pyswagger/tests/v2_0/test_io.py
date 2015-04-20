@@ -45,3 +45,14 @@ class SwaggerResponseTestCase(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.raw, 'some data')
         self.assertEqual(resp.data, None)
+
+        # make sure header also works fine
+        header = {
+            'A': 1,
+            'B': '222'
+        }
+        resp.apply_with(200, None, header)
+        self.assertEqual(resp.header, {
+            'A': [1],
+            'B': ['222']
+        })

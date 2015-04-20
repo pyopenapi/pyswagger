@@ -284,7 +284,7 @@ class SwaggerResponse(object):
         self.__header = {}
 
     def _convert_header(self, resp, k, v):
-        if k in resp.headers:
+        if resp and resp.headers and k in resp.headers:
             v = resp.headers[k]._prim_(v)
 
         if k in self.__header:
