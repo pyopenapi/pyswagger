@@ -2,10 +2,11 @@ from __future__ import absolute_import
 from .getter import UrlGetter, LocalGetter
 from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
+from .spec.v2_0.objects import Operation
 from .scan import Scanner
 from .scanner import TypeReduce, CycleDetector
 from .scanner.v1_2 import Upgrade
-from .scanner.v2_0 import AssignParent, Resolve, PatchObject
+from .scanner.v2_0 import AssignParent, Resolve, PatchObject, YamlFixer
 from pyswagger import utils, errs
 import inspect
 import base64
@@ -129,7 +130,7 @@ class SwaggerApp(object):
         """
         return self.__app_cache
 
-    def _load_json(self, url, getter=None, parser=None):
+    def _load_obj(self, url, getter=None, parser=None):
         """
         """
         if url in self.__app_cache:
@@ -147,11 +148,11 @@ class SwaggerApp(object):
             if p.scheme == 'file' and p.path:
                 getter = LocalGetter(p.path)
 
-            if inspect.isclass(getter):
-                # default initialization is passing the url
-                # you can override this behavior by passing an
-                # initialized getter object.
-                getter = getter(local_url)
+        if inspect.isclass(getter):
+            # default initialization is passing the url
+            # you can override this behavior by passing an
+            # initialized getter object.
+            getter = getter(local_url)
 
         # get root document to check its swagger version.
         obj, _ = six.advance_iterator(getter)
@@ -223,6 +224,7 @@ class SwaggerApp(object):
 
             self.__root = obj
         elif self.version == '2.0':
+            s.scan(root=self.raw, route=[YamlFixer()], leaves=[Operation])
             self.__root = self.raw
         else:
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
@@ -254,7 +256,7 @@ class SwaggerApp(object):
         url = utils.normalize_url(url)
         app = kls(url, app_cache, url_load_hook)
 
-        app._load_json(url, getter, parser)
+        app._load_obj(url, getter, parser)
 
         # update schem if any
         p = six.moves.urllib.parse.urlparse(url)
