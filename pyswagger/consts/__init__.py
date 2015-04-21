@@ -1,2 +1,1 @@
-FILE_TYPE_JSON = 1
-FILE_TYPE_YAML = 2
+# placeholder for public consts

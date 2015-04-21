@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .consts import FILE_TYPE_JSON, FILE_TYPE_YAML, private
+from .consts import private
 import json
 import yaml
 import six
@@ -12,9 +12,8 @@ class Getter(six.Iterator):
     The part to extend getter would be finalized once Swagger 2.0 is ready.
     """
 
-    def __init__(self, path, type_hint):
+    def __init__(self, path):
         self.base_path = path
-        self.type_hint = type_hint
 
     def __iter__(self):
         return self
@@ -32,10 +31,13 @@ class Getter(six.Iterator):
         elif not isinstance(obj, six.string_types):
             raise ValueError('Unknown types: [{0}]'.format(str(type(obj))))
 
-        if self.type_hint == FILE_TYPE_JSON:
+        # a very simple logic to distinguish json and yaml
+        if obj.startswith('{'):
             obj = json.loads(obj)
-        elif self.type_hint == FILE_TYPE_YAML:
+        elif obj.startswith('---'):
             obj = yaml.load(obj)
+        else:
+            raise Exception('Unknown format startswith {0} ...'.format(obj[:10]))
 
         # find urls to retrieve from resource listing file
         if name == '':
@@ -77,8 +79,8 @@ class Getter(six.Iterator):
 class LocalGetter(Getter):
     """ default getter implmenetation for local resource file
     """
-    def __init__(self, path, type_hint):
-        super(LocalGetter, self).__init__(path, type_hint)
+    def __init__(self, path):
+        super(LocalGetter, self).__init__(path)
 
         for n in private.SWAGGER_FILE_NAMES:
             if self.base_path.endswith(n):
@@ -96,10 +98,15 @@ class LocalGetter(Getter):
     def load(self, path):
         ret = None
 
+        # try to get extension from Getter.base_path
+        _, ext = os.path.splitext(self.base_path)
+        # try to get extension from path
+        _, ext = os.path.splitext(path) if ext == '' else ext
+        # .json is default extension to try
+        ext = '.json' if ext == '' else ext
         # make sure we get .json or .yaml files
-        ext = private.EXT_MAPPING.get(self.type_hint, None)
-        if ext and not path.endswith(ext):
-            path = path + '.' + ext
+        if not path.endswith(ext):
+            path = path + ext
 
         with open(path, 'r') as f:
             ret = f.read()
@@ -109,8 +116,8 @@ class LocalGetter(Getter):
 class UrlGetter(Getter):
     """ default getter implementation for remote resource file
     """
-    def __init__(self, path, type_hint):
-        super(UrlGetter, self).__init__(path, type_hint)
+    def __init__(self, path):
+        super(UrlGetter, self).__init__(path)
         if self.base_path.endswith('/'):
             self.base_path = self.base_path[:-1]
         self.urls = [(path, '')]
