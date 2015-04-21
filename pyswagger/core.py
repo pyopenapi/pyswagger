@@ -131,7 +131,7 @@ class SwaggerApp(object):
         """
         return self.__app_cache
 
-    def _load_json(self, url, type_hint=FILE_TYPE_JSON, getter=None, parser=None):
+    def _load_obj(self, url, type_hint=FILE_TYPE_JSON, getter=None, parser=None):
         """
         """
         if url in self.__app_cache:
@@ -258,7 +258,7 @@ class SwaggerApp(object):
         url = utils.normalize_url(url)
         app = kls(url, app_cache, url_load_hook)
 
-        app._load_json(url, type_hint, getter, parser)
+        app._load_obj(url, type_hint, getter, parser)
 
         # update schem if any
         p = six.moves.urllib.parse.urlparse(url)
