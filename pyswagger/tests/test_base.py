@@ -2,13 +2,27 @@ from __future__ import absolute_import
 from pyswagger.spec import base
 import unittest
 import six
+import copy
 
+
+class GrandChildObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+    __swagger_fields__ = [
+        ('name', '')
+    ]
+
+class GrandChildContext(base.Context):
+    __swagger_ref_object__ = GrandChildObj
 
 class ChildObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
-    pass
+    __swagger_fields__ = [
+        ('g', None)
+    ]
 
 class ChildContext(base.Context):
     __swagger_ref_object__ = ChildObj
+    __swagger_child__ = [
+        ('g', None, GrandChildContext)
+    ]
 
 class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
     __swagger_fields__ = [
@@ -238,4 +252,77 @@ class SwaggerBaseTestCase(unittest.TestCase):
 
         self.assertTrue(isinstance(tmp['t'], bool))
         self.assertEqual(tmp['t'], True)
+
+    def test_compare(self):
+        """ test compare """
+        tmp = {'t': {}}
+        obj = {
+            'a': [{'g': {'name':'Tom'}}, {'g': {'name': 'Kevin'}}],
+            'b': {
+                'bb': {},
+                'bbb': {'g': {'name': 'Owl'}}
+            },
+            'c': {
+                'cc': [
+                    {'g': {'name':'Mary'}}
+                ]
+            },
+            'd': {}
+        }
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(obj)
+        obj1 = tmp['t']
+
+        # make sure ok when compare with self
+        self.assertEqual((True, ''), obj1.compare(obj1))
+
+        # make sure diff in list would be captured
+        objt = copy.deepcopy(obj)
+        objt['a'][0]['g']['name'] = 'Tom1'
+
+        tmp = {'t': {}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(objt)
+        obj2 = tmp['t']
+        self.assertEqual((False, 'a/0/g/name'), obj1.compare(obj2))
+
+        # make sure re order in list would be ok
+        objt = copy.deepcopy(obj)
+        objt['a'][0], objt['a'][1] = objt['a'][1], objt['a'][0]
+
+        tmp = {'t': {}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(objt)
+        obj3 = tmp['t']
+        self.assertEqual((False, 'a/0/g/name'), obj1.compare(obj3))
+
+        # make sure diff in dict would be captured
+        objt = copy.deepcopy(obj)
+        objt['b']['bbb']['g']['name'] = 'Leo'
+
+        tmp = {'t': {}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(objt)
+        obj4 = tmp['t']
+        self.assertEqual((False, 'b/bbb/g/name'), obj1.compare(obj4))
+
+        # make sure diff in dict of list would be captured
+        objt = copy.deepcopy(obj)
+        objt['c']['cc'][0]['g']['name'] = 'Celios'
+
+        tmp = {'t': {}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(objt)
+        obj5 = tmp['t']
+        self.assertEqual((False, 'c/cc/0/g/name'), obj1.compare(obj5))
+
+        # make sure diff in dict would be captured
+        objt = copy.deepcopy(obj)
+        objt['b']['bbbb'] = {'g': {'name': 'Leo'}}
+
+        tmp = {'t': {}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(objt)
+        obj6 = tmp['t']
+        self.assertEqual((False, 'b/bbbb'), obj1.compare(obj6))
 

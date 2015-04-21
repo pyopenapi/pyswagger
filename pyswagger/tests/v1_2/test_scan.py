@@ -22,13 +22,14 @@ class CountObject(object):
         self.total = {
             Resource: 0,
             Authorization: 0,
-            Operation: 0
+            Operation: 0,
+            ResponseMessage: 0
         }
         self.long_name = ''
 
-    @Disp.register([Resource, Authorization, Operation])
+    @Disp.register([Resource, Authorization, Operation, ResponseMessage])
     def _count(self, path, obj, _):
-        self.total[obj.__class__] = self.total[obj.__class__] + 1        
+        self.total[obj.__class__] = self.total[obj.__class__] + 1
         return path.rsplit('/', 1)[1]
 
     @Disp.result
@@ -82,8 +83,23 @@ class ScannerTestCase(unittest.TestCase):
         self.assertEqual(co.total, {
             Authorization: 1,
             Resource: 3,
-            Operation: 20
+            Operation: 20,
+            ResponseMessage: 23
         })
+
+    def test_leaves(self):
+        s = Scanner(app)
+        co = CountObject()
+        s.scan(route=[co], root=app.raw, leaves=[Operation])
+        # the scanning would stop at Operation, so ResponseMessage
+        # would not be counted.
+        self.assertEqual(co.total, {
+            Authorization: 1,
+            Resource: 3,
+            Operation: 20,
+            ResponseMessage: 0
+        })
+
 
     def test_path(self):
         self.maxDiff = None

@@ -3,7 +3,7 @@ from .spec.base import BaseObj
 import six
 
 
-def default_tree_traversal(root):
+def default_tree_traversal(root, leaves):
     """ default tree traversal """
     objs = [('#', root)]
     while len(objs) > 0:
@@ -11,7 +11,8 @@ def default_tree_traversal(root):
 
         # name of child are json-pointer encoded, we don't have
         # to encode it again.
-        objs.extend(map(lambda i: (path + '/' + i[0],) + (i[1],), six.iteritems(obj._children_)))
+        if obj.__class__ not in leaves:
+            objs.extend(map(lambda i: (path + '/' + i[0],) + (i[1],), six.iteritems(obj._children_)))
 
         # the path we expose here follows JsonPointer described here
         #   http://tools.ietf.org/html/draft-ietf-appsawg-json-pointer-07
@@ -100,14 +101,14 @@ class Scanner(object):
 
         return ret
 
-    def scan(self, route, root, nexter=default_tree_traversal):
+    def scan(self, route, root, nexter=default_tree_traversal, leaves=[]):
         """
         """
         if root == None:
             raise ValueError('Can\'t scan because root==None')
 
         merged_r = self.__build_route(route)
-        for path, obj in nexter(root):
+        for path, obj in nexter(root, leaves):
             for the_self, r, res in merged_r:
 
                 def handle_cls(cls):
