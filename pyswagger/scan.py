@@ -104,7 +104,6 @@ class Scanner(object):
     def scan(self, route, root, nexter=default_tree_traversal, leaves=[]):
         """
         """
-        # TODO: test leaves
         if root == None:
             raise ValueError('Can\'t scan because root==None')
 
