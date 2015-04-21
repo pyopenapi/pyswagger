@@ -28,6 +28,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 
 ##Features
 - support Swagger **1.2**, **2.0** on python **2.6**, **2.7**, **3.3**, **3.4**
+- support YAML via [Pretty-YAML](https://github.com/mk-fg/pretty-yaml)
 - support $ref to **External Document**, multiple swagger.json will be organized into a group of SwaggerApp. And external document with self-describing resource is also supported (refer to [issue](https://github.com/swagger-api/swagger-spec/issues/219)).
 - type safe, input/output are converted to python types according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in Swagger. You don't need to touch any json schema when using pyswagger. Limitations like **minimum/maximum** or **enum** are also checked. **Model inheritance** also supported.
 - provide function **SwaggerApp.validate** to check validity of the loaded API definition according to spec.
@@ -43,7 +44,6 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
     - [ ] A scanner to validate schema
   - [ ] A WebSocket client
   - [ ] Pluggable primitive system, allowing to use new 'type' & 'format' in Swagger.
-  - [ ] integrate YAML loader: [pyyaml](https://bitbucket.org/xi/pyyaml), the downside is, we need one more dependency. (right now we only depends on 'six')
 
 ---------
 
