@@ -314,6 +314,47 @@ class BaseObj(object):
         """
         return k in self.__origin_keys
 
+    def compare(self, other, base=None):
+        """ comparison, will return the first difference """
+        if self.__class__ != other.__class__:
+            return False, ''
+
+        names = self._field_names_
+
+        def cmp_func(name, s, o):
+            if s.__class__ != o.__class__:
+                return False, name
+
+            if isinstance(s, BaseObj):
+                if not isinstance(s, weakref.ProxyTypes):
+                    return s.compare(o, name)
+            elif isinstance(s, list):
+                for i, v in zip(range(len(s)), s):
+                    same, n = cmp_func(jp_compose(str(i), name), v, o[i])
+                    if not same:
+                        return same, n
+            elif isinstance(s, dict):
+                # compare if any key diff
+                diff = set(s.keys()) - set(o.keys())
+                if diff:
+                    return False, jp_compose(str(diff[0]), name)
+
+                for k, v in six.iteritems(s):
+                    same, n = cmp_func(jp_compose(k, name), v, o[k])
+                    if not same:
+                        return same, n
+            else:
+                return s == o, name
+
+            return True, name
+
+        for n in names:
+            same, n = cmp_func(jp_compose(n, base), getattr(self, n), getattr(other, n))
+            if not same:
+                return same, n
+
+        return True, ''
+
     @property
     def _parent_(self):
         """ get parent object
