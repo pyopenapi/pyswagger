@@ -322,6 +322,10 @@ class BaseObj(object):
         names = self._field_names_
 
         def cmp_func(name, s, o):
+            # special case for string types
+            if isinstance(s, six.string_types) and isinstance(o, six.string_types):
+                return s == o, name
+
             if s.__class__ != o.__class__:
                 return False, name
 
@@ -335,7 +339,10 @@ class BaseObj(object):
                         return same, n
             elif isinstance(s, dict):
                 # compare if any key diff
-                diff = set(s.keys()) - set(o.keys())
+                diff = list(set(s.keys()) - set(o.keys()))
+                if diff:
+                    return False, jp_compose(str(diff[0]), name)
+                diff = list(set(o.keys()) - set(s.keys()))
                 if diff:
                     return False, jp_compose(str(diff[0]), name)
 

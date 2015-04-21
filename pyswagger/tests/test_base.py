@@ -316,3 +316,13 @@ class SwaggerBaseTestCase(unittest.TestCase):
         obj5 = tmp['t']
         self.assertEqual((False, 'c/cc/0/g/name'), obj1.compare(obj5))
 
+        # make sure diff in dict would be captured
+        objt = copy.deepcopy(obj)
+        objt['b']['bbbb'] = {'g': {'name': 'Leo'}}
+
+        tmp = {'t': {}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(objt)
+        obj6 = tmp['t']
+        self.assertEqual((False, 'b/bbbb'), obj1.compare(obj6))
+
