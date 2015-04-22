@@ -23,6 +23,6 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    install_requires = ['six >= 1.7.2']
+    install_requires = ['six >= 1.7.2', 'pyaml>=15.03.1']
 )
 
