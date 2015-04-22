@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp, errs
+from pyswagger import SwaggerApp, errs, utils
 from ..utils import get_test_data_folder
 from pyswagger.spec.v2_0.objects import (
     Schema,
@@ -128,14 +128,11 @@ class SwaggerAppTestCase(unittest.TestCase):
         )
 
         def _hook(url):
+            # a demo of hooking a remote url to local path
             p = six.moves.urllib.parse.urlparse(url)
-            if p.scheme != 'file':
-                return url
+            return utils.normalize_url(os.path.join(folder, p.path[1:]))
 
-            path = os.path.join(folder, p.path if not p.path.startswith('/') else p.path[1:])
-            return six.moves.urllib.parse.urlunparse(p[:2]+(path,)+p[3:])
-
-        self.app = SwaggerApp.load('wordnik', url_load_hook=_hook)
+        self.app = SwaggerApp.load('http://petstore.io/wordnik', url_load_hook=_hook)
         self.app.prepare()
 
     def test_ref(self):
@@ -154,11 +151,11 @@ class SwaggerAppTestCase(unittest.TestCase):
         # for how to dereferencing weakref
         self.assertEqual(
             self.app.resolve('#/definitions/user!##!User').__repr__(),
-            self.app.resolve('file:///wordnik#/definitions/user!##!User').__repr__()
+            self.app.resolve('http://petstore.io/wordnik#/definitions/user!##!User').__repr__()
         )
         self.assertEqual(
            self.app.resolve('#/paths/~1api~1user~1{username}/put').__repr__(),
-           self.app.resolve('file:///wordnik#/paths/~1api~1user~1{username}/put').__repr__()
+           self.app.resolve('http://petstore.io/wordnik#/paths/~1api~1user~1{username}/put').__repr__()
         )
 
     def test_scope_dict(self):
