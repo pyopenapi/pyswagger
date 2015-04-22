@@ -6,6 +6,7 @@ import imp
 import sys
 import datetime
 import re
+import os
 
 #TODO: accept varg
 def scope_compose(scope, name, sep=private.SCOPE_SEPARATOR):
@@ -288,7 +289,7 @@ def normalize_url(url):
     if p.scheme == '':
         if p.netloc == '' and p.path != '':
             # it should be a file path
-            url = path2url(url)
+            url = path2url(os.path.abspath(url))
         else:
             raise ValueError('url should be a http-url or file path -- ' + url)
 

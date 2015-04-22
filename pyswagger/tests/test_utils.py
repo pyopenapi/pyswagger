@@ -2,6 +2,7 @@ from pyswagger import utils, errs
 from datetime import datetime
 import unittest
 import functools
+import six
 
 
 class SwaggerUtilsTestCase(unittest.TestCase):
@@ -110,10 +111,11 @@ class SwaggerUtilsTestCase(unittest.TestCase):
             'file:///user/tmp/local/ttt', '#'))
         self.assertEqual(utils.jr_split(
             '/user/tmp/local/ttt/'), (
-            'file:///user/tmp/local/ttt/', '#'))
+            'file:///user/tmp/local/ttt', '#'))
+        # relative path should be converted to absolute one
         self.assertEqual(utils.jr_split(
             'user'), (
-            'file:///user', '#'))
+            utils.normalize_url('user'), '#'))
         self.assertEqual(utils.jr_split(
             '#'), (
             '', '#'))
@@ -133,7 +135,7 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.normalize_url(None), None)
         self.assertEqual(utils.normalize_url(''), '')
         self.assertEqual(utils.normalize_url('http://test.com/a/q.php?q=100'), 'http://test.com/a/q.php?q=100')
-        self.assertEqual(utils.normalize_url('/tmp/local/test/'), 'file:///tmp/local/test/')
+        self.assertEqual(utils.normalize_url('/tmp/local/test/'), 'file:///tmp/local/test')
         self.assertEqual(utils.normalize_url('/tmp/local/test'), 'file:///tmp/local/test')
         self.assertEqual(utils.normalize_url('/tmp/local/test in space.txt'), 'file:///tmp/local/test%20in%20space.txt')
 

@@ -12,6 +12,7 @@ import inspect
 import base64
 import six
 import weakref
+import os
 
 
 class SwaggerApp(object):
@@ -146,7 +147,7 @@ class SwaggerApp(object):
             getter = UrlGetter
             p = six.moves.urllib.parse.urlparse(local_url)
             if p.scheme == 'file' and p.path:
-                getter = LocalGetter(p.path)
+                getter = LocalGetter(os.path.join(p.netloc, p.path))
 
         if inspect.isclass(getter):
             # default initialization is passing the url

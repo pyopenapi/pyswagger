@@ -108,6 +108,10 @@ class LocalGetter(Getter):
         if not path.endswith(ext):
             path = path + ext
 
+        # trim the leading slash, which is invalid on Windows
+        if os.name == 'nt' and path.startswith('/'):
+            path = path[1:]
+
         with open(path, 'r') as f:
             ret = f.read()
         return ret
