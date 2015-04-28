@@ -16,13 +16,14 @@ For other projects related to Swagger tools in python, check [here](https://gith
 
 Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go through this README.
 
-- [Features](https://github.com/mission-liao/pyswagger/blob/master/README.md#features)
-- [Quick Start](https://github.com/mission-liao/pyswagger/blob/master/README.md#quick-start)
-- [Installation](https://github.com/mission-liao/pyswagger/blob/master/README.md#installation)
-- [Reference](https://github.com/mission-liao/pyswagger/blob/master/README.md#reference)
-- [Contributors](https://github.com/mission-liao/pyswagger/blob/master/README.md#contributors)
-- [Contribution Guideline](https://github.com/mission-liao/pyswagger/blob/master/README.md#contribution-guideline)
-- [FAQ](https://github.com/mission-liao/pyswagger/blob/master/README.md#faq)
+- [Features](README.md#features)
+- [Quick Start](README.md#quick-start)
+- [Installation](README.md#installation)
+- [Tutorial](README.md#tutorial)
+- [Reference](README.md#reference)
+- [Contributors](README.md#contributors)
+- [Contribution Guideline](README.md#contribution-guildeline)
+- [FAQ](README.md#faq)
 
 ---------
 
