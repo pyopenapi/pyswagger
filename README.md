@@ -87,20 +87,20 @@ pip install pyswagger
 
 ##Tutorial
 
-- [Initialization](docs/tutorial/init.md)
-- [Testing a Local Server](docs/tutorial/local.md)
-- [Making a Request](docs/tutorial/request.md)
-- [Access the Response](docs/tutorial/response.md)
+- [Initialization](docs/md/tutorial/init.md)
+- [Testing a Local Server](docs/md/tutorial/local.md)
+- [Making a Request](docs/md/tutorial/request.md)
+- [Access the Response](docs/md/tutorial/response.md)
 
 ---------
 
 ##Reference
 All exported API are described in following sections. ![A diagram about relations between components](https://docs.google.com/drawings/d/1DZiJgl4i9L038UJJp3kpwkWRvcNQktf5h-e4m96_C-k/pub?w=849&h=530)
 
-- [SwaggerApp](docs/ref/app.md)
-- [SwaggerClient](docs/ref/client.md)
-- [SwaggerSecurity](docs/ref/security.md)
-- [SwaggerResponse](docs/ref/response.md)
+- [SwaggerApp](docs/md/ref/app.md)
+- [SwaggerClient](docs/md/ref/client.md)
+- [SwaggerSecurity](docs/md/ref/security.md)
+- [SwaggerResponse](docs/md/ref/response.md)
 
 ---------
 
