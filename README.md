@@ -17,9 +17,9 @@ For other projects related to Swagger tools in python, check [here](https://gith
 Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go through this README.
 
 - [Features](README.md#features)
+- [Tutorial](README.md#tutorial)
 - [Quick Start](README.md#quick-start)
 - [Installation](README.md#installation)
-- [Tutorial](README.md#tutorial)
 - [Reference](README.md#reference)
 - [Contributors](README.md#contributors)
 - [Contribution Guideline](README.md#contribution-guildeline)
@@ -45,6 +45,15 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
     - [ ] A scanner to validate schema
   - [ ] A WebSocket client
   - [ ] Pluggable primitive system, allowing to use new 'type' & 'format' in Swagger.
+
+---------
+
+##Tutorial
+
+- [Initialization](docs/md/tutorial/init.md)
+- [Making a Request](docs/md/tutorial/request.md)
+- [Access the Response](docs/md/tutorial/response.md)
+- [Testing a Local Server](docs/md/tutorial/local.md)
 
 ---------
 
@@ -80,18 +89,14 @@ assert pet.name == 'Tom'
 pet = client.request(app.resolve(jp_compose('/pet/{petId}', base='#/paths')).get(petId=1)).data
 assert pet.id == 1
 ```
+
+---------
+
 ##Installation
 We support pip installtion.
 ```bash
 pip install pyswagger
 ```
-
-##Tutorial
-
-- [Initialization](docs/md/tutorial/init.md)
-- [Making a Request](docs/md/tutorial/request.md)
-- [Access the Response](docs/md/tutorial/response.md)
-- [Testing a Local Server](docs/md/tutorial/local.md)
 
 ---------
 
