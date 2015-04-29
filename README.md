@@ -89,9 +89,9 @@ pip install pyswagger
 ##Tutorial
 
 - [Initialization](docs/md/tutorial/init.md)
-- [Testing a Local Server](docs/md/tutorial/local.md)
 - [Making a Request](docs/md/tutorial/request.md)
 - [Access the Response](docs/md/tutorial/response.md)
+- [Testing a Local Server](docs/md/tutorial/local.md)
 
 ---------
 
