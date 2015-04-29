@@ -60,7 +60,16 @@ req_and_resp = op(
   # date, in string ISO8601
   next_date_4='2007-04-05',
   # datetime, in string ISO8601
-  next_date_5='2007-04-05T12:30:00-02:00'
+  next_date_5='2007-04-05T12:30:00-02:00',
+  # array of integer
+  list_of_ids=[1, 2, 3, 4, 5],
+  # a model
+  user=dict(id=1, username='Tom'),
+  # list of models
+  users=[
+    dict(id=1, username='Tom'),
+    dict(id=2, username='Mary')
+  ]
 )
 ```
 ### Pass result to Client
