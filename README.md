@@ -101,7 +101,6 @@ All exported API are described in following sections. ![A diagram about relation
 - [SwaggerApp](docs/md/ref/app.md)
 - [SwaggerClient](docs/md/ref/client.md)
 - [SwaggerSecurity](docs/md/ref/security.md)
-- [SwaggerResponse](docs/md/ref/response.md)
 
 ---------
 
