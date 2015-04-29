@@ -63,9 +63,9 @@ req_and_resp = op(
   next_date_5='2007-04-05T12:30:00-02:00',
   # array of integer
   list_of_ids=[1, 2, 3, 4, 5],
-  # a model
+  # an object
   user=dict(id=1, username='Tom'),
-  # list of models
+  # list of objects
   users=[
     dict(id=1, username='Tom'),
     dict(id=2, username='Mary')
