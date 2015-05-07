@@ -262,6 +262,15 @@
                "type":"boolean"
             }
          }
+      },
+      "array_int":{
+          "type":"array",
+          "items":{
+              "type":"integer",
+              "format":"int32"
+          },
+          "maxItems":5,
+          "minItems":2
       }
    }
 }

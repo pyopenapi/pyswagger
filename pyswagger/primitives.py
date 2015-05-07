@@ -114,9 +114,9 @@ class Array(list):
 
         # init array as list
         if obj.minItems and len(self) < obj.minItems:
-            raise errs.ValidationError('Array should be more than {0}, not {1}'.format(o.minItems, len(self)))
+            raise errs.ValidationError('Array should be more than {0}, not {1}'.format(obj.minItems, len(self)))
         if obj.maxItems and len(self) > obj.maxItems:
-            raise errs.ValidationError('Array should be less than {0}, not {1}'.format(o.maxItems, len(self)))
+            raise errs.ValidationError('Array should be less than {0}, not {1}'.format(obj.maxItems, len(self)))
 
         self.__collection_format = getattr(obj, 'collectionFormat', 'csv')
         return val

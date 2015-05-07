@@ -100,6 +100,19 @@ class SchemaTestCase(unittest.TestCase):
         self.assertRaises(errs.ValidationError, i._prim_, 200)
         self.assertRaises(errs.ValidationError, i._prim_, 99)
 
+    def test_array_of_int(self):
+        """ test array of integer """
+        i = self.app.resolve('#/definitions/array_int')
+
+        # pass
+        i._prim_([1, 1, 1, 1, 1])
+        i._prim_([1, 1])
+
+        # failed
+        self.assertRaises(errs.ValidationError, i._prim_, [1, 1, 1, 1, 1, 1])
+        self.assertRaises(errs.ValidationError, i._prim_, [1])
+
+
     def test_num_multiple_of(self):
         """ test multipleOf """
         i = self.app.resolve("#/definitions/num_multipleOf")
