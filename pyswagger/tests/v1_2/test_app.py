@@ -135,6 +135,12 @@ class SwaggerAppTestCase(unittest.TestCase):
         self.app = SwaggerApp.load('http://petstore.io/wordnik', url_load_hook=_hook)
         self.app.prepare()
 
+    def test_url(self):
+        """ make sure url is not touched by hook """
+        req, _ = self.app.op['getUserByName'](username='Tom')
+        req.prepare()
+        self.assertEqual(req.url, 'http://petstore.swagger.wordnik.com/api/user/Tom')
+
     def test_ref(self):
         """ test ref function """
         self.assertRaises(ValueError, self.app.resolve, None)

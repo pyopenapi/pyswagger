@@ -39,3 +39,9 @@ class OperationAccessTestCase(unittest.TestCase):
         _check(self, self.app.s('pet').post)
         _check(self, self.app.s('pet', b=SwaggerApp._shortcut_[SwaggerApp.sc_path]).post)
 
+    def test_special_char(self):
+        """ when the path has '{' and '}' """
+        self.assertEqual(
+                self.app.resolve(utils.jp_compose(['#', 'paths', '/user/{username}'])).get.operationId,
+                'getUserByName'
+        )
