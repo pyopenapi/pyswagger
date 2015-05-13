@@ -1,5 +1,6 @@
 from pyswagger import SwaggerApp
 from .utils import get_test_data_folder
+from pyswagger.spec.base import BaseObj
 import pyswagger
 import unittest
 import httpretty
@@ -35,3 +36,24 @@ class SwaggerCoreTestCase(unittest.TestCase):
 
         app = SwaggerApp._create_('http://test.com/api-doc/swagger.json')
         self.assertEqual(app.schemes, ['http'])
+
+    @httpretty.activate
+    def test_load_from_url_without_file(self):
+        """ try to load from a url withou swagger.json """
+        data = None
+        with open(os.path.join(get_test_data_folder(
+            version='2.0',
+            which='wordnik'), 'swagger.json')) as f:
+            data = f.read()
+
+        httpretty.register_uri(
+            httpretty.GET,
+            'http://10.0.0.10:8080/swaggerapi/api/v1beta2',
+            body=data
+        )
+
+        # no exception should be raised
+        app = SwaggerApp.create('http://10.0.0.10:8080/swaggerapi/api/v1beta2')
+        self.assertTrue(app.schemes, ['http'])
+        self.assertTrue(isinstance(app.root, BaseObj))
+
