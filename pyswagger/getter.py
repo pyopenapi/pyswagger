@@ -4,6 +4,11 @@ import json
 import yaml
 import six
 import os
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 class Getter(six.Iterator):
     """ base of getter object
@@ -98,6 +103,8 @@ class LocalGetter(Getter):
     def load(self, path):
         ret = None
 
+        logger.info('to load: [{0}]'.format(path))
+
         # try to get extension from Getter.base_path
         _, ext = os.path.splitext(self.base_path)
         # try to get extension from path
@@ -111,6 +118,8 @@ class LocalGetter(Getter):
         # trim the leading slash, which is invalid on Windows
         if os.name == 'nt' and path.startswith('/'):
             path = path[1:]
+
+        logger.info('final path to load: [{0}]'.format(path))
 
         with open(path, 'r') as f:
             ret = f.read()
@@ -127,6 +136,9 @@ class UrlGetter(Getter):
         self.urls = [(path, '')]
 
     def load(self, path):
+
+        logger.info('to load: [{0}]'.format(path))
+
         ret = f = None
         try:
             f = six.moves.urllib.request.urlopen(path)

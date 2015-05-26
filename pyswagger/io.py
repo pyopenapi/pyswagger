@@ -7,6 +7,10 @@ import six
 import json
 import io, codecs
 import collections
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class SwaggerRequest(object):
@@ -135,6 +139,8 @@ class SwaggerRequest(object):
             self.__url = six.moves.urllib.parse.urlunparse(
                 (scheme, opt_netloc, path, params, query, fragment)
                 )
+
+            logger.info('patching url: [{0}]'.format(self.__url))
 
     def prepare(self, scheme='http', handle_files=True, encoding='utf-8'):
         """ make this request ready for Clients

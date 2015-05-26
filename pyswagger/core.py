@@ -13,6 +13,10 @@ import base64
 import six
 import weakref
 import os
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class SwaggerApp(object):
@@ -35,6 +39,9 @@ class SwaggerApp(object):
         :param dict app_cache: a url map shared by SwaggerApp(s), mapping from url to SwaggerApp
         :param func url_load_hook: a way to redirect url to a accessible place. for self testing.
         """
+
+        logger.info('init with url: {0}'.format(url))
+
         self.__root = None
         self.__raw = None
         self.__version = ''
@@ -135,6 +142,8 @@ class SwaggerApp(object):
         """
         """
         if url in self.__app_cache:
+            logger.info('{0} hit cache'.format(url))
+
             # look into cache first
             return
 
@@ -143,6 +152,8 @@ class SwaggerApp(object):
             # note that we didn't cache SwaggerApp with this local_url
 
             local_url = url if not self.__url_load_hook else self.__url_load_hook(url)
+
+            logger.info('{0} patch to {1}'.format(url, local_url))
 
             getter = UrlGetter
             p = six.moves.urllib.parse.urlparse(local_url)
@@ -174,6 +185,8 @@ class SwaggerApp(object):
             version = tmp['_tmp_'].__swagger_version__ if hasattr(tmp['_tmp_'], '__swagger_version__') else version
         else:
             raise NotImplementedError('Unsupported Swagger Version: {0} from {1}'.format(version, url))
+
+        logger.info('version: {0}'.format(version))
 
         self.__app_cache[url] = weakref.proxy(self) # avoid circular reference
         self.__version = version
@@ -253,6 +266,8 @@ class SwaggerApp(object):
         :raises ValueError: if url is wrong
         :raises NotImplementedError: the swagger version is not supported.
         """
+
+        logger.info('load with [{0}]'.format(url))
 
         url = utils.normalize_url(url)
         app = kls(url, app_cache, url_load_hook)
@@ -337,6 +352,8 @@ class SwaggerApp(object):
         :rtype: weakref.ProxyType
         :raises ValueError: if path is not valid
         """
+
+        logger.info('resolving: [{0}]'.format(jref))
 
         if jref == None or len(jref) == 0:
             raise ValueError('Empty Path is not allowed')
@@ -435,7 +452,10 @@ class SwaggerSecurity(object):
         for s in req._security:
             for k, v in six.iteritems(s):
                 if not k in self.__info:
+                    logger.info('missing: [{0}]'.format(k))
                     continue
+
+                logger.info('applying: [{0}]'.format(k))
 
                 header, cred = self.__info[k]
                 if header:
@@ -501,6 +521,13 @@ class BaseClient(object):
         :rtype: SwaggerRequest, SwaggerResponse
         """
         req, resp = req_and_resp
+
+        # dump info for debugging
+        logger.info('request.url: {0}'.format(req.url))
+        logger.info('request.header: {0}'.format(req.header))
+        logger.info('request.query: {0}'.format(req.query))
+        logger.info('request.file: {0}'.format(req.files))
+        logger.info('request.schemes: {0}'.format(req.schemes))
 
         # apply authorizations
         if self.__security:
