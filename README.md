@@ -120,6 +120,24 @@ All exported API are described in following sections. ![A diagram about relation
 report an issue:
 - issues can be reported [here](https://github.com/mission-liao/pyswagger/issues)
 - include swagger.json if possible
+- turn on logging and report with messages on console
+```python
+import logging
+logger = logging.getLogger('pyswagger')
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+console = logging.StreamHandler()
+console.setLevel(logging.DEBUG)
+console.setFormatter(formatter)
+
+logger.addHandler(console)
+logger.setLevel(logging.DEBUG)
+
+... your stuff
+
+```
+
 - describe expected behavior, or more specific, the input/output
 
 request a merge
