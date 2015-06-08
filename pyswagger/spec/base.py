@@ -4,6 +4,7 @@ import six
 import copy
 import functools
 import weakref
+import itertools
 
 
 class ContainerType:
@@ -180,6 +181,8 @@ class BaseObj(object):
     # - tuple(string, default-value): a field name with default value
     __swagger_fields__ = []
 
+    # fields used internally
+    __internal_fields__ = []
 
     # Swagger Version this object belonging to
     __swagger_version__ = None
@@ -203,6 +206,9 @@ class BaseObj(object):
         # handle fields
         for name, default in self.__swagger_fields__:
             setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
+
+        for name, default in self.__internal_fields__:
+            setattr(self, self.get_private_name(name), None)
 
         self._assign_parent(ctx)
 
@@ -279,7 +285,7 @@ class BaseObj(object):
         def _produce_new_obj(x, ct, v):
             return x(None, None).produce().merge(v, x)
 
-        for name, default in self.__swagger_fields__:
+        for name, default in itertools.chain(self.__swagger_fields__, self.__internal_fields__):
             v = getattr(other, name)
             if v == default or getattr(self, name) != default:
                 continue
@@ -446,13 +452,22 @@ class FieldMeta(type):
                 spc[name] = property(_method_(name))
 
         rename = spc['__swagger_rename__'] if '__swagger_rename__' in spc.keys() else {}
+        # swagger fields
         if '__swagger_fields__' in spc.keys():
             init_fields(spc['__swagger_fields__'], rename)
+        # internal fields
+        if '__internal_fields__' in spc.keys():
+            init_fields(spc['__internal_fields__'], {})
 
         for b in bases:
+            # swagger fields
             fields = b.__swagger_fields__ if hasattr(b, '__swagger_fields__') else []
             rename = b.__swagger_rename__ if hasattr(b, '__swagger_rename__') else {}
             init_fields(fields, rename)
+
+            # internal fields
+            fields = b.__internal_fields__ if hasattr(b, '__internal_fields__') else []
+            init_fields(fields, {})
 
         return type.__new__(metacls, name, bases, spc)
 

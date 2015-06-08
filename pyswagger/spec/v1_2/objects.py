@@ -61,6 +61,7 @@ class Scope(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
 
     __swagger_fields__ = [
         ('scope', None),
+        ('description', None),
     ]
 
 
@@ -130,6 +131,7 @@ class Authorizations(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
 
     __swagger_fields__ = [
         ('scope', None),
+        ('description', None),
     ]
 
 
@@ -169,6 +171,7 @@ class Parameter(six.with_metaclass(FieldMeta, DataTypeObj)):
         ('name', None),
         ('required', None),
         ('allowMultiple', None),
+        ('description', None),
     ]
 
 
@@ -185,7 +188,11 @@ class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
         ('produces', None),
         ('consumes', None),
         ('deprecated', None),
+        ('summary', None),
+        ('note', None),
+    ]
 
+    __internal_fields__ = [
         # path from Api object, concated with Resource object
         ('path', None),
     ]
@@ -201,6 +208,7 @@ class Api(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     __swagger_fields__ = [
         ('path', None),
         ('operations', None),
+        ('description', None),
     ]
 
 
@@ -208,7 +216,9 @@ class Property(six.with_metaclass(FieldMeta, DataTypeObj)):
     """ Property Object
     """
 
-    __swagger_fields__ = []
+    __swagger_fields__ = [
+        ('description', None),
+        ]
 
 
 class Model(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
@@ -221,10 +231,13 @@ class Model(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
         ('properties', None),
         ('subTypes', None),
         ('discriminator', None),
+        ('description', None),
+        ]
 
+    __internal_fields__ = [
         # for model inheritance
         ('_extends_', None),
-        ]
+    ]
 
     def get_name(self, path):
         return self.id
@@ -244,6 +257,7 @@ class Resource(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
         ('produces', None),
         ('consumes', None),
         ('authorizations', None),
+        ('description', None),
     ]
 
     def __init__(self, ctx):

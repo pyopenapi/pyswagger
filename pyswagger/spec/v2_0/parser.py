@@ -16,8 +16,25 @@ from .objects import (
     Operation,
     PathItem,
     SecurityScheme,
-    Tag
-)
+    Tag,
+    ExternalDocumentation,
+    Contact,
+    License,
+    XMLObject)
+
+
+class ExternalDocumentationContext(Context):
+    """ Context of External Document
+    """
+
+    __swagger_ref_object__ = ExternalDocumentation
+
+
+class XMLObjectContext(Context):
+    """ Context of XML Object
+    """
+
+    __swagger_ref_object__ = XMLObject
 
 
 class ItemsContext(Context):
@@ -37,6 +54,10 @@ class SchemaContext(Context):
     """
 
     __swagger_ref_object__ = Schema
+    __swagger_child__ = [
+        ('xml', None, XMLObjectContext),
+        ('externalDocs', None, ExternalDocumentationContext),
+    ]
 
 
 class AdditionalPropertiesContext(Context):
@@ -167,11 +188,29 @@ class SecuritySchemeContext(Context):
     __swagger_ref_object__ = SecurityScheme
 
 
+
 class TagContext(Context):
     """ Context of Tag Object
     """
 
     __swagger_ref_object__ = Tag
+    __swagger_child__ = [
+        ('externalDocs', None, ExternalDocumentationContext),
+    ]
+
+
+class ContactContext(Context):
+    """ Context of Contact Object
+    """
+
+    __swagger_ref_object__ = Contact
+
+
+class LicenseContext(Context):
+    """ Context of License Object
+    """
+
+    __swagger_ref_object__ = License
 
 
 class InfoContext(Context):
@@ -179,6 +218,10 @@ class InfoContext(Context):
     """
 
     __swagger_ref_object__ = Info
+    __swagger_child__ = [
+        ('contact', None, ContactContext),
+        ('license', None, LicenseContext),
+    ]
 
 
 class SwaggerContext(Context):
@@ -193,5 +236,6 @@ class SwaggerContext(Context):
         ('responses', ContainerType.dict_, ResponseContext),
         ('securityDefinitions', ContainerType.dict_, SecuritySchemeContext),
         ('tags', ContainerType.list_, TagContext),
+        ('externalDocs', None, ExternalDocumentationContext),
     ]
     __swagger_ref_object__ = Swagger

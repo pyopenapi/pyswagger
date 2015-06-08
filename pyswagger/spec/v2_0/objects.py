@@ -1,13 +1,26 @@
 from __future__ import absolute_import
 from ..base import BaseObj, FieldMeta
 from ...utils import deref
-from pyswagger import primitives, io
+from ...io import SwaggerRequest, SwaggerResponse
+from ...primitives import prim_factory, Array
 import six
 import copy
 
 
 class BaseObj_v2_0(BaseObj):
     __swagger_version__ = '2.0'
+
+
+class XMLObject(BaseObj_v2_0):
+    """ XML Object
+    """
+    __swagger_fields__ = [
+        ('name', None),
+        ('namespace', None),
+        ('prefix', None),
+        ('attribute', None),
+        ('wrapped', None),
+    ]
 
 
 class BaseSchema(BaseObj_v2_0):
@@ -49,7 +62,7 @@ class Items(six.with_metaclass(FieldMeta, BaseSchema)):
     ]
 
     def _prim_(self, v):
-        return primitives.prim_factory(self, v)
+        return prim_factory(self, v)
 
 
 class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
@@ -61,22 +74,27 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
         ('maxProperties', None),
         ('minProperties', None),
         ('required', []),
-
         ('allOf', []),
         ('properties', {}),
         ('additionalProperties', True),
-
+        ('title', None),
+        ('description', None),
         ('discriminator', None),
         # TODO: readonly not handled
         ('readOnly', None),
+        ('xml', None),
+        ('externalDocs', None),
+        ('example', None),
+    ]
 
+    __internal_fields__ = [
         # pyswagger only
         ('ref_obj', None),
         ('name', None),
     ]
 
     def _prim_(self, v):
-        return primitives.prim_factory(self, v)
+        return prim_factory(self, v)
 
 
 class Swagger(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
@@ -98,6 +116,28 @@ class Swagger(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
         ('securityDefinitions', None),
         ('security', None),
         ('tags', None),
+        ('externalDocs', None),
+    ]
+
+
+class Contact(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+    """ Contact Object
+    """
+
+    __swagger_fields__ = [
+        ('name', None),
+        ('url', None),
+        ('email', None),
+    ]
+
+
+class License(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+    """ License Object
+    """
+
+    __swagger_fields__ = [
+        ('name', None),
+        ('url', None),
     ]
 
 
@@ -107,6 +147,11 @@ class Info(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
 
     __swagger_fields__ = [
         ('version', None),
+        ('title', None),
+        ('description', None),
+        ('termsOfService', None),
+        ('contact', None),
+        ('license', None),
     ]
 
 
@@ -128,13 +173,21 @@ class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
         # other parameter
         ('collectionFormat', None),
 
+        # for converter only
+        ('description', None),
+
+        # TODO: not supported yet
+        ('allowEmptyValue', False),
+    ]
+
+    __internal_fields__ = [
         # pyswagger only
         ('ref_obj', None),
     ]
 
     def _prim_(self, v):
         i = getattr(self, 'in')
-        return primitives.prim_factory(self.schema, v) if i == 'body' else primitives.prim_factory(self, v)
+        return prim_factory(self.schema, v) if i == 'body' else prim_factory(self, v)
 
 
 class Header(six.with_metaclass(FieldMeta, BaseSchema)):
@@ -143,6 +196,7 @@ class Header(six.with_metaclass(FieldMeta, BaseSchema)):
 
     __swagger_fields__ = [
         ('collectionFormat', None),
+        ('description', None),
     ]
 
 
@@ -157,7 +211,11 @@ class Response(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
         ('schema', None),
         ('headers', {}),
 
-        # pyswagger only
+        ('description', None),
+        ('examples', None),
+    ]
+
+    __internal_fields__ = [
         ('ref_obj', None),
     ]
 
@@ -175,10 +233,13 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
         ('parameters', None),
         ('responses', None),
         ('deprecated', False),
-        ('description', None),
         ('security', None),
+        ('description', None),
+        ('summary', None),
+        ('externalDocs', None),
+    ]
 
-        # for pyswagger
+    __internal_fields__ = [
         ('method', None),
         ('url', None),
         ('path', None),
@@ -208,7 +269,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
             if p.type == 'file':
                 params['file'][p.name] = c
             elif i in ('query', 'formData'):
-                if isinstance(c, primitives.Array):
+                if isinstance(c, Array):
                     params[i].extend([tuple([p.name, v]) for v in c.to_url()])
                 else:
                     params[i].append((p.name, str(c),))
@@ -226,7 +287,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
             raise ValueError('Unknown parameters: {0}'.format(unknown))
 
         return \
-        io.SwaggerRequest(op=self, params=params), io.SwaggerResponse(self)
+        SwaggerRequest(op=self, params=params), SwaggerResponse(self)
 
 
 class PathItem(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
@@ -245,8 +306,9 @@ class PathItem(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
         ('head', None),
         ('patch', None),
         ('parameters', []),
+    ]
 
-        # pyswagger only
+    __internal_fields__ = [
         ('ref_obj', None),
     ]
 
@@ -263,6 +325,7 @@ class SecurityScheme(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
         ('authorizationUrl', None),
         ('tokenUrl', None),
         ('scopes', None),
+        ('description', None),
     ]
 
 
@@ -272,5 +335,16 @@ class Tag(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
 
     __swagger_fields__ = [
         ('name', None),
+        ('description', None),
+        ('externalDocs', None),
     ]
 
+
+class ExternalDocumentation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
+    """ External Documentation Object
+    """
+
+    __swagger_fields__ = [
+        ('description', None),
+        ('url', None),
+    ]
