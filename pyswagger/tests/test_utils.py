@@ -154,6 +154,37 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.get_swagger_version({'swagger': '2.0'}), '2.0')
         self.assertEqual(utils.get_swagger_version({'qq': '20.0'}), None)
 
+    def test_diff(self):
+        dict1 = dict(a=1, b=[1, 2, 3])
+        dict2 = dict(a=1, b=[1, 3])
+        dict3 = dict(
+            a=dict(a=1, b=[1, 2, 3], c=4),
+            b=dict(a=2, b=[1, 2, 3], c=4),
+        )
+        dict4 = dict(
+            a=dict(a=2, b=[1, 3], c=5),
+            b=dict(a=2, b=[1, 2], c=4),
+        )
+
+        list1 = [dict1, dict3]
+        list2 = [dict2, dict4]
+
+        self.assertEqual(utils._diff_(dict1, dict2), [
+            'b',
+        ])
+
+        self.assertEqual(utils._diff_(dict2, dict1), [
+            'b',
+        ])
+
+        self.assertEqual(sorted(utils._diff_(dict3, dict4)), sorted([
+            'a/a', 'a/c', 'a/b', 'b/b'
+        ]))
+
+        self.assertEqual(sorted(utils._diff_(list1, list2)), sorted([
+            '0/b', '1/a/a', '1/a/c', '1/a/b', '1/b/b',
+        ]))
+
 
 class WalkTestCase(unittest.TestCase):
     """ test for walk """
@@ -290,4 +321,5 @@ class WalkTestCase(unittest.TestCase):
             [2, 3, 5, 4, 2],
             [2, 3 ,4, 2]
             ]))
+
 

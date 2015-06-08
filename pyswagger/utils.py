@@ -386,3 +386,53 @@ def walk(start, ofn, cyc=None):
     return cyc
 
 
+def _diff_(src, dst, ret=None, jp=None):
+    """ compare 2 dict/list, return a list containing
+    json-pointer indicating what's different.
+
+    """
+
+    def _dict_(src, dst, ret, jp):
+        ss, sd = set(src.keys()), set(dst.keys())
+
+        # added keys
+        for k in sd - ss:
+            ret.append(jp_compose(k, base=jp))
+
+        # removed keys
+        for k in ss - sd:
+            ret.append(jp_compose(k, base=jp))
+
+        # same key
+        for k in ss & sd:
+            _diff_(src[k], dst[k], ret, jp_compose(k, base=jp))
+
+    def _list_(src, dst, ret, jp):
+        if len(src) < len(dst):
+            ret.append(jp)
+        elif len(src) > len(dst):
+            ret.append(jp)
+        else:
+            # assume sortable
+            ss, sd = sorted(src), sorted(dst)
+            for idx, (s, d) in enumerate(zip(ss, sd)):
+                _diff_(s, d, ret, jp_compose(str(idx), base=jp))
+
+    ret = [] if ret == None else ret
+    jp = '' if jp == None else jp
+
+    if src.__class__ != dst.__class__:
+        ret.append(jp)
+        return ret
+
+    if isinstance(src, dict):
+        _dict_(src, dst, ret, jp)
+
+    elif isinstance(src, list):
+        _list_(src, dst, ret, jp)
+
+    elif src != dst:
+        ret.append(jp)
+
+    return ret
+
