@@ -84,6 +84,7 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
     __internal_fields__ = {
         # pyswagger only
         'ref_obj': None,
+        'norm_ref': None,
         'name': None,
     }
 
@@ -177,6 +178,7 @@ class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
     __internal_fields__ = {
         # pyswagger only
         'ref_obj': None,
+        'norm_ref': None,
     }
 
     def _prim_(self, v):
@@ -211,6 +213,7 @@ class Response(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
 
     __internal_fields__ = {
         'ref_obj': None,
+        'norm_ref': None,
     }
 
 
@@ -304,6 +307,7 @@ class PathItem(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
 
     __internal_fields__ = {
         'ref_obj': None,
+        'norm_ref': None,
     }
 
 

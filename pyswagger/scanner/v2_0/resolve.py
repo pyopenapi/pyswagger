@@ -31,7 +31,7 @@ def _resolve(obj, app, prefix, parser):
         raise TypeError('Referenced Type mismatch: {0}'.format(r))
 
     obj.update_field('ref_obj', ro)
-    obj.update_field('$ref', normalize_jr(r, prefix, app.url))
+    obj.update_field('norm_ref', normalize_jr(r, prefix, app.url))
 
 def _merge(obj, app, prefix, ctx):
     """ resolve $ref as ref_obj, and merge ref_obj to self.

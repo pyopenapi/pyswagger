@@ -12,7 +12,7 @@ import six
 
 def _out(app, prefix, path):
     obj = app.resolve(normalize_jr(path, prefix))
-    r = getattr(obj, '$ref')
+    r = getattr(obj, 'norm_ref')
     return [r] if r else []
 
 def _schema_out_obj(obj, out=None):
@@ -30,7 +30,7 @@ def _schema_out_obj(obj, out=None):
     if obj.items:
         out = _schema_out_obj(obj.items, out)
 
-    r = getattr(obj, '$ref')
+    r = getattr(obj, 'norm_ref')
     if r:
         out.append(r)
 
