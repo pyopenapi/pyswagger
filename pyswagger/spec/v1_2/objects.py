@@ -49,10 +49,6 @@ class DataTypeObj(BaseObj_v1_2):
         else:
             setattr(self, self.get_private_name('items'), None)
 
-        for name, default in six.iteritems(DataTypeObj.__swagger_fields__):
-            # almost every data field is not required.
-            setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
-
         super(DataTypeObj, self).__init__(ctx)
 
 class Scope(six.with_metaclass(FieldMeta, BaseObj_v1_2)):

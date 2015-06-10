@@ -64,7 +64,6 @@ class HTTPGetterTestCase(unittest.TestCase):
         self.assertEqual(sorted(local_app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
 
         op = local_app.raw.apis['pet'].apis['updatePet']
-        print sorted(op._field_names_)
         self.assertEqual(sorted(op._field_names_), sorted([
             'authorizations',
             'consumes',

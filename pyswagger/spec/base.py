@@ -370,7 +370,7 @@ class BaseObj(object):
 
         return True, ''
 
-   @property
+    @property
     def _parent_(self):
         """ get parent object
 
@@ -381,31 +381,16 @@ class BaseObj(object):
 
     @property
     def _field_names_(self):
-        """ get list of field names defined in Swagger spec,
-        will go through MRO to merge all fields in parent classes.
+        """ get list of field names defined in Swagger spec
 
         :return: a list of field names
         :rtype: a list of str
         """
         ret = []
-
-        def _merge(f, rename):
-            if not f:
-                return
-
-            if not rename:
-                ret.extend([n for n in six.iterkeys(f)])
-            else:
-                for n in six.iterkeys(f):
-                    new_n = rename.get(n, None)
-                    ret.append(new_n) if new_n else ret.append(n)
-
-        for b in self.__class__.__mro__:
-            _merge(
-                getattr(b, '__swagger_fields__', None),
-                getattr(b, '__swagger_rename__', None)
-            )
-
+        for n in six.iterkeys(self.__swagger_fields__):
+            new_n = self.__swagger_rename__.get(n, None)
+            ret.append(new_n) if new_n else ret.append(n)
+        
         return ret
 
     @property
@@ -453,6 +438,24 @@ class FieldMeta(type):
                 name = rename[name] if name in rename.keys() else name
                 spc[name] = property(_method_(name))
 
+        def _default_(name, default):
+            spc[name] = spc[name] if name in spc else default
+
+        def _update_(dict1, dict2):
+            dict1.update({k:v for k, v in six.iteritems(dict2) if k not in dict1})
+
+        # compose fields definition from parents
+        for b in bases:
+            if hasattr(b, '__swagger_fields__'):
+                _default_('__swagger_fields__', {})
+                _update_(spc['__swagger_fields__'], b.__swagger_fields__)
+            if hasattr(b, '__swagger_rename__'):
+                _default_('__swagger_rename__', {})
+                _update_(spc['__swagger_rename__'], b.__swagger_rename__)
+            if hasattr(b, '__internal_fields__'):
+                _default_('__internal_fields__', {})
+                _update_(spc['__internal_fields__'], b.__internal_fields__)
+
         rename = spc['__swagger_rename__'] if '__swagger_rename__' in spc.keys() else {}
         # swagger fields
         if '__swagger_fields__' in spc.keys():
@@ -460,16 +463,6 @@ class FieldMeta(type):
         # internal fields
         if '__internal_fields__' in spc.keys():
             init_fields(spc['__internal_fields__'], {})
-
-        for b in bases:
-            # swagger fields
-            fields = b.__swagger_fields__ if hasattr(b, '__swagger_fields__') else []
-            rename = b.__swagger_rename__ if hasattr(b, '__swagger_rename__') else {}
-            init_fields(fields, rename)
-
-            # internal fields
-            fields = b.__internal_fields__ if hasattr(b, '__internal_fields__') else []
-            init_fields(fields, {})
 
         return type.__new__(metacls, name, bases, spc)
 

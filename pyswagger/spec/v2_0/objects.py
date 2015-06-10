@@ -46,12 +46,6 @@ class BaseSchema(BaseObj_v2_0):
         'uniqueItems': None,
     }
 
-    def __init__(self, ctx):
-        # __swagger_fields__ would be overriden by child class.
-        for name, default in six.iteritems(BaseSchema.__swagger_fields__):
-            setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
-
-        super(BaseSchema, self).__init__(ctx)
 
 class Items(six.with_metaclass(FieldMeta, BaseSchema)):
     """ Items Object
