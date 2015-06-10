@@ -312,7 +312,7 @@ class SwaggerApp(object):
         # 'op' -- shortcut for Operation with tag and operaionId
         self.__op = utils.ScopeDict(tr.op)
         # 'm' -- shortcut for model in Swagger 1.2
-        if hasattr(self.__root, 'definitions'):
+        if hasattr(self.__root, 'definitions') and self.__root.definitions != None:
             self.__m = utils.ScopeDict(self.__root.definitions)
         else:
             self.__m = utils.ScopeDict({})
@@ -396,6 +396,15 @@ class SwaggerApp(object):
             return self.resolve(utils.jp_compose(b[0] + p if not p.startswith(b[0]) else p, base=b[1]))
         else:
             return self.resolve(utils.jp_compose(p, base=b[1]))
+
+    def dump(self):
+        """ dump into Swagger Document
+
+        :rtype: dict
+        :return: dict representation of Swagger
+        """
+        return self.root.dump()
+
 
 class SwaggerSecurity(object):
     """ security handler

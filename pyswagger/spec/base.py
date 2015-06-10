@@ -147,13 +147,13 @@ class Context(object):
             for key, (ct, ctx_kls) in six.iteritems(self.__swagger_child__):
                 items = obj.get(key, None)
 
+                if items == None:
+                    continue
+
                 if ct == ContainerType.list_:
                     self._obj[key] = []
                 elif ct:
                     self._obj[key] = {}
-
-                if items == None:
-                    continue
 
                 container_apply(ct, items,
                     functools.partial(_apply, ctx_kls, key),
@@ -369,6 +369,37 @@ class BaseObj(object):
                 return same, n
 
         return True, ''
+
+    def dump(self):
+        """ dump Swagger Spec in dict(which can be
+        convert to JSON)
+        """
+        r = {}
+        def _dump_(obj):
+            if isinstance(obj, dict):
+                ret = {}
+                for k, v in six.iteritems(obj):
+                    ret[k] = _dump_(v)
+                return ret
+            elif isinstance(obj, list):
+                ret = []
+                for v in obj:
+                    ret.append(_dump_(v))
+                return ret
+            elif isinstance(obj, BaseObj):
+                return obj.dump()
+            elif isinstance(obj, (six.string_types, six.integer_types)):
+                return obj
+            else:
+                raise ValueError('Unknown object to dump: {0}'.format(obj.__class__.__name__))
+
+        for name, default in six.iteritems(self.__swagger_fields__):
+            # only dump a field when its value is not equal to default value
+            v = getattr(self, name)
+            if v != default:
+                r[name] = _dump_(v)
+
+        return r
 
     @property
     def _parent_(self):

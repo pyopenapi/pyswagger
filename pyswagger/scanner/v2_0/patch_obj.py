@@ -4,6 +4,7 @@ from ...spec.v2_0.objects import PathItem, Operation, Schema, Swagger
 from ...spec.v2_0.parser import PathItemContext
 from ...utils import jp_split, scope_split
 import six
+import copy
 
 
 class PatchObject(object):
@@ -27,11 +28,14 @@ class PatchObject(object):
         # combine parameters from PathItem
         if obj._parent_:
             for p in obj._parent_.parameters:
-                for pp in obj.parameters:
-                    if p.name == pp.name:
-                        break
+                if obj.parameters:
+                    for pp in obj.parameters:
+                        if p.name == pp.name:
+                            break
+                    else:
+                        obj.parameters.append(p)
                 else:
-                    obj.parameters.append(p)
+                    obj.update_field('parameters', copy.copy(obj._parent_.parameters))
 
         # schemes
         obj.update_field('cached_schemes', app.schemes if len(obj.schemes) == 0 else obj.schemes)

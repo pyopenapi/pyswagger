@@ -15,6 +15,8 @@ class YamlFixer(object):
     def _op(self, _, obj, app):
         """ convert status code in Responses from int to string
         """
+        if obj.responses == None: return 
+
         tmp = {}
         for k, v in six.iteritems(obj.responses):
             if isinstance(k, six.integer_types):
