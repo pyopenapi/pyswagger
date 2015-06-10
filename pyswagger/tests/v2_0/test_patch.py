@@ -60,8 +60,8 @@ class PatchObjTestCase(unittest.TestCase):
         """ test patch Operation with scheme """
         p = self.app.s('/s')
 
-        self.assertEqual(p.get.schemes, self.app.root.schemes)
-        self.assertEqual(p.get.schemes, ['http', 'https'])
+        self.assertEqual(p.get.cached_schemes, self.app.root.schemes)
+        self.assertEqual(p.get.cached_schemes, ['http', 'https'])
 
     def test_path_item(self):
         """ test patch PathItem """

@@ -34,7 +34,7 @@ class PatchObject(object):
                     obj.parameters.append(p)
 
         # schemes
-        obj.update_field('schemes', app.schemes if len(obj.schemes) == 0 else obj.schemes)
+        obj.update_field('cached_schemes', app.schemes if len(obj.schemes) == 0 else obj.schemes)
 
     @Disp.register([PathItem])
     def _path_item(self, path, obj, app):

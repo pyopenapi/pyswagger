@@ -241,6 +241,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
         'url': None,
         'path': None,
         'base_path': None,
+        'cached_schemes': [],
     }
 
     def __call__(self, **k):
