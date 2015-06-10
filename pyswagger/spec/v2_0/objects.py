@@ -14,41 +14,41 @@ class BaseObj_v2_0(BaseObj):
 class XMLObject(BaseObj_v2_0):
     """ XML Object
     """
-    __swagger_fields__ = [
-        ('name', None),
-        ('namespace', None),
-        ('prefix', None),
-        ('attribute', None),
-        ('wrapped', None),
-    ]
+    __swagger_fields__ = {
+        'name': None,
+        'namespace': None,
+        'prefix': None,
+        'attribute': None,
+        'wrapped': None,
+    }
 
 
 class BaseSchema(BaseObj_v2_0):
     """ Base type for Items, Schema, Parameter, Header
     """
 
-    __swagger_fields__ = [
-        ('type', None),
-        ('format', None),
-        ('items', None),
-        ('default', None),
-        ('maximum', None),
-        ('exclusiveMaximum', None),
-        ('minimum', None),
-        ('exclusiveMinimum', None),
-        ('maxLength', None),
-        ('minLength', None),
-        ('maxItems', None),
-        ('minItems', None),
-        ('multipleOf', None),
-        ('enum', None),
-        ('pattern', None),
-        ('uniqueItems', None),
-    ]
+    __swagger_fields__ = {
+        'type': None,
+        'format': None,
+        'items': None,
+        'default': None,
+        'maximum': None,
+        'exclusiveMaximum': None,
+        'minimum': None,
+        'exclusiveMinimum': None,
+        'maxLength': None,
+        'minLength': None,
+        'maxItems': None,
+        'minItems': None,
+        'multipleOf': None,
+        'enum': None,
+        'pattern': None,
+        'uniqueItems': None,
+    }
 
     def __init__(self, ctx):
         # __swagger_fields__ would be overriden by child class.
-        for name, default in BaseSchema.__swagger_fields__:
+        for name, default in six.iteritems(BaseSchema.__swagger_fields__):
             setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
 
         super(BaseSchema, self).__init__(ctx)
@@ -57,9 +57,9 @@ class Items(six.with_metaclass(FieldMeta, BaseSchema)):
     """ Items Object
     """
 
-    __swagger_fields__ = [
-        ('collectionFormat', None),
-    ]
+    __swagger_fields__ = {
+        'collectionFormat': None,
+    }
 
     def _prim_(self, v):
         return prim_factory(self, v)
@@ -69,29 +69,29 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
     """ Schema Object
     """
 
-    __swagger_fields__ = [
-        ('$ref', None),
-        ('maxProperties', None),
-        ('minProperties', None),
-        ('required', []),
-        ('allOf', []),
-        ('properties', {}),
-        ('additionalProperties', True),
-        ('title', None),
-        ('description', None),
-        ('discriminator', None),
+    __swagger_fields__ = {
+        '$ref': None,
+        'maxProperties': None,
+        'minProperties': None,
+        'required': [],
+        'allOf': [],
+        'properties': {},
+        'additionalProperties': True,
+        'title': None,
+        'description': None,
+        'discriminator': None,
         # TODO: readonly not handled
-        ('readOnly', None),
-        ('xml', None),
-        ('externalDocs', None),
-        ('example', None),
-    ]
+        'readOnly': None,
+        'xml': None,
+        'externalDocs': None,
+        'example': None,
+    }
 
-    __internal_fields__ = [
+    __internal_fields__ = {
         # pyswagger only
-        ('ref_obj', None),
-        ('name', None),
-    ]
+        'ref_obj': None,
+        'name': None,
+    }
 
     def _prim_(self, v):
         return prim_factory(self, v)
@@ -101,89 +101,89 @@ class Swagger(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Swagger Object
     """
 
-    __swagger_fields__ = [
-        ('swagger', None),
-        ('info', None),
-        ('host', None),
-        ('basePath', None),
-        ('schemes', []),
-        ('consumes', []),
-        ('produces', []),
-        ('paths', None),
-        ('definitions', None),
-        ('parameters', None),
-        ('responses', None),
-        ('securityDefinitions', None),
-        ('security', None),
-        ('tags', None),
-        ('externalDocs', None),
-    ]
+    __swagger_fields__ = {
+        'swagger': None,
+        'info': None,
+        'host': None,
+        'basePath': None,
+        'schemes': [],
+        'consumes': [],
+        'produces': [],
+        'paths': None,
+        'definitions': None,
+        'parameters': None,
+        'responses': None,
+        'securityDefinitions': None,
+        'security': None,
+        'tags': None,
+        'externalDocs': None,
+    }
 
 
 class Contact(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Contact Object
     """
 
-    __swagger_fields__ = [
-        ('name', None),
-        ('url', None),
-        ('email', None),
-    ]
+    __swagger_fields__ = {
+        'name': None,
+        'url': None,
+        'email': None,
+    }
 
 
 class License(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ License Object
     """
 
-    __swagger_fields__ = [
-        ('name', None),
-        ('url', None),
-    ]
+    __swagger_fields__ = {
+        'name': None,
+        'url': None,
+    }
 
 
 class Info(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Info Object
     """
 
-    __swagger_fields__ = [
-        ('version', None),
-        ('title', None),
-        ('description', None),
-        ('termsOfService', None),
-        ('contact', None),
-        ('license', None),
-    ]
+    __swagger_fields__ = {
+        'version': None,
+        'title': None,
+        'description': None,
+        'termsOfService': None,
+        'contact': None,
+        'license': None,
+    }
 
 
 class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
     """ Parameter Object
     """
 
-    __swagger_fields__ = [
+    __swagger_fields__ = {
         # Reference Object
-        ('$ref', None),
+        '$ref': None,
 
-        ('name', None),
-        ('in', None),
-        ('required', None),
+        'name': None,
+        'in': None,
+        'required': None,
 
         # body parameter
-        ('schema', None),
+        'schema': None,
 
         # other parameter
-        ('collectionFormat', None),
+        'collectionFormat': None,
 
         # for converter only
-        ('description', None),
+        'description': None,
 
         # TODO: not supported yet
-        ('allowEmptyValue', False),
-    ]
+        'allowEmptyValue': False,
+    }
 
-    __internal_fields__ = [
+    __internal_fields__ = {
         # pyswagger only
-        ('ref_obj', None),
-    ]
+        'ref_obj': None,
+    }
 
     def _prim_(self, v):
         i = getattr(self, 'in')
@@ -194,57 +194,57 @@ class Header(six.with_metaclass(FieldMeta, BaseSchema)):
     """ Header Object
     """
 
-    __swagger_fields__ = [
-        ('collectionFormat', None),
-        ('description', None),
-    ]
+    __swagger_fields__ = {
+        'collectionFormat': None,
+        'description': None,
+    }
 
 
 class Response(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Response Object
     """
 
-    __swagger_fields__ = [
+    __swagger_fields__ = {
         # Reference Object
-        ('$ref', None),
+        '$ref': None,
 
-        ('schema', None),
-        ('headers', {}),
+        'schema': None,
+        'headers': {},
 
-        ('description', None),
-        ('examples', None),
-    ]
+        'description': None,
+        'examples': None,
+    }
 
-    __internal_fields__ = [
-        ('ref_obj', None),
-    ]
+    __internal_fields__ = {
+        'ref_obj': None,
+    }
 
 
 class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Operation Object
     """
 
-    __swagger_fields__ = [
-        ('tags', None),
-        ('operationId', None),
-        ('consumes', []),
-        ('produces', []),
-        ('schemes', []),
-        ('parameters', None),
-        ('responses', None),
-        ('deprecated', False),
-        ('security', None),
-        ('description', None),
-        ('summary', None),
-        ('externalDocs', None),
-    ]
+    __swagger_fields__ = {
+        'tags': None,
+        'operationId': None,
+        'consumes': [],
+        'produces': [],
+        'schemes': [],
+        'parameters': None,
+        'responses': None,
+        'deprecated': False,
+        'security': None,
+        'description': None,
+        'summary': None,
+        'externalDocs': None,
+    }
 
-    __internal_fields__ = [
-        ('method', None),
-        ('url', None),
-        ('path', None),
-        ('base_path', None),
-    ]
+    __internal_fields__ = {
+        'method': None,
+        'url': None,
+        'path': None,
+        'base_path': None,
+    }
 
     def __call__(self, **k):
         # prepare parameter set
@@ -294,57 +294,57 @@ class PathItem(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Path Item Object
     """
 
-    __swagger_fields__ = [
+    __swagger_fields__ = {
         # Reference Object
-        ('$ref', None),
+        '$ref': None,
 
-        ('get', None),
-        ('put', None),
-        ('post', None),
-        ('delete', None),
-        ('options', None),
-        ('head', None),
-        ('patch', None),
-        ('parameters', []),
-    ]
+        'get': None,
+        'put': None,
+        'post': None,
+        'delete': None,
+        'options': None,
+        'head': None,
+        'patch': None,
+        'parameters': [],
+    }
 
-    __internal_fields__ = [
-        ('ref_obj', None),
-    ]
+    __internal_fields__ = {
+        'ref_obj': None,
+    }
 
 
 class SecurityScheme(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Security Scheme Object
     """
 
-    __swagger_fields__ = [
-        ('type', None),
-        ('name', None),
-        ('in', None),
-        ('flow', None),
-        ('authorizationUrl', None),
-        ('tokenUrl', None),
-        ('scopes', None),
-        ('description', None),
-    ]
+    __swagger_fields__ = {
+        'type': None,
+        'name': None,
+        'in': None,
+        'flow': None,
+        'authorizationUrl': None,
+        'tokenUrl': None,
+        'scopes': None,
+        'description': None,
+    }
 
 
 class Tag(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Tag Object
     """
 
-    __swagger_fields__ = [
-        ('name', None),
-        ('description', None),
-        ('externalDocs', None),
-    ]
+    __swagger_fields__ = {
+        'name': None,
+        'description': None,
+        'externalDocs': None,
+    }
 
 
 class ExternalDocumentation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ External Documentation Object
     """
 
-    __swagger_fields__ = [
-        ('description', None),
-        ('url', None),
-    ]
+    __swagger_fields__ = {
+        'description': None,
+        'url': None,
+    }

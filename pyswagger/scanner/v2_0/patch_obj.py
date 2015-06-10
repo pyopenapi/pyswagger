@@ -3,6 +3,7 @@ from ...scan import Dispatcher
 from ...spec.v2_0.objects import PathItem, Operation, Schema, Swagger
 from ...spec.v2_0.parser import PathItemContext
 from ...utils import jp_split, scope_split
+import six
 
 
 class PatchObject(object):
@@ -47,8 +48,8 @@ class PatchObject(object):
             url = None
             base_path = None
 
-        for c in PathItemContext.__swagger_child__:
-            o = getattr(obj, c[0])
+        for n in six.iterkeys(PathItemContext.__swagger_child__):
+            o = getattr(obj, n)
             if isinstance(o, Operation):
                 # base path
                 o.update_field('base_path', base_path)
@@ -57,7 +58,7 @@ class PatchObject(object):
                 # url
                 o.update_field('url', url)
                 # http method
-                o.update_field('method', c[0]) 
+                o.update_field('method', n) 
 
     @Disp.register([Schema])
     def _schema(self, path, obj, app):

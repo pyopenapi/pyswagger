@@ -44,9 +44,9 @@ class ItemsContext(Context):
     __swagger_ref_object__ = Items
 
 # self-reference 
-setattr(ItemsContext, '__swagger_child__', [
-    ('items', None, ItemsContext),
-])
+setattr(ItemsContext, '__swagger_child__', {
+    'items': (None, ItemsContext),
+})
 
 
 class SchemaContext(Context):
@@ -54,10 +54,10 @@ class SchemaContext(Context):
     """
 
     __swagger_ref_object__ = Schema
-    __swagger_child__ = [
-        ('xml', None, XMLObjectContext),
-        ('externalDocs', None, ExternalDocumentationContext),
-    ]
+    __swagger_child__ = {
+        'xml': (None, XMLObjectContext),
+        'externalDocs': (None, ExternalDocumentationContext),
+    }
 
 
 class AdditionalPropertiesContext(Context):
@@ -104,16 +104,16 @@ class AdditionalPropertiesContext(Context):
 
 
 # self-reference 
-setattr(SchemaContext, '__swagger_child__', [
+setattr(SchemaContext, '__swagger_child__', {
     # items here should refer to an Schema Object.
     # refer to https://github.com/swagger-api/swagger-spec/issues/165
     # for details
-    ('items', None, SchemaContext),
-    ('properties', ContainerType.dict_, SchemaContext),
+    'items': (None, SchemaContext),
+    'properties': (ContainerType.dict_, SchemaContext),
     # solution for properties with 2 possible types
-    ('additionalProperties', None, AdditionalPropertiesContext),
-    ('allOf', ContainerType.list_, SchemaContext),
-])
+    'additionalProperties': (None, AdditionalPropertiesContext),
+    'allOf': (ContainerType.list_, SchemaContext),
+})
 
 
 
@@ -122,13 +122,13 @@ class ParameterContext(Context):
     Reference Object
     """
 
-    __swagger_child__ = [
-        ('schema', None, SchemaContext),
+    __swagger_child__ = {
+        'schema': (None, SchemaContext),
         # items here should refer to an Items Object.
         # refer to https://github.com/swagger-api/swagger-spec/issues/165
         # for details
-        ('items', None, ItemsContext),
-    ]
+        'items': (None, ItemsContext),
+    }
     __swagger_ref_object__ = Parameter
 
 
@@ -136,9 +136,9 @@ class HeaderContext(Context):
     """ Context of Header Object
     """
 
-    __swagger_child__ = [
-        ('items', None, ItemsContext),
-    ]
+    __swagger_child__ = {
+        'items': (None, ItemsContext),
+    }
     __swagger_ref_object__ = Header
 
 
@@ -146,10 +146,10 @@ class ResponseContext(Context):
     """ Context of Response Object
     """
 
-    __swagger_child__ = [
-        ('schema', None, SchemaContext),
-        ('headers', ContainerType.dict_, HeaderContext),
-    ]
+    __swagger_child__ = {
+        'schema': (None, SchemaContext),
+        'headers': (ContainerType.dict_, HeaderContext),
+    }
     __swagger_ref_object__ = Response
 
 
@@ -157,10 +157,10 @@ class OperationContext(Context):
     """ Context of Operation Object
     """
 
-    __swagger_child__ = [
-        ('parameters', ContainerType.list_, ParameterContext),
-        ('responses', ContainerType.dict_, ResponseContext),
-    ]
+    __swagger_child__ = {
+        'parameters': (ContainerType.list_, ParameterContext),
+        'responses': (ContainerType.dict_, ResponseContext),
+    }
     __swagger_ref_object__ = Operation
 
 
@@ -168,16 +168,16 @@ class PathItemContext(Context):
     """ Context of Path Item Object
     """
 
-    __swagger_child__ = [
-        ('get', None, OperationContext),
-        ('put', None, OperationContext),
-        ('post', None, OperationContext),
-        ('delete', None, OperationContext),
-        ('options', None, OperationContext),
-        ('head', None, OperationContext),
-        ('patch', None, OperationContext),
-        ('parameters', ContainerType.list_, ParameterContext),
-    ]
+    __swagger_child__ = {
+        'get': (None, OperationContext),
+        'put': (None, OperationContext),
+        'post': (None, OperationContext),
+        'delete': (None, OperationContext),
+        'options': (None, OperationContext),
+        'head': (None, OperationContext),
+        'patch': (None, OperationContext),
+        'parameters': (ContainerType.list_, ParameterContext),
+    }
     __swagger_ref_object__ = PathItem
 
 
@@ -194,9 +194,9 @@ class TagContext(Context):
     """
 
     __swagger_ref_object__ = Tag
-    __swagger_child__ = [
-        ('externalDocs', None, ExternalDocumentationContext),
-    ]
+    __swagger_child__ = {
+        'externalDocs': (None, ExternalDocumentationContext),
+    }
 
 
 class ContactContext(Context):
@@ -218,24 +218,24 @@ class InfoContext(Context):
     """
 
     __swagger_ref_object__ = Info
-    __swagger_child__ = [
-        ('contact', None, ContactContext),
-        ('license', None, LicenseContext),
-    ]
+    __swagger_child__ = {
+        'contact': (None, ContactContext),
+        'license': (None, LicenseContext),
+    }
 
 
 class SwaggerContext(Context):
     """ Context of Swagger Object
     """
 
-    __swagger_child__ = [
-        ('info', None, InfoContext),
-        ('paths', ContainerType.dict_, PathItemContext),
-        ('definitions', ContainerType.dict_, SchemaContext),
-        ('parameters', ContainerType.dict_, ParameterContext),
-        ('responses', ContainerType.dict_, ResponseContext),
-        ('securityDefinitions', ContainerType.dict_, SecuritySchemeContext),
-        ('tags', ContainerType.list_, TagContext),
-        ('externalDocs', None, ExternalDocumentationContext),
-    ]
+    __swagger_child__ = {
+        'info': (None, InfoContext),
+        'paths': (ContainerType.dict_, PathItemContext),
+        'definitions': (ContainerType.dict_, SchemaContext),
+        'parameters': (ContainerType.dict_, ParameterContext),
+        'responses': (ContainerType.dict_, ResponseContext),
+        'securityDefinitions': (ContainerType.dict_, SecuritySchemeContext),
+        'tags': (ContainerType.list_, TagContext),
+        'externalDocs': (None, ExternalDocumentationContext),
+    }
     __swagger_ref_object__ = Swagger

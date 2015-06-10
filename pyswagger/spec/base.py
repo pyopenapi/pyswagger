@@ -59,7 +59,7 @@ class Context(object):
 
     # parsing context of children fields,
     # a list of tuple (field-name, container-type, parsing-context)
-    __swagger_child__ = []
+    __swagger_child__ = {}
 
     # factory of object to be created according to
     # this parsing context.
@@ -144,7 +144,7 @@ class Context(object):
 
         if hasattr(self, '__swagger_child__'):
             # to nested objects
-            for key, ct, ctx_kls in self.__swagger_child__:
+            for key, (ct, ctx_kls) in six.iteritems(self.__swagger_child__):
                 items = obj.get(key, None)
 
                 if ct == ContainerType.list_:
@@ -176,13 +176,13 @@ class BaseObj(object):
     # fields that need re-named.
     __swagger_rename__ = {}
 
-    # list of names of fields, we will skip fields not in this list.
+    # dict of names of fields, we will skip fields not in this list.
     # field format:
-    # - tuple(string, default-value): a field name with default value
-    __swagger_fields__ = []
+    # - {name: default-value}: a field name with default value
+    __swagger_fields__ = {}
 
     # fields used internally
-    __internal_fields__ = []
+    __internal_fields__ = {}
 
     # Swagger Version this object belonging to
     __swagger_version__ = None
@@ -204,10 +204,10 @@ class BaseObj(object):
         self.__origin_keys = set([k for k in six.iterkeys(ctx._obj)])
 
         # handle fields
-        for name, default in self.__swagger_fields__:
+        for name, default in six.iteritems(self.__swagger_fields__):
             setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
 
-        for name, default in self.__internal_fields__:
+        for name, default in six.iteritems(self.__internal_fields__):
             setattr(self, self.get_private_name(name), None)
 
         self._assign_parent(ctx)
@@ -226,7 +226,7 @@ class BaseObj(object):
                 raise ValueError('Object is not instance of {0} but {1}'.format(cls.__swagger_ref_object__.__name__, obj.__class__.__name__))
 
         # set self as childrent's parent
-        for name, ct, ctx in ctx.__swagger_child__:
+        for name, (ct, ctx) in six.iteritems(ctx.__swagger_child__):
             obj = getattr(self, name)
             if obj == None:
                 continue
@@ -285,12 +285,14 @@ class BaseObj(object):
         def _produce_new_obj(x, ct, v):
             return x(None, None).produce().merge(v, x)
 
-        for name, default in itertools.chain(self.__swagger_fields__, self.__internal_fields__):
+        for name, default in itertools.chain(
+                six.iteritems(self.__swagger_fields__),
+                six.iteritems(self.__internal_fields__)):
             v = getattr(other, name)
             if v == default or getattr(self, name) != default:
                 continue
 
-            childs = [c for c in ctx.__swagger_child__ if c[0] == name]
+            childs = [(n, ct, cctx) for n, (ct, cctx) in six.iteritems(ctx.__swagger_child__) if n == name]
             if len(childs) == 0:
                 # we don't need to make a copy,
                 # since everything under SwaggerApp should be
@@ -368,7 +370,7 @@ class BaseObj(object):
 
         return True, ''
 
-    @property
+   @property
     def _parent_(self):
         """ get parent object
 
@@ -379,8 +381,8 @@ class BaseObj(object):
 
     @property
     def _field_names_(self):
-        """ get list of field names, will go through MRO
-        to merge all fields in parent classes.
+        """ get list of field names defined in Swagger spec,
+        will go through MRO to merge all fields in parent classes.
 
         :return: a list of field names
         :rtype: a list of str
@@ -392,9 +394,9 @@ class BaseObj(object):
                 return
 
             if not rename:
-                ret.extend([n for n, _ in f])
+                ret.extend([n for n in six.iterkeys(f)])
             else:
-                for n, _ in f:
+                for n in six.iterkeys(f):
                     new_n = rename.get(n, None)
                     ret.append(new_n) if new_n else ret.append(n)
 
@@ -447,7 +449,7 @@ class FieldMeta(type):
         and create those fields.
         """
         def init_fields(fields, rename):
-            for name, _ in fields:
+            for name in six.iterkeys(fields):
                 name = rename[name] if name in rename.keys() else name
                 spc[name] = property(_method_(name))
 

@@ -6,41 +6,41 @@ import copy
 
 
 class GrandChildObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
-    __swagger_fields__ = [
-        ('name', '')
-    ]
+    __swagger_fields__ = {
+        'name': ''
+    } 
 
 class GrandChildContext(base.Context):
     __swagger_ref_object__ = GrandChildObj
 
 class ChildObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
-    __swagger_fields__ = [
-        ('g', None)
-    ]
+    __swagger_fields__ = {
+        'g': None
+    }
 
 class ChildContext(base.Context):
     __swagger_ref_object__ = ChildObj
-    __swagger_child__ = [
-        ('g', None, GrandChildContext)
-    ]
+    __swagger_child__ = {
+        'g': (None, GrandChildContext)
+    }
 
 class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
-    __swagger_fields__ = [
-        ('a', []),
-        ('b', {}),
-        ('c', {}),
-        ('d', None),
-        ('f', None)
-    ]
+    __swagger_fields__ = {
+        'a': [],
+        'b': {},
+        'c': {},
+        'd': None,
+        'f': None
+    }
 
 class TestContext(base.Context):
     __swagger_ref_object__ = TestObj
-    __swagger_child__ = [
-        ('a', base.ContainerType.list_, ChildContext),
-        ('b', base.ContainerType.dict_, ChildContext),
-        ('c', base.ContainerType.dict_of_list_, ChildContext),
-        ('d', None, ChildContext),
-    ]
+    __swagger_child__ = {
+        'a': (base.ContainerType.list_, ChildContext),
+        'b': (base.ContainerType.dict_, ChildContext),
+        'c': (base.ContainerType.dict_of_list_, ChildContext),
+        'd': (None, ChildContext),
+    }
 
 class SwaggerBaseTestCase(unittest.TestCase):
     """ test things in base.py """
@@ -75,7 +75,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
         """ renamed field name """
 
         class TestRenameObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
-            __swagger_fields__ = [('a', None)]
+            __swagger_fields__ = {'a': None}
             __swagger_rename__ = {'a': 'b'}
  
         class TestRenameContext(base.Context):
@@ -102,18 +102,18 @@ class SwaggerBaseTestCase(unittest.TestCase):
         """ test merge function """
 
         class MergeObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
-            __swagger_fields__ = [
-                ('ma', None),
-                ('mb', None),
-                ('mc', {})
-            ]
+            __swagger_fields__ = {
+                'ma': None,
+                'mb': None,
+                'mc': {}
+            }
 
         class MergeContext(base.Context):
-            __swagger_child__ = [
-                ('ma', None, TestContext),
-                ('mb', None, TestContext),
-                ('mc', base.ContainerType.dict_, TestContext)
-            ]
+            __swagger_child__ = {
+                'ma': (None, TestContext),
+                'mb': (None, TestContext),
+                'mc': (base.ContainerType.dict_, TestContext)
+            }
             __swagger_ref_object__ = MergeObj
 
 
@@ -207,15 +207,15 @@ class SwaggerBaseTestCase(unittest.TestCase):
 
         class TestOkContext(base.Context):
             __swagger_ref_object__ = TestObj
-            __swagger_child__ = [
-                ('a', None, ChildContext)
-            ]
+            __swagger_child__ = {
+                'a': (None, ChildContext)
+            }
 
         class TestNotOkContext(base.Context):
             __swagger_ref_object__ = TestObj
-            __swagger_child__ = [
-                ('a', None, ChildNotOkContext)
-            ]
+            __swagger_child__ = {
+                'a': (None, ChildNotOkContext)
+            }
 
         tmp = {'t': {}}
         obj = {'a': {}}
@@ -238,9 +238,9 @@ class SwaggerBaseTestCase(unittest.TestCase):
         """ test produce function """
         class TestBoolContext(base.Context):
             __swagger_ref_object__ = TestObj
-            __swagger_child__ = [
-                ('a', None, ChildContext),
-            ]
+            __swagger_child__ = {
+                'a': (None, ChildContext),
+            }
 
             def produce(self):
                 return True
@@ -325,4 +325,33 @@ class SwaggerBaseTestCase(unittest.TestCase):
             ctx.parse(objt)
         obj6 = tmp['t']
         self.assertEqual((False, 'b/bbbb'), obj1.compare(obj6))
+
+    def test_inheritance(self):
+        """ test case for multiple layers of inheritance of BaseObj
+        """
+        class A(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+            __swagger_fields__ = {'a': None}
+
+        class B(six.with_metaclass(base.FieldMeta, A)):
+            __swagger_fields__ = {'b': None}
+
+        class C(six.with_metaclass(base.FieldMeta, B)):
+            __swagger_fields__ = {'c': None}
+
+        class D(six.with_metaclass(base.FieldMeta, C)):
+            __swagger_fields__ = {'d': None}
+
+        class Dx(base.Context):
+            __swagger_ref_object__ = D
+
+        obj = dict(a=1, b=2, c=3, d=4)
+        tmp = {'t': {}}
+        with Dx(tmp, 't') as ctx:
+            ctx.parse(obj)
+
+        d = tmp['t']
+        self.assertEqual(d.a, 1)
+        self.assertEqual(d.b, 2)
+        self.assertEqual(d.c, 3)
+        self.assertEqual(d.d, 4)
 
