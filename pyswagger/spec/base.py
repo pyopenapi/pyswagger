@@ -147,13 +147,15 @@ class Context(object):
             for key, (ct, ctx_kls) in six.iteritems(self.__swagger_child__):
                 items = obj.get(key, None)
 
-                if items == None:
-                    continue
-
+                # create an empty child, even it's None in input.
+                # this makes other logic easier.
                 if ct == ContainerType.list_:
                     self._obj[key] = []
                 elif ct:
                     self._obj[key] = {}
+
+                if items == None:
+                    continue
 
                 container_apply(ct, items,
                     functools.partial(_apply, ctx_kls, key),
@@ -380,12 +382,12 @@ class BaseObj(object):
                 ret = {}
                 for k, v in six.iteritems(obj):
                     ret[k] = _dump_(v)
-                return ret
+                return None if ret == {} else ret
             elif isinstance(obj, list):
                 ret = []
                 for v in obj:
                     ret.append(_dump_(v))
-                return ret
+                return None if ret == [] else ret
             elif isinstance(obj, BaseObj):
                 return obj.dump()
             elif isinstance(obj, (six.string_types, six.integer_types)):
@@ -397,9 +399,11 @@ class BaseObj(object):
             # only dump a field when its value is not equal to default value
             v = getattr(self, name)
             if v != default:
-                r[name] = _dump_(v)
+                d = _dump_(v)
+                if d != None:
+                    r[name] = d
 
-        return r
+        return None if r == {} else r
 
     @property
     def _parent_(self):

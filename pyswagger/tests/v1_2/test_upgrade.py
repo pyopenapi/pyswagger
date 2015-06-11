@@ -1,5 +1,6 @@
 from pyswagger import SwaggerApp, errs
 from ..utils import get_test_data_folder
+from ...spec.v2_0 import objects
 import unittest
 import os
 import six
@@ -76,6 +77,8 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         self.assertEqual(o.operationId, 'getPetById')
         self.assertEqual(o.produces, ['application/json', 'application/xml', 'text/plain', 'text/html'])
         self.assertEqual(o.consumes, [])
+        self.assertEqual(o.summary, 'Find pet by ID')
+        self.assertEqual(o.description, 'Returns a pet based on ID')
         self.assertEqual(o.deprecated, False)
 
         # partialUpdate
@@ -105,10 +108,10 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         self.assertEqual(ss.type, 'oauth2')
         self.assertEqual(ss.name, None)
         self.assertEqual(getattr(ss, 'in'), None)
-        self.assertEqual(ss.flow, 'accessCode')
+        self.assertEqual(ss.flow, 'implicit')
         self.assertEqual(ss.authorizationUrl, 'http://petstore.swagger.wordnik.com/api/oauth/dialog')
         self.assertEqual(ss.tokenUrl, 'http://petstore.swagger.wordnik.com/api/oauth/token')
-        self.assertEqual(ss.scopes, {'write:pets': '', 'read:pets': ''})
+        self.assertEqual(ss.scopes, {'write:pets': 'Modify pets in your account', 'read:pets': 'Read your pets'})
 
     def test_parameter(self):
         """ Parameter -> Parameter
@@ -155,6 +158,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         p = d.properties['id']
         self.assertEqual(p.type, 'integer')
         self.assertEqual(p.format, 'int64')
+        self.assertEqual(p.description, 'unique identifier for the pet')
         self.assertEqual(p.minimum, 0)
         self.assertEqual(p.maximum, 100)
 
@@ -196,10 +200,22 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         else:
             self.fail('SchemaError not raised')
 
+    def test_info(self):
+        """ Info -> [Info, Contact, License]
+        """
+        info = self.app.root.info
+        self.assertEqual(info.title, 'Swagger Sample App')
+        self.assertEqual(info.description, 'This is a sample server Petstore server.  You can find out more about Swagger \n    at <a href=\"http://swagger.wordnik.com\">http://swagger.wordnik.com</a> or on irc.freenode.net, #swagger.  For this sample,\n    you can use the api key \"special-key\" to test the authorization filters')
+        self.assertEqual(info.termsOfService, 'http://helloreverb.com/terms/')
+        self.assertTrue(isinstance(info.license, objects.License))
+        self.assertEqual(info.license.name, 'Apache 2.0')
+        self.assertEqual(info.license.url, 'http://www.apache.org/licenses/LICENSE-2.0.html')
+        self.assertTrue(isinstance(info.contact, objects.Contact))
+        self.assertEqual(info.contact.email, 'apiteam@wordnik.com')
+
     def test_authorizations(self):
         """ Authorizations -> [Security Requirement]
         """
-        
 
 
 class ModelSubtypesTestCase(unittest.TestCase):
