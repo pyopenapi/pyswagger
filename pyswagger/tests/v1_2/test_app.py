@@ -83,7 +83,7 @@ class HTTPGetterTestCase(unittest.TestCase):
             'type',
             'uniqueItems',
             'summary',
-            'note'
+            'notes'
         ]))
 
 

@@ -185,7 +185,7 @@ class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
         'consumes': None,
         'deprecated': None,
         'summary': None,
-        'note': None,
+        'notes': None,
     }
 
     __internal_fields__ = {

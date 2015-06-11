@@ -122,7 +122,7 @@ class PropertyTestCase(unittest.TestCase):
         self.assertEqual(updatePet.path, '/pet')
         self.assertEqual(updatePet.method, 'PUT')
         self.assertEqual(updatePet.summary, 'Update an existing pet')
-        self.assertEqual(updatePet.note, None)
+        self.assertEqual(updatePet.notes, '')
 
     def test_parameter(self):
         """ parameter """
