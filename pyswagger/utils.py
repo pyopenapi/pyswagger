@@ -386,22 +386,30 @@ def walk(start, ofn, cyc=None):
     return cyc
 
 
-def _diff_(src, dst, ret=None, jp=None):
+def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
     """ compare 2 dict/list, return a list containing
-    json-pointer indicating what's different.
+    json-pointer indicating what's different, and what's diff exactly.
 
+    - list length diff: (jp, length of src, length of dst)
+    - dict key diff: (jp, None, None)
+    - when src is dict or list, and dst is not: (jp, type(src), type(dst))
+    - other: (jp, src, dst)
     """
 
-    def _dict_(src, dst, ret, jp):
+    def _dict_(src, dst, ret, jp, exc, inc):
         ss, sd = set(src.keys()), set(dst.keys())
+        # what's include is prior to what's exclude
+        si, se = set(inc or []), set(exc or [])
+        ss, sd = (ss & si, sd & si) if si else (ss, sd)
+        ss, sd = (ss - se, sd - se) if se else (ss, sd)
 
         # added keys
         for k in sd - ss:
-            ret.append(jp_compose(k, base=jp))
+            ret.append((jp_compose(k, base=jp), None, None,))
 
         # removed keys
         for k in ss - sd:
-            ret.append(jp_compose(k, base=jp))
+            ret.append((jp_compose(k, base=jp), None, None,))
 
         # same key
         for k in ss & sd:
@@ -409,9 +417,9 @@ def _diff_(src, dst, ret=None, jp=None):
 
     def _list_(src, dst, ret, jp):
         if len(src) < len(dst):
-            ret.append(jp)
+            ret.append((jp, len(src), len(dst),))
         elif len(src) > len(dst):
-            ret.append(jp)
+            ret.append((jp, len(src), len(dst),))
         else:
             # assume sortable
             ss, sd = sorted(src), sorted(dst)
@@ -421,18 +429,18 @@ def _diff_(src, dst, ret=None, jp=None):
     ret = [] if ret == None else ret
     jp = '' if jp == None else jp
 
-    if src.__class__ != dst.__class__:
-        ret.append(jp)
-        return ret
-
     if isinstance(src, dict):
-        _dict_(src, dst, ret, jp)
-
+        if not isinstance(dst, dict):
+            ret.append((jp, str(type(src)), str(type(dst)),))
+        else:
+            _dict_(src, dst, ret, jp, exclude, include)
     elif isinstance(src, list):
-        _list_(src, dst, ret, jp)
-
+        if not isinstance(dst, list):
+            ret.append((jp, str(type(src)), str(type(dst)),))
+        else:
+            _list_(src, dst, ret, jp)
     elif src != dst:
-        ret.append(jp)
+        ret.append((jp, src, dst,))
 
     return ret
 

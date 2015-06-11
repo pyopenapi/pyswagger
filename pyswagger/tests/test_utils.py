@@ -170,19 +170,36 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         list2 = [dict2, dict4]
 
         self.assertEqual(utils._diff_(dict1, dict2), [
-            'b',
+            ('b', 3, 2),
         ])
 
         self.assertEqual(utils._diff_(dict2, dict1), [
-            'b',
+            ('b', 2, 3),
         ])
 
         self.assertEqual(sorted(utils._diff_(dict3, dict4)), sorted([
-            'a/a', 'a/c', 'a/b', 'b/b'
+            ('a/a', 1, 2), ('a/b', 3, 2), ('a/c', 4, 5), ('b/b', 3, 2)
         ]))
 
         self.assertEqual(sorted(utils._diff_(list1, list2)), sorted([
-            '0/b', '1/a/a', '1/a/c', '1/a/b', '1/b/b',
+            ('0/b', 3, 2),
+            ('1/a/a', 1, 2),
+            ('1/a/b', 3, 2),
+            ('1/a/c', 4, 5),
+            ('1/b/b', 3, 2)
+        ]))
+
+        # test include
+        self.assertEqual(sorted(utils._diff_(dict3, dict4, include=['a'])), sorted([
+            ('a/a', 1, 2), ('a/b', 3, 2), ('a/c', 4, 5)
+        ]))
+        # test exclude
+        self.assertEqual(sorted(utils._diff_(dict3, dict4, exclude=['a'])), sorted([
+            ('b/b', 3, 2)
+        ]))
+        # test include and exclude
+        self.assertEqual(sorted(utils._diff_(dict3, dict4, include=['a', 'b'], exclude=['a'])), sorted([
+            ('b/b', 3, 2)
         ]))
 
 
