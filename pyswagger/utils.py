@@ -447,3 +447,10 @@ def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
 
     return ret
 
+def get_or_none(obj, *a):
+    ret = obj
+    for v in a:
+        ret = getattr(ret, v, None)
+        if not ret:
+            break
+    return ret

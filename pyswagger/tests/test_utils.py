@@ -202,6 +202,17 @@ class SwaggerUtilsTestCase(unittest.TestCase):
             ('b/b', 3, 2)
         ]))
 
+    def test_get_or_none(self):
+        """ test for get_or_none
+        """
+        class A(object): pass
+        a = A()
+        setattr(A, 'b', A())
+        setattr(a.b, 'c', A())
+        setattr(a.b.c, 'd', 'test string')
+        self.assertEqual(utils.get_or_none(a, 'b', 'c', 'd'), 'test string')
+        self.assertEqual(utils.get_or_none(a, 'b', 'c', 'd', 'e'), None)
+
 
 class WalkTestCase(unittest.TestCase):
     """ test for walk """
