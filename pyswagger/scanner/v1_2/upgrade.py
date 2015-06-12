@@ -4,6 +4,7 @@ from ...scan import Dispatcher
 from ...errs import SchemaError
 from ...primitives import is_primitive
 from ...utils import scope_compose
+from ...consts import private
 from ...spec.v1_2.objects import (
     ResourceList,
     Resource,
@@ -17,15 +18,15 @@ import os
 import six
 
 
-def update_type_and_ref(dst, src, scope):
+def update_type_and_ref(dst, src, scope, sep):
     ref = getattr(src, '$ref')
     if ref:
-        dst.update_field('$ref', '#/definitions/' + scope_compose(scope, ref))
+        dst.update_field('$ref', '#/definitions/' + scope_compose(scope, ref, sep=sep))
 
     if is_primitive(src):
         dst.update_field('type', src.type.lower())
     elif src.type:
-        dst.update_field('$ref', '#/definitions/' + scope_compose(scope, src.type))
+        dst.update_field('$ref', '#/definitions/' + scope_compose(scope, src.type, sep=sep))
 
 def convert_min_max(dst, src):
     def _from_str(name):
@@ -46,12 +47,12 @@ def convert_min_max(dst, src):
     _from_str('maximum')
 
 
-def convert_schema_from_datatype(obj, scope):
+def convert_schema_from_datatype(obj, scope, sep):
     if obj == None:
         return None
 
     s = objects.Schema(NullContext())
-    update_type_and_ref(s, obj, scope)
+    update_type_and_ref(s, obj, scope, sep)
     s.update_field('format', obj.format)
     if obj.is_set('defaultValue'):
         s.update_field('default', obj.defaultValue)
@@ -60,7 +61,7 @@ def convert_schema_from_datatype(obj, scope):
     s.update_field('enum', obj.enum)
     if obj.items:
         i = objects.Schema(NullContext())
-        update_type_and_ref(i, obj.items, scope)
+        update_type_and_ref(i, obj.items, scope, sep)
         i.update_field('format', obj.items.format)
         s.update_field('items', i)
 
@@ -83,8 +84,9 @@ class Upgrade(object):
     """
     class Disp(Dispatcher): pass
 
-    def __init__(self):
+    def __init__(self, sep=private.SCOPE_SEPARATOR):
         self.__swagger = None
+        self.__sep = sep
 
     @Disp.register([ResourceList])
     def _resource_list(self, path, obj, app):
@@ -170,7 +172,7 @@ class Upgrade(object):
         o.update_field('responses', {})
         resp = objects.Response(NullContext())
         if obj.type != 'void':
-            resp.update_field('schema', convert_schema_from_datatype(obj, scope))
+            resp.update_field('schema', convert_schema_from_datatype(obj, scope, sep=self.__sep))
         o.responses['default'] = resp
 
         path = obj._parent_.basePath + obj.path
@@ -221,7 +223,7 @@ class Upgrade(object):
             o.update_field('in', obj.paramType)
 
         if 'body' == getattr(o, 'in'):
-            o.update_field('schema', convert_schema_from_datatype(obj, scope))
+            o.update_field('schema', convert_schema_from_datatype(obj, scope, sep=self.__sep))
         else:
             if getattr(obj, '$ref'):
                 raise SchemaError('Can\'t have $ref in non-body Parameters')
@@ -256,7 +258,7 @@ class Upgrade(object):
     def _model(self, path, obj, app):
         scope = obj._parent_.get_name(path)
 
-        s = scope_compose(scope, obj.get_name(path))
+        s = scope_compose(scope, obj.get_name(path), sep=self.__sep)
         o = self.__swagger.definitions.get(s, None)
         if not o:
             o = objects.Schema(NullContext())
@@ -264,7 +266,7 @@ class Upgrade(object):
 
         props = {}
         for name, prop in six.iteritems(obj.properties):
-            props[name] = convert_schema_from_datatype(prop, scope)
+            props[name] = convert_schema_from_datatype(prop, scope, sep=self.__sep)
             props[name].update_field('description', prop.description)
         o.update_field('properties', props)
         o.update_field('required', obj.required)
@@ -274,7 +276,7 @@ class Upgrade(object):
         for t in obj.subTypes or []:
             # here we assume those child models belongs to
             # the same resource.
-            sub_s = scope_compose(scope, t)
+            sub_s = scope_compose(scope, t, sep=self.__sep)
             sub_o = self.__swagger.definitions.get(sub_s, None)
             if not sub_o:
                 sub_o = objects.Schema(NullContext())

@@ -51,7 +51,9 @@ class ScopeDict(dict):
         raise TypeError('sep property is write-only')
 
     @sep.setter
-    def  sep(self, sep):
+    def sep(self, sep):
+        """ update separater used here
+        """
         self.__sep = sep
 
     def __getitem__(self, *keys):
@@ -59,6 +61,7 @@ class ScopeDict(dict):
         - n!##!m...!##!z
         - n, m, ..., z
         - z
+        when separater == !##!
 
         :param dict keys: keys to access via scopes.
         """

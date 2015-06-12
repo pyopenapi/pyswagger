@@ -40,9 +40,10 @@ class Converter_v1_2_TestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.create(get_test_data_folder(
-            version='1.2', which='wordnik')
+        kls.app = SwaggerApp.load(get_test_data_folder(
+            version='1.2', which='wordnik'), sep=':'
         )
+        kls.app.prepare()
 
         with open('./test.json', 'w') as r:
             r.write(json.dumps(kls.app.dump(), indent=3))
@@ -51,9 +52,8 @@ class Converter_v1_2_TestCase(unittest.TestCase):
         """
         """
         # $ref
-        # TODO: allow different separator
         expect = {
-            '$ref':'#/definitions/pet!##!Pet'
+            '$ref':'#/definitions/pet:Pet'
         }
         self.assertEqual(_diff_(
             expect,
@@ -76,7 +76,7 @@ class Converter_v1_2_TestCase(unittest.TestCase):
         }
         self.assertEqual(_diff_(
             expect,
-            self.app.resolve('#/definitions/pet!##!Pet').properties['photoUrls'].items.dump()
+            self.app.resolve('#/definitions/pet:Pet').properties['photoUrls'].items.dump()
         ), [])
 
     def test_scope(self):
@@ -196,7 +196,7 @@ class Converter_v1_2_TestCase(unittest.TestCase):
         expect = {
             'in':'body',
             'schema':{
-                '$ref':'#/definitions/pet!##!Pet'
+                '$ref':'#/definitions/pet:Pet'
             }
         }
         self.assertEqual(_diff_(
@@ -243,7 +243,7 @@ class Converter_v1_2_TestCase(unittest.TestCase):
             'schema':{
                 'type':'array',
                 'items': {
-                    '$ref':'#/definitions/pet!##!Pet',
+                    '$ref':'#/definitions/pet:Pet',
                 }
             }
         }
@@ -267,7 +267,7 @@ class Converter_v1_2_TestCase(unittest.TestCase):
         }
         self.assertEqual(_diff_(
             expect,
-            self.app.resolve('#/definitions/user!##!User').properties['userStatus'].dump()
+            self.app.resolve('#/definitions/user:User').properties['userStatus'].dump()
         ), [])
 
     def test_model(self):
@@ -287,7 +287,7 @@ class Converter_v1_2_TestCase(unittest.TestCase):
                     "maximum":100.0
                 },
                 "category":{
-                    "$ref":"#/definitions/pet!##!Category"
+                    "$ref":"#/definitions/pet:Category"
                 },
                 "name":{
                     "type":"string"
@@ -301,7 +301,7 @@ class Converter_v1_2_TestCase(unittest.TestCase):
                 "tags":{
                     "type":"array",
                     "items":{
-                        "$ref":"#/definitions/pet!##!Tag"
+                        "$ref":"#/definitions/pet:Tag"
                     }
                 },
                 "status":{
@@ -315,10 +315,10 @@ class Converter_v1_2_TestCase(unittest.TestCase):
                 }
             }
         }
-        d = self.app.resolve('#/definitions/pet!##!Pet').dump()
+        d = self.app.resolve('#/definitions/pet:Pet').dump()
         self.assertEqual(_diff_(
             expect,
-            self.app.resolve('#/definitions/pet!##!Pet').dump()
+            self.app.resolve('#/definitions/pet:Pet').dump()
         ), [])
 
     def test_info(self):

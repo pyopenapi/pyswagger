@@ -3,6 +3,7 @@ from ..scan import Dispatcher
 from ..errs import SchemaError
 from ..spec.v2_0.objects import Operation
 from ..utils import scope_compose
+from ..consts import private
 
 class TypeReduce(object):
     """ Type Reducer, collect Operation & Model
@@ -10,15 +11,16 @@ class TypeReduce(object):
     """
     class Disp(Dispatcher): pass
 
-    def __init__(self):
+    def __init__(self, sep=private.SCOPE_SEPARATOR):
         self.op = {}
+        self.__sep = sep
 
     @Disp.register([Operation])
     def _op(self, path, obj, _):
         scope = obj.tags[0] if obj.tags and len(obj.tags) > 0 else None
         name = obj.operationId if obj.operationId else None
 
-        new_scope = scope_compose(scope, name)
+        new_scope = scope_compose(scope, name, sep=self.__sep)
         if new_scope:
             if new_scope in self.op.keys():
                 raise SchemaError('duplicated key found: ' + new_scope)

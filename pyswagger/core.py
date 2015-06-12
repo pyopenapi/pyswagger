@@ -7,7 +7,7 @@ from .scan import Scanner
 from .scanner import TypeReduce, CycleDetector
 from .scanner.v1_2 import Upgrade
 from .scanner.v2_0 import AssignParent, Resolve, PatchObject, YamlFixer
-from pyswagger import utils, errs
+from pyswagger import utils, errs, consts
 import inspect
 import base64
 import six
@@ -32,7 +32,7 @@ class SwaggerApp(object):
         sc_path: ('/', '#/paths')
     }
 
-    def __init__(self, url=None, app_cache=None, url_load_hook=None):
+    def __init__(self, url=None, app_cache=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR):
         """ constructor
 
         :param url str: url of swagger.json
@@ -60,7 +60,8 @@ class SwaggerApp(object):
         # all urls to load json would go through this hook
         self.__url_load_hook = url_load_hook
 
-        # TODO: allow init App-wised SCOPE_SEPARATOR
+        # allow init App-wised SCOPE_SEPARATOR
+        self.__sep = sep
 
     @property
     def root(self):
@@ -228,7 +229,7 @@ class SwaggerApp(object):
         self.validate(strict=strict)
 
         if self.version == '1.2':
-            converter = Upgrade()
+            converter = Upgrade(self.__sep)
             s.scan(root=self.raw, route=[converter])
             obj = converter.swagger
 
@@ -251,7 +252,7 @@ class SwaggerApp(object):
         s.scan(root=self.__root, route=[PatchObject()])
 
     @classmethod
-    def load(kls, url, getter=None, parser=None, app_cache=None, url_load_hook=None):
+    def load(kls, url, getter=None, parser=None, app_cache=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR):
         """ load json as a raw SwaggerApp
 
         :param str url: url of path of Swagger API definition
@@ -261,6 +262,7 @@ class SwaggerApp(object):
         :type parser: pyswagger.base.Context
         :param dict app_cache: the cache shared by related SwaggerApp
         :param func url_load_hook: hook to patch the url to load json
+        :param str sep: scope-separater used in this SwaggerApp
         :return: the created SwaggerApp object
         :rtype: SwaggerApp
         :raises ValueError: if url is wrong
@@ -270,7 +272,7 @@ class SwaggerApp(object):
         logger.info('load with [{0}]'.format(url))
 
         url = utils.normalize_url(url)
-        app = kls(url, app_cache, url_load_hook)
+        app = kls(url, app_cache=app_cache, url_load_hook=url_load_hook, sep=sep)
 
         app._load_obj(url, getter, parser)
 
@@ -305,7 +307,7 @@ class SwaggerApp(object):
 
         # reducer for Operation 
         s = Scanner(self)
-        tr = TypeReduce()
+        tr = TypeReduce(self.__sep)
         cy = CycleDetector()
         s.scan(root=self.__root, route=[tr, cy])
 
@@ -316,6 +318,9 @@ class SwaggerApp(object):
             self.__m = utils.ScopeDict(self.__root.definitions)
         else:
             self.__m = utils.ScopeDict({})
+        # update scope-separater
+        self.__m.sep = self.__sep
+        self.__op.sep = self.__sep
 
         # cycle detection
         if len(cy.cycles['schema']) > 0 and strict:
@@ -404,6 +409,7 @@ class SwaggerApp(object):
         :return: dict representation of Swagger
         """
         return self.root.dump()
+
 
 
 class SwaggerSecurity(object):
