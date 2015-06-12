@@ -3,7 +3,7 @@ from ...spec.base import NullContext
 from ...scan import Dispatcher
 from ...errs import SchemaError
 from ...primitives import is_primitive
-from ...utils import scope_compose
+from ...utils import scope_compose, get_or_none
 from ...consts import private
 from ...spec.v1_2.objects import (
     ResourceList,
@@ -194,10 +194,9 @@ class Upgrade(object):
         for s in obj.scopes or []:
             o.scopes[s.scope] = s.description
 
-        o.update_field('flow', '')
         if o.type == 'oauth2':
-            o.update_field('authorizationUrl', obj.grantTypes.implicit.loginEndpoint.url)
-            o.update_field('tokenUrl', obj.grantTypes.authorization_code.tokenEndpoint.url)
+            o.update_field('authorizationUrl', get_or_none(obj, 'grantTypes', 'implicit', 'loginEndpoint', 'url'))
+            o.update_field('tokenUrl', get_or_none(obj, 'grantTypes', 'authorization_code', 'tokenEndpoint', 'url'))
             if o.authorizationUrl:
                 o.update_field('flow', 'implicit')
             elif o.tokenUrl:

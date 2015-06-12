@@ -23,6 +23,28 @@
             "type": "apiKey",
             "passAs": "header",
             "keyname": "simpleHK"
+        },
+        "oauth2":{
+            "type":"oauth2",
+            "scopes":[
+                {
+                    "scope":"test:anything",
+                    "description":"for testing purpose"
+                }
+            ],
+            "grantTypes":{
+                "authorization_code":{
+                    "tokenRequestEndpoint":{
+                        "url":"http://petstore.swagger.wordnik.com/api/oauth/requestToken",
+                        "clientIdName":"client_id",
+                        "clientSecretName":"client_secret"
+                    },
+                    "tokenEndpoint":{
+                        "url":"http://petstore.swagger.wordnik.com/api/oauth/token",
+                        "tokenName":"auth_code"
+                    }
+                }
+            }
         }
    },
    "info":{

@@ -126,11 +126,6 @@ class Converter_v1_2_TestCase(unittest.TestCase):
             self.app.root.securityDefinitions['oauth2'].dump(),
             include=['type', 'authorizationUrl', 'flow']), [])
 
-    def test_token_endpoint(self):
-        """
-        """
-        # TODO: need another script
-
     def test_authorizations(self):
         """
         """
@@ -155,9 +150,6 @@ class Converter_v1_2_TestCase(unittest.TestCase):
             self.app.root.securityDefinitions['oauth2'].dump(),
             exclude=['scopes', ]
         ), [])
-
-        # TODO: API-key, another script
-        # TODO: basic Auth, another script
 
     def test_parameter(self):
         """
@@ -349,5 +341,66 @@ class Converter_v1_2_TestCase(unittest.TestCase):
             expect,
             self.app.root.dump(),
             include=['swagger']
+        ), [])
+
+
+class Converter_v1_2_TestCase_Others(unittest.TestCase):
+    """ for test cases needs special init
+    """
+    def test_token_endpoint(self):
+        """
+        """
+        app = SwaggerApp.create(get_test_data_folder(
+            version='1.2', which='simple_auth')
+        )
+
+        expect={
+            'tokenUrl':'http://petstore.swagger.wordnik.com/api/oauth/token',
+            'type':'oauth2',
+            'flow':'access_code',
+            'scopes': {
+                'test:anything':'for testing purpose'        
+            }
+        }
+
+        self.assertEqual(_diff_(
+            expect,
+            app.resolve('#/securityDefinitions/oauth2').dump()
+        ), [])
+
+    def test_authorization(self):
+        """
+        """
+        app = SwaggerApp.create(get_test_data_folder(
+            version='1.2', which='simple_auth')
+        )
+            
+        expect = {
+            'type':'apiKey',
+            'in':'query',
+            'name':'simpleQK'
+        }
+        self.assertEqual(_diff_(
+            expect,
+            app.resolve('#/securityDefinitions/simple_key').dump()
+        ), [])
+
+        expect = {
+            'type':'apiKey',
+            'in':'header',
+            'name':'simpleHK'
+        }
+        self.assertEqual(_diff_(
+            expect,
+            app.resolve('#/securityDefinitions/simple_key2').dump()
+        ), [])
+
+
+        expect = {
+            'type':'basic',
+        }
+        self.assertEqual(_diff_(
+            expect,
+            app.resolve('#/securityDefinitions/simple_basic').dump()
         ), [])
 
