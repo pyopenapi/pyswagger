@@ -477,7 +477,10 @@ class FieldMeta(type):
             spc[name] = spc[name] if name in spc else default
 
         def _update_(dict1, dict2):
-            dict1.update({k:v for k, v in six.iteritems(dict2) if k not in dict1})
+            d = {}
+            for k in set(dict2.keys()) - set(dict1.keys()):
+                d[k] = dict2[k]
+            dict1.update(d)
 
         # compose fields definition from parents
         for b in bases:
