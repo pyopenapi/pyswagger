@@ -21,9 +21,9 @@ class ConverterTestCase(unittest.TestCase):
 
         # diff for empty list or dict is allowed
         self.assertEqual(sorted(_diff_(origin, app.dump())), sorted([
-            ('paths/~1pet~1{petId}/get/security/0/api_key', "<type 'list'>", "<type 'NoneType'>"),
+            ('paths/~1pet~1{petId}/get/security/0/api_key', "list", "NoneType"),
             ('paths/~1store~1inventory/get/parameters', None, None),
-            ('paths/~1store~1inventory/get/security/0/api_key', "<type 'list'>", "<type 'NoneType'>"),
+            ('paths/~1store~1inventory/get/security/0/api_key', "list", "NoneType"),
             ('paths/~1user~1logout/get/parameters', None, None)
         ]))
             

@@ -95,19 +95,19 @@ class Upgrade(object):
         #   Info Object
         info = objects.Info(NullContext())
         info.update_field('version', obj.apiVersion)
-        info.update_field('title', get_or_none(obj, 'info','title')
-        info.update_field('description', get_or_none(obj, 'info', 'description')
-        info.update_field('termsOfService', get_or_none(obj, 'info', 'termsOfServiceUrl')
+        info.update_field('title', get_or_none(obj, 'info','title'))
+        info.update_field('description', get_or_none(obj, 'info', 'description'))
+        info.update_field('termsOfService', get_or_none(obj, 'info', 'termsOfServiceUrl'))
         #       Contact Object
         if obj.info.contact:
             contact = objects.Contact(NullContext())
-            contact.update_field('email', get_or_none(obj, 'info', 'contact')
+            contact.update_field('email', get_or_none(obj, 'info', 'contact'))
             info.update_field('contact', contact)
         #       License Object
         if obj.info.license or obj.info.licenseUrl:
             license = objects.License(NullContext())
-            license.update_field('name', get_or_none(obj, 'info', 'license')
-            license.update_field('url', get_or_none(obj, 'info', 'licenseUrl')
+            license.update_field('name', get_or_none(obj, 'info', 'license'))
+            license.update_field('url', get_or_none(obj, 'info', 'licenseUrl'))
             info.update_field('license', license)
 
         o.update_field('info', info)

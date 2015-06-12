@@ -7,6 +7,8 @@ import sys
 import datetime
 import re
 import os
+import operator
+import functools
 
 #TODO: accept varg
 def scope_compose(scope, name, sep=private.SCOPE_SEPARATOR):
@@ -424,9 +426,30 @@ def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
         elif len(src) > len(dst):
             ret.append((jp, len(src), len(dst),))
         else:
-            # assume sortable
-            ss, sd = sorted(src), sorted(dst)
-            for idx, (s, d) in enumerate(zip(ss, sd)):
+            if len(src) == 0:
+                return
+
+            # make sure every element in list is the same
+            def r(x, y):
+                if type(y) != type(x):
+                    raise ValueError('different type: {0}, {1}'.format(type(y).__name__, type(x).__name__))
+                return x
+            ts = type(functools.reduce(r, src))
+            td = type(functools.reduce(r, dst))
+
+            # when type is different
+            if ts != td:
+                ret.append(jp, str(ts), str(td))
+                return
+
+            if ts != dict:
+                ss, sd = sorted(src), sorted(dst)
+            else:
+                # process dict without sorting
+                # TODO: find a way to sort list of dict, (ooch)
+                ss, sd = src, dst
+
+            for idx, (s, d) in enumerate(zip(src, dst)):
                 _diff_(s, d, ret, jp_compose(str(idx), base=jp))
 
     ret = [] if ret == None else ret
@@ -434,12 +457,12 @@ def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
 
     if isinstance(src, dict):
         if not isinstance(dst, dict):
-            ret.append((jp, str(type(src)), str(type(dst)),))
+            ret.append((jp, type(src).__name__, type(dst).__name__,))
         else:
             _dict_(src, dst, ret, jp, exclude, include)
     elif isinstance(src, list):
         if not isinstance(dst, list):
-            ret.append((jp, str(type(src)), str(type(dst)),))
+            ret.append((jp, type(src).__name__, type(dst).__name__,))
         else:
             _list_(src, dst, ret, jp)
     elif src != dst:
