@@ -438,8 +438,14 @@ def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
             td = type(functools.reduce(r, dst))
 
             # when type is different
-            if ts != td:
-                ret.append(jp, str(ts), str(td))
+            while True:
+                if issubclass(ts, six.string_types) and issubclass(td, six.string_types):
+                    break
+                if issubclass(ts, six.integer_types) and issubclass(td, six.integer_types):
+                    break
+                if ts == td:
+                    break
+                ret.append((jp, str(ts), str(td),))
                 return
 
             if ts != dict:
