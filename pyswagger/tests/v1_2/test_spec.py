@@ -46,7 +46,7 @@ class PropertyTestCase(unittest.TestCase):
         self.assertTrue(isinstance(auth.scopes[0], Scope))
         self.assertEqual(auth.scopes[0].scope, 'write:pets')
         self.assertEqual(auth.scopes[1].scope, 'read:pets')
-        self.assertRaises(AttributeError, getattr, auth.scopes[1], 'description')
+        self.assertEqual(auth.scopes[1].description, 'Read your pets')
 
     def test_grant_type(self):
         """ grant type """
@@ -121,8 +121,8 @@ class PropertyTestCase(unittest.TestCase):
         self.assertTrue(isinstance(updatePet, Operation))
         self.assertEqual(updatePet.path, '/pet')
         self.assertEqual(updatePet.method, 'PUT')
-        self.assertRaises(AttributeError, getattr, updatePet, 'summary')
-        self.assertRaises(AttributeError, getattr, updatePet, 'note')
+        self.assertEqual(updatePet.summary, 'Update an existing pet')
+        self.assertEqual(updatePet.notes, '')
 
     def test_parameter(self):
         """ parameter """
@@ -132,7 +132,7 @@ class PropertyTestCase(unittest.TestCase):
         self.assertEqual(p.name, 'body')
         self.assertEqual(p.required, True)
         self.assertEqual(p.allowMultiple, False)
-        self.assertRaises(AttributeError, getattr, p, 'description')
+        self.assertEqual(p.description, 'Pet object that needs to be updated in the store')
 
     def test_response_message(self):
         """ response message """

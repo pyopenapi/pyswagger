@@ -77,12 +77,13 @@ class HTTPGetterTestCase(unittest.TestCase):
             'minimum',
             'nickname',
             'parameters',
-            'path',
             'produces',
             '$ref',
             'responseMessages',
             'type',
-            'uniqueItems'
+            'uniqueItems',
+            'summary',
+            'notes'
         ]))
 
 

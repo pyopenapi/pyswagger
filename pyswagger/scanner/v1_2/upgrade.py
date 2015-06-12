@@ -3,7 +3,8 @@ from ...spec.base import NullContext
 from ...scan import Dispatcher
 from ...errs import SchemaError
 from ...primitives import is_primitive
-from ...utils import scope_compose
+from ...utils import scope_compose, get_or_none
+from ...consts import private
 from ...spec.v1_2.objects import (
     ResourceList,
     Resource,
@@ -17,15 +18,15 @@ import os
 import six
 
 
-def update_type_and_ref(dst, src, scope):
+def update_type_and_ref(dst, src, scope, sep):
     ref = getattr(src, '$ref')
     if ref:
-        dst.update_field('$ref', '#/definitions/' + scope_compose(scope, ref))
+        dst.update_field('$ref', '#/definitions/' + scope_compose(scope, ref, sep=sep))
 
     if is_primitive(src):
         dst.update_field('type', src.type.lower())
     elif src.type:
-        dst.update_field('$ref', '#/definitions/' + scope_compose(scope, src.type))
+        dst.update_field('$ref', '#/definitions/' + scope_compose(scope, src.type, sep=sep))
 
 def convert_min_max(dst, src):
     def _from_str(name):
@@ -46,12 +47,12 @@ def convert_min_max(dst, src):
     _from_str('maximum')
 
 
-def convert_schema_from_datatype(obj, scope):
+def convert_schema_from_datatype(obj, scope, sep):
     if obj == None:
         return None
 
     s = objects.Schema(NullContext())
-    update_type_and_ref(s, obj, scope)
+    update_type_and_ref(s, obj, scope, sep)
     s.update_field('format', obj.format)
     if obj.is_set('defaultValue'):
         s.update_field('default', obj.defaultValue)
@@ -60,7 +61,7 @@ def convert_schema_from_datatype(obj, scope):
     s.update_field('enum', obj.enum)
     if obj.items:
         i = objects.Schema(NullContext())
-        update_type_and_ref(i, obj.items, scope)
+        update_type_and_ref(i, obj.items, scope, sep)
         i.update_field('format', obj.items.format)
         s.update_field('items', i)
 
@@ -83,15 +84,32 @@ class Upgrade(object):
     """
     class Disp(Dispatcher): pass
 
-    def __init__(self):
+    def __init__(self, sep=private.SCOPE_SEPARATOR):
         self.__swagger = None
+        self.__sep = sep
 
     @Disp.register([ResourceList])
     def _resource_list(self, path, obj, app):
         o = objects.Swagger(NullContext())
 
+        #   Info Object
         info = objects.Info(NullContext())
         info.update_field('version', obj.apiVersion)
+        info.update_field('title', get_or_none(obj, 'info','title'))
+        info.update_field('description', get_or_none(obj, 'info', 'description'))
+        info.update_field('termsOfService', get_or_none(obj, 'info', 'termsOfServiceUrl'))
+        #       Contact Object
+        if obj.info.contact:
+            contact = objects.Contact(NullContext())
+            contact.update_field('email', get_or_none(obj, 'info', 'contact'))
+            info.update_field('contact', contact)
+        #       License Object
+        if obj.info.license or obj.info.licenseUrl:
+            license = objects.License(NullContext())
+            license.update_field('name', get_or_none(obj, 'info', 'license'))
+            license.update_field('url', get_or_none(obj, 'info', 'licenseUrl'))
+            info.update_field('license', license)
+
         o.update_field('info', info)
 
         o.update_field('swagger', '2.0')
@@ -107,7 +125,6 @@ class Upgrade(object):
         o.update_field('paths', {})
         o.update_field('security', [])
         o.update_field('securityDefinitions', {})
-
 
         o.update_field('consumes', [])
         o.update_field('produces', [])
@@ -132,6 +149,8 @@ class Upgrade(object):
 
         o.update_field('tags', [scope])
         o.update_field('operationId', obj.nickname)
+        o.update_field('summary', obj.summary)
+        o.update_field('description', obj.notes)
         o.update_field('deprecated', obj.deprecated == 'true')
 
         c = obj.consumes if obj.consumes and len(obj.consumes) > 0 else obj._parent_.consumes
@@ -153,7 +172,7 @@ class Upgrade(object):
         o.update_field('responses', {})
         resp = objects.Response(NullContext())
         if obj.type != 'void':
-            resp.update_field('schema', convert_schema_from_datatype(obj, scope))
+            resp.update_field('schema', convert_schema_from_datatype(obj, scope, sep=self.__sep))
         o.responses['default'] = resp
 
         path = obj._parent_.basePath + obj.path
@@ -173,17 +192,15 @@ class Upgrade(object):
             o.update_field('type', obj.type)
         o.update_field('scopes', {})
         for s in obj.scopes or []:
-            o.scopes[s.scope] = ''
+            o.scopes[s.scope] = s.description
 
-        o.update_field('flow', '')
         if o.type == 'oauth2':
-            o.update_field('authorizationUrl', obj.grantTypes.implicit.loginEndpoint.url)
-            o.update_field('tokenUrl', obj.grantTypes.authorization_code.tokenEndpoint.url)
+            o.update_field('authorizationUrl', get_or_none(obj, 'grantTypes', 'implicit', 'loginEndpoint', 'url'))
+            o.update_field('tokenUrl', get_or_none(obj, 'grantTypes', 'authorization_code', 'tokenEndpoint', 'url'))
             if o.authorizationUrl:
-                if o.tokenUrl:
-                    o.update_field('flow', 'accessCode')
-                else:
-                    o.update_field('flow', 'implicit')
+                o.update_field('flow', 'implicit')
+            elif o.tokenUrl:
+                o.update_field('flow', 'access_code')
         elif o.type == 'apiKey':
             o.update_field('name', obj.keyname)
             o.update_field('in', obj.passAs)
@@ -197,6 +214,7 @@ class Upgrade(object):
 
         o.update_field('name', obj.name)
         o.update_field('required', obj.required)
+        o.update_field('description', obj.description)
 
         if obj.paramType == 'form':
             o.update_field('in', 'formData')
@@ -204,7 +222,7 @@ class Upgrade(object):
             o.update_field('in', obj.paramType)
 
         if 'body' == getattr(o, 'in'):
-            o.update_field('schema', convert_schema_from_datatype(obj, scope))
+            o.update_field('schema', convert_schema_from_datatype(obj, scope, sep=self.__sep))
         else:
             if getattr(obj, '$ref'):
                 raise SchemaError('Can\'t have $ref in non-body Parameters')
@@ -239,7 +257,7 @@ class Upgrade(object):
     def _model(self, path, obj, app):
         scope = obj._parent_.get_name(path)
 
-        s = scope_compose(scope, obj.get_name(path))
+        s = scope_compose(scope, obj.get_name(path), sep=self.__sep)
         o = self.__swagger.definitions.get(s, None)
         if not o:
             o = objects.Schema(NullContext())
@@ -247,15 +265,17 @@ class Upgrade(object):
 
         props = {}
         for name, prop in six.iteritems(obj.properties):
-            props[name] = convert_schema_from_datatype(prop, scope)
+            props[name] = convert_schema_from_datatype(prop, scope, sep=self.__sep)
+            props[name].update_field('description', prop.description)
         o.update_field('properties', props)
         o.update_field('required', obj.required)
         o.update_field('discriminator', obj.discriminator)
+        o.update_field('description', obj.description)
 
         for t in obj.subTypes or []:
             # here we assume those child models belongs to
             # the same resource.
-            sub_s = scope_compose(scope, t)
+            sub_s = scope_compose(scope, t, sep=self.__sep)
             sub_o = self.__swagger.definitions.get(sub_s, None)
             if not sub_o:
                 sub_o = objects.Schema(NullContext())

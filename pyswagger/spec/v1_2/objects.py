@@ -11,11 +11,11 @@ class BaseObj_v1_2(BaseObj):
 class Items(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Items Object
     """
-    __swagger_fields__ = [
-        ('$ref', None),
-        ('type', None),
-        ('format', None),
-    ]
+    __swagger_fields__ = {
+        '$ref': None,
+        'type': None,
+        'format': None,
+    }
 
 
 class ItemsContext(Context):
@@ -27,17 +27,17 @@ class ItemsContext(Context):
 class DataTypeObj(BaseObj_v1_2):
     """ Data Type Fields
     """
-    __swagger_fields__ = [
-        ('type', None),
-        ('$ref', None),
-        ('format', None),
-        ('defaultValue', None),
-        ('enum', None),
-        ('items', None),
-        ('minimum', None),
-        ('maximum', None),
-        ('uniqueItems', None),
-    ]
+    __swagger_fields__ = {
+        'type': None,
+        '$ref': None,
+        'format': None,
+        'defaultValue': None,
+        'enum': None,
+        'items': None,
+        'minimum': None,
+        'maximum': None,
+        'uniqueItems': None,
+    }
 
     def __init__(self, ctx):
         # Items Object, too lazy to create a Context for DataTypeObj
@@ -49,101 +49,99 @@ class DataTypeObj(BaseObj_v1_2):
         else:
             setattr(self, self.get_private_name('items'), None)
 
-        for name, default in DataTypeObj.__swagger_fields__:
-            # almost every data field is not required.
-            setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
-
         super(DataTypeObj, self).__init__(ctx)
 
 class Scope(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Scope Object
     """
 
-    __swagger_fields__ = [
-        ('scope', None),
-    ]
+    __swagger_fields__ = {
+        'scope': None,
+        'description': None,
+    }
 
 
 class LoginEndpoint(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ LoginEndpoint Object
     """
 
-    __swagger_fields__ = [
-        ('url', None),
-    ]
+    __swagger_fields__ = {
+        'url': None,
+    }
 
 
 class Implicit(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Implicit Object
     """
 
-    __swagger_fields__ = [
-        ('loginEndpoint', None),
-        ('tokenName', None),
-    ]
+    __swagger_fields__ = {
+        'loginEndpoint': None,
+        'tokenName': None,
+    }
 
 
 class TokenRequestEndpoint(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ TokenRequestEndpoint Object
     """
 
-    __swagger_fields__ = [
-        ('url', None),
-        ('clientIdName', None),
-        ('clientSecretName', None),
-    ]
+    __swagger_fields__ = {
+        'url': None,
+        'clientIdName': None,
+        'clientSecretName': None,
+    }
 
 
 class TokenEndpoint(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ TokenEndpoint Object
     """
 
-    __swagger_fields__ = [
-        ('url', None),
-        ('tokenName', None),
-    ]
+    __swagger_fields__ = {
+        'url': None,
+        'tokenName': None,
+    }
 
 
 class AuthorizationCode(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ AuthorizationCode Object
     """
 
-    __swagger_fields__ = [
-        ('tokenRequestEndpoint', None),
-        ('tokenEndpoint', None),
-    ]
+    __swagger_fields__ = {
+        'tokenRequestEndpoint': None,
+        'tokenEndpoint': None,
+    }
 
 
 class GrantType(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ GrantType Object
     """
 
-    __swagger_fields__ = [
-        ('implicit', None),
-        ('authorization_code', None),
-    ]
+    __swagger_fields__ = {
+        'implicit': None,
+        'authorization_code': None,
+    }
 
 
 class Authorizations(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Authorizations Object
     """
 
-    __swagger_fields__ = [
-        ('scope', None),
-    ]
+    __swagger_fields__ = {
+        'scope': None,
+        'description': None,
+    }
 
 
 class Authorization(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Authorization Object
     """
 
-    __swagger_fields__ = [
-        ('type', None),
-        ('passAs', None),
-        ('keyname', None),
-        ('scopes', None),
-        ('grantTypes', None),
-    ]
+    __swagger_fields__ = {
+        'type': None,
+        'passAs': None,
+        'keyname': None,
+        'scopes': None,
+        'grantTypes': None,
+    }
 
     def get_name(self, path):
         return path.split('/', 3)[2]
@@ -153,42 +151,47 @@ class ResponseMessage(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ ResponseMessage Object
     """
 
-    __swagger_fields__ = [
-        ('code', None),
-        ('message', None),
-        ('responseModel', None),
-    ]
+    __swagger_fields__ = {
+        'code': None,
+        'message': None,
+        'responseModel': None,
+    }
 
 
 class Parameter(six.with_metaclass(FieldMeta, DataTypeObj)):
     """ Parameter Object
     """
 
-    __swagger_fields__ = [
-        ('paramType', None),
-        ('name', None),
-        ('required', None),
-        ('allowMultiple', None),
-    ]
+    __swagger_fields__ = {
+        'paramType': None,
+        'name': None,
+        'required': None,
+        'allowMultiple': None,
+        'description': None,
+    }
 
 
 class Operation(six.with_metaclass(FieldMeta, DataTypeObj)):
     """ Operation Object
     """
 
-    __swagger_fields__ = [
-        ('method', None),
-        ('nickname', None),
-        ('authorizations', None),
-        ('parameters', None),
-        ('responseMessages', None),
-        ('produces', None),
-        ('consumes', None),
-        ('deprecated', None),
+    __swagger_fields__ = {
+        'method': None,
+        'nickname': None,
+        'authorizations': None,
+        'parameters': None,
+        'responseMessages': None,
+        'produces': None,
+        'consumes': None,
+        'deprecated': None,
+        'summary': None,
+        'notes': None,
+    }
 
+    __internal_fields__ = {
         # path from Api object, concated with Resource object
-        ('path', None),
-    ]
+        'path': None,
+    }
 
     def get_name(self, path):
         return self.nickname
@@ -198,33 +201,39 @@ class Api(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Api Object
     """
 
-    __swagger_fields__ = [
-        ('path', None),
-        ('operations', None),
-    ]
+    __swagger_fields__ = {
+        'path': None,
+        'operations': None,
+        'description': None,
+    }
 
 
 class Property(six.with_metaclass(FieldMeta, DataTypeObj)):
     """ Property Object
     """
 
-    __swagger_fields__ = []
+    __swagger_fields__ = {
+        'description': None,
+    }     
 
 
 class Model(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Model Object
     """
 
-    __swagger_fields__ = [
-        ('id', None),
-        ('required', []),
-        ('properties', None),
-        ('subTypes', None),
-        ('discriminator', None),
+    __swagger_fields__ = {
+        'id': None,
+        'required': [],
+        'properties': None,
+        'subTypes': None,
+        'discriminator': None,
+        'description': None,
+    }
 
+    __internal_fields__ = {
         # for model inheritance
-        ('_extends_', None),
-        ]
+        '_extends_': None,
+    }
 
     def get_name(self, path):
         return self.id
@@ -234,17 +243,18 @@ class Resource(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Resource Object
     """
 
-    __swagger_fields__ = [
-        ('swaggerVersion', None),
-        ('apiVersion', None),
-        ('apis', None),
-        ('basePath', None),
-        ('resourcePath', None),
-        ('models', None),
-        ('produces', None),
-        ('consumes', None),
-        ('authorizations', None),
-    ]
+    __swagger_fields__ = {
+        'swaggerVersion': None,
+        'apiVersion': None,
+        'apis': None,
+        'basePath': None,
+        'resourcePath': None,
+        'models': None,
+        'produces': None,
+        'consumes': None,
+        'authorizations': None,
+        'description': None,
+    }
 
     def __init__(self, ctx):
         """ The original structure of API object is very bad
@@ -277,24 +287,24 @@ class Info(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Info Object
     """
 
-    __swagger_fields__ = [
-        ('title', None),
-        ('termsOfServiceUrl', None),
-        ('contact', None),
-        ('license', None),
-        ('licenseUrl', None),
-        ('description', None),
-    ]
+    __swagger_fields__ = {
+        'title': None,
+        'termsOfServiceUrl': None,
+        'contact': None,
+        'license': None,
+        'licenseUrl': None,
+        'description': None,
+    }
 
 
 class ResourceList(six.with_metaclass(FieldMeta, BaseObj_v1_2)):
     """ Resource List Object
     """
-    __swagger_fields__ = [
-        ('swaggerVersion', None),
-        ('apis', None),
-        ('apiVersion', None),
-        ('info', None),
-        ('authorizations', None),
-    ]
+    __swagger_fields__ = {
+        'swaggerVersion': None,
+        'apis': None,
+        'apiVersion': None,
+        'info': None,
+        'authorizations': None,
+    }
 

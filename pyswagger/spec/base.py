@@ -4,6 +4,7 @@ import six
 import copy
 import functools
 import weakref
+import itertools
 
 
 class ContainerType:
@@ -58,7 +59,7 @@ class Context(object):
 
     # parsing context of children fields,
     # a list of tuple (field-name, container-type, parsing-context)
-    __swagger_child__ = []
+    __swagger_child__ = {}
 
     # factory of object to be created according to
     # this parsing context.
@@ -143,9 +144,11 @@ class Context(object):
 
         if hasattr(self, '__swagger_child__'):
             # to nested objects
-            for key, ct, ctx_kls in self.__swagger_child__:
+            for key, (ct, ctx_kls) in six.iteritems(self.__swagger_child__):
                 items = obj.get(key, None)
 
+                # create an empty child, even it's None in input.
+                # this makes other logic easier.
                 if ct == ContainerType.list_:
                     self._obj[key] = []
                 elif ct:
@@ -175,11 +178,13 @@ class BaseObj(object):
     # fields that need re-named.
     __swagger_rename__ = {}
 
-    # list of names of fields, we will skip fields not in this list.
+    # dict of names of fields, we will skip fields not in this list.
     # field format:
-    # - tuple(string, default-value): a field name with default value
-    __swagger_fields__ = []
+    # - {name: default-value}: a field name with default value
+    __swagger_fields__ = {}
 
+    # fields used internally
+    __internal_fields__ = {}
 
     # Swagger Version this object belonging to
     __swagger_version__ = None
@@ -201,8 +206,11 @@ class BaseObj(object):
         self.__origin_keys = set([k for k in six.iterkeys(ctx._obj)])
 
         # handle fields
-        for name, default in self.__swagger_fields__:
+        for name, default in six.iteritems(self.__swagger_fields__):
             setattr(self, self.get_private_name(name), ctx._obj.get(name, copy.copy(default)))
+
+        for name, default in six.iteritems(self.__internal_fields__):
+            setattr(self, self.get_private_name(name), None)
 
         self._assign_parent(ctx)
 
@@ -220,7 +228,7 @@ class BaseObj(object):
                 raise ValueError('Object is not instance of {0} but {1}'.format(cls.__swagger_ref_object__.__name__, obj.__class__.__name__))
 
         # set self as childrent's parent
-        for name, ct, ctx in ctx.__swagger_child__:
+        for name, (ct, ctx) in six.iteritems(ctx.__swagger_child__):
             obj = getattr(self, name)
             if obj == None:
                 continue
@@ -279,12 +287,14 @@ class BaseObj(object):
         def _produce_new_obj(x, ct, v):
             return x(None, None).produce().merge(v, x)
 
-        for name, default in self.__swagger_fields__:
+        for name, default in itertools.chain(
+                six.iteritems(self.__swagger_fields__),
+                six.iteritems(self.__internal_fields__)):
             v = getattr(other, name)
             if v == default or getattr(self, name) != default:
                 continue
 
-            childs = [c for c in ctx.__swagger_child__ if c[0] == name]
+            childs = [(n, ct, cctx) for n, (ct, cctx) in six.iteritems(ctx.__swagger_child__) if n == name]
             if len(childs) == 0:
                 # we don't need to make a copy,
                 # since everything under SwaggerApp should be
@@ -362,6 +372,39 @@ class BaseObj(object):
 
         return True, ''
 
+    def dump(self):
+        """ dump Swagger Spec in dict(which can be
+        convert to JSON)
+        """
+        r = {}
+        def _dump_(obj):
+            if isinstance(obj, dict):
+                ret = {}
+                for k, v in six.iteritems(obj):
+                    ret[k] = _dump_(v)
+                return None if ret == {} else ret
+            elif isinstance(obj, list):
+                ret = []
+                for v in obj:
+                    ret.append(_dump_(v))
+                return None if ret == [] else ret
+            elif isinstance(obj, BaseObj):
+                return obj.dump()
+            elif isinstance(obj, (six.string_types, six.integer_types)):
+                return obj
+            else:
+                raise ValueError('Unknown object to dump: {0}'.format(obj.__class__.__name__))
+
+        for name, default in six.iteritems(self.__swagger_fields__):
+            # only dump a field when its value is not equal to default value
+            v = getattr(self, name)
+            if v != default:
+                d = _dump_(v)
+                if d != None:
+                    r[name] = d
+
+        return None if r == {} else r
+
     @property
     def _parent_(self):
         """ get parent object
@@ -373,31 +416,16 @@ class BaseObj(object):
 
     @property
     def _field_names_(self):
-        """ get list of field names, will go through MRO
-        to merge all fields in parent classes.
+        """ get list of field names defined in Swagger spec
 
         :return: a list of field names
         :rtype: a list of str
         """
         ret = []
-
-        def _merge(f, rename):
-            if not f:
-                return
-
-            if not rename:
-                ret.extend([n for n, _ in f])
-            else:
-                for n, _ in f:
-                    new_n = rename.get(n, None)
-                    ret.append(new_n) if new_n else ret.append(n)
-
-        for b in self.__class__.__mro__:
-            _merge(
-                getattr(b, '__swagger_fields__', None),
-                getattr(b, '__swagger_rename__', None)
-            )
-
+        for n in six.iterkeys(self.__swagger_fields__):
+            new_n = self.__swagger_rename__.get(n, None)
+            ret.append(new_n) if new_n else ret.append(n)
+        
         return ret
 
     @property
@@ -441,18 +469,38 @@ class FieldMeta(type):
         and create those fields.
         """
         def init_fields(fields, rename):
-            for name, _ in fields:
+            for name in six.iterkeys(fields):
                 name = rename[name] if name in rename.keys() else name
                 spc[name] = property(_method_(name))
 
+        def _default_(name, default):
+            spc[name] = spc[name] if name in spc else default
+
+        def _update_(dict1, dict2):
+            d = {}
+            for k in set(dict2.keys()) - set(dict1.keys()):
+                d[k] = dict2[k]
+            dict1.update(d)
+
+        # compose fields definition from parents
+        for b in bases:
+            if hasattr(b, '__swagger_fields__'):
+                _default_('__swagger_fields__', {})
+                _update_(spc['__swagger_fields__'], b.__swagger_fields__)
+            if hasattr(b, '__swagger_rename__'):
+                _default_('__swagger_rename__', {})
+                _update_(spc['__swagger_rename__'], b.__swagger_rename__)
+            if hasattr(b, '__internal_fields__'):
+                _default_('__internal_fields__', {})
+                _update_(spc['__internal_fields__'], b.__internal_fields__)
+
         rename = spc['__swagger_rename__'] if '__swagger_rename__' in spc.keys() else {}
+        # swagger fields
         if '__swagger_fields__' in spc.keys():
             init_fields(spc['__swagger_fields__'], rename)
-
-        for b in bases:
-            fields = b.__swagger_fields__ if hasattr(b, '__swagger_fields__') else []
-            rename = b.__swagger_rename__ if hasattr(b, '__swagger_rename__') else {}
-            init_fields(fields, rename)
+        # internal fields
+        if '__internal_fields__' in spc.keys():
+            init_fields(spc['__internal_fields__'], {})
 
         return type.__new__(metacls, name, bases, spc)
 

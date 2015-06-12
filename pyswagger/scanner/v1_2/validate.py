@@ -128,7 +128,7 @@ class Validate(object):
         """
         errs = []
 
-        for k, v in six.iteritems(obj.authorizations):
+        for k, v in six.iteritems(obj.authorizations or {}):
             if k not in app.raw.authorizations:
                 errs.append('auth {0} not found in resource list'.format(k))
 

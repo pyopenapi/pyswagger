@@ -255,7 +255,7 @@ class SwaggerRequest(object):
 
         :type: list of str
         """
-        return self.__op.schemes
+        return self.__op.cached_schemes
 
     @property
     def _p(self):

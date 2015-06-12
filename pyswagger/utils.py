@@ -7,6 +7,8 @@ import sys
 import datetime
 import re
 import os
+import operator
+import functools
 
 #TODO: accept varg
 def scope_compose(scope, name, sep=private.SCOPE_SEPARATOR):
@@ -51,7 +53,9 @@ class ScopeDict(dict):
         raise TypeError('sep property is write-only')
 
     @sep.setter
-    def  sep(self, sep):
+    def sep(self, sep):
+        """ update separater used here
+        """
         self.__sep = sep
 
     def __getitem__(self, *keys):
@@ -59,6 +63,7 @@ class ScopeDict(dict):
         - n!##!m...!##!z
         - n, m, ..., z
         - z
+        when separater == !##!
 
         :param dict keys: keys to access via scopes.
         """
@@ -386,3 +391,95 @@ def walk(start, ofn, cyc=None):
     return cyc
 
 
+def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
+    """ compare 2 dict/list, return a list containing
+    json-pointer indicating what's different, and what's diff exactly.
+
+    - list length diff: (jp, length of src, length of dst)
+    - dict key diff: (jp, None, None)
+    - when src is dict or list, and dst is not: (jp, type(src), type(dst))
+    - other: (jp, src, dst)
+    """
+
+    def _dict_(src, dst, ret, jp, exc, inc):
+        ss, sd = set(src.keys()), set(dst.keys())
+        # what's include is prior to what's exclude
+        si, se = set(inc or []), set(exc or [])
+        ss, sd = (ss & si, sd & si) if si else (ss, sd)
+        ss, sd = (ss - se, sd - se) if se else (ss, sd)
+
+        # added keys
+        for k in sd - ss:
+            ret.append((jp_compose(k, base=jp), None, None,))
+
+        # removed keys
+        for k in ss - sd:
+            ret.append((jp_compose(k, base=jp), None, None,))
+
+        # same key
+        for k in ss & sd:
+            _diff_(src[k], dst[k], ret, jp_compose(k, base=jp))
+
+    def _list_(src, dst, ret, jp):
+        if len(src) < len(dst):
+            ret.append((jp, len(src), len(dst),))
+        elif len(src) > len(dst):
+            ret.append((jp, len(src), len(dst),))
+        else:
+            if len(src) == 0:
+                return
+
+            # make sure every element in list is the same
+            def r(x, y):
+                if type(y) != type(x):
+                    raise ValueError('different type: {0}, {1}'.format(type(y).__name__, type(x).__name__))
+                return x
+            ts = type(functools.reduce(r, src))
+            td = type(functools.reduce(r, dst))
+
+            # when type is different
+            while True:
+                if issubclass(ts, six.string_types) and issubclass(td, six.string_types):
+                    break
+                if issubclass(ts, six.integer_types) and issubclass(td, six.integer_types):
+                    break
+                if ts == td:
+                    break
+                ret.append((jp, str(ts), str(td),))
+                return
+
+            if ts != dict:
+                ss, sd = sorted(src), sorted(dst)
+            else:
+                # process dict without sorting
+                # TODO: find a way to sort list of dict, (ooch)
+                ss, sd = src, dst
+
+            for idx, (s, d) in enumerate(zip(src, dst)):
+                _diff_(s, d, ret, jp_compose(str(idx), base=jp))
+
+    ret = [] if ret == None else ret
+    jp = '' if jp == None else jp
+
+    if isinstance(src, dict):
+        if not isinstance(dst, dict):
+            ret.append((jp, type(src).__name__, type(dst).__name__,))
+        else:
+            _dict_(src, dst, ret, jp, exclude, include)
+    elif isinstance(src, list):
+        if not isinstance(dst, list):
+            ret.append((jp, type(src).__name__, type(dst).__name__,))
+        else:
+            _list_(src, dst, ret, jp)
+    elif src != dst:
+        ret.append((jp, src, dst,))
+
+    return ret
+
+def get_or_none(obj, *a):
+    ret = obj
+    for v in a:
+        ret = getattr(ret, v, None)
+        if not ret:
+            break
+    return ret
