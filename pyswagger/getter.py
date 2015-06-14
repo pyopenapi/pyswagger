@@ -98,7 +98,20 @@ class LocalGetter(Getter):
                     self.urls = [(p, '')]
                     break
         else:
-            raise ValueError('Unable to locate resource file: [{0}]'.format(path))
+            # there is no file matched predefined file name:
+            # - resource_list.json (1.2)
+            # - swagger.json       (2.0)
+            # in this case, we will locate them in this way:
+            # - when 'path' points to a specific file, and its
+            #   extension is either 'json' or 'yaml'.
+            _, ext = os.path.splitext(path)
+            for e in [private.FILE_EXT_JSON, private.FILE_EXT_YAML]:
+                if ext.endswith(e):
+                    self.base_path = os.path.dirname(path)
+                    self.urls=[(path, '')]
+                    break
+            else:
+                raise ValueError('Unable to locate resource file: [{0}]'.format(path))
 
     def load(self, path):
         ret = None
