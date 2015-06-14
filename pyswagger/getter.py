@@ -108,7 +108,7 @@ class LocalGetter(Getter):
         # try to get extension from Getter.base_path
         _, ext = os.path.splitext(self.base_path)
         # try to get extension from path
-        _, ext = os.path.splitext(path) if ext == '' else ext
+        _, ext = os.path.splitext(path) if ext == '' else (None, ext)
         # .json is default extension to try
         ext = '.json' if ext == '' else ext
         # make sure we get .json or .yaml files
