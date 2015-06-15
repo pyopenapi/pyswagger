@@ -1,6 +1,7 @@
 from pyswagger import SwaggerApp
 from ..utils import get_test_data_folder
 from ...utils import _diff_
+from ...spec.v2_0.parser import SwaggerContext
 import os
 import json
 import unittest
@@ -20,12 +21,18 @@ class ConverterTestCase(unittest.TestCase):
             origin = json.loads(r.read())
 
         # diff for empty list or dict is allowed
-        self.assertEqual(sorted(_diff_(origin, app.dump())), sorted([
+        d = app.dump()
+        self.assertEqual(sorted(_diff_(origin, d)), sorted([
             ('paths/~1pet~1{petId}/get/security/0/api_key', "list", "NoneType"),
             ('paths/~1store~1inventory/get/parameters', None, None),
             ('paths/~1store~1inventory/get/security/0/api_key', "list", "NoneType"),
             ('paths/~1user~1logout/get/parameters', None, None)
         ]))
+
+        # try to load the dumped dict back, to see if anything wrong
+        tmp = {'_tmp_': {}}
+        with SwaggerContext(tmp, '_tmp_') as ctx:
+            ctx.parse(d)
             
 
 class Converter_v1_2_TestCase(unittest.TestCase):
@@ -404,3 +411,20 @@ class Converter_v1_2_TestCase_Others(unittest.TestCase):
             app.resolve('#/securityDefinitions/simple_basic').dump()
         ), [])
 
+    def test_model_inheritance(self):
+        """
+        """
+        app = SwaggerApp.load(get_test_data_folder(
+            version='1.2', which='model_subtypes'
+            ), sep=':')
+        app.prepare()
+
+        expect = {
+            'allOf': [{'$ref': u'#/definitions/user:User'}]
+        }
+        
+        self.assertEqual(_diff_(
+            expect,
+            app.resolve('#/definitions/user:UserWithInfo').dump(),
+            include=['allOf']
+        ), [])
