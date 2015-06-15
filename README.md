@@ -28,6 +28,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 ---------
 
 ##Features
+- **NEW** convert Swagger Document from older version to newer one. (ex. convert from 1.2 to 2.0)
 - support Swagger **1.2**, **2.0** on python **2.6**, **2.7**, **3.3**, **3.4**
 - support YAML via [Pretty-YAML](https://github.com/mk-fg/pretty-yaml)
 - support $ref to **External Document**, multiple swagger.json will be organized into a group of SwaggerApp. And external document with self-describing resource is also supported (refer to [issue](https://github.com/swagger-api/swagger-spec/issues/219)).
@@ -42,9 +43,11 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
     - [ ] Schema.pattern
     - [ ] Scheme.patternProperties
     - [ ] Schema.readonly
+    - [ ] Schema.allowEmptyValue
     - [ ] A scanner to validate schema
   - [ ] A WebSocket client
   - [ ] Pluggable primitive system, allowing to use new 'type' & 'format' in Swagger.
+  - [ ] dump extension field
 
 ---------
 
@@ -54,6 +57,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - [Making a Request](docs/md/tutorial/request.md)
 - [Access the Response](docs/md/tutorial/response.md)
 - [Testing a Local Server](docs/md/tutorial/local.md)
+- [Converting Document into another version](docs/md/tutorial/converter.md)
 
 ---------
 
@@ -151,7 +155,7 @@ pip install -r requirement-dev.txt
 
 unit testing
 ```bash
-python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc --cov-report=html pyswagger/tests
+python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc pyswagger/tests
 ```
 
 ---------

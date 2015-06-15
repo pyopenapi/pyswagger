@@ -25,4 +25,4 @@ app.resolve('http://another_site.com/apis/swagger.json#/definitions/User')
 ```
 `pyswagger` will load that swagger.json, create a new `SwaggerApp`, and group it with the `SwaggerApp` you kept (**app** in code above). Internally, when `pyswagger` encounter some $ref directs to external documents, we just silently handle it in the same way.
 
-
+**SwaggerApp.dump()** dumps the root object(Swagger Object in 2.0, ResourceList Object in 1.2) into a dict.

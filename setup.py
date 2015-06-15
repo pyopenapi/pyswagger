@@ -6,7 +6,7 @@ setup(
     name = 'pyswagger',
     packages = find_packages(exclude=['*.tests.*']),
     version = version,
-    description = 'A type-safe, dynamic, spec-compliant swagger client for python',
+    description = 'A type-safe, dynamic, spec-compliant swagger client & converter for python',
     author = 'Mission Liao',
     author_email = 'missionaryliao@gmail.com',
     url = 'https://github.com/mission-liao/pyswagger', # use the URL to the github repo
