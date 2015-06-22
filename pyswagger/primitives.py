@@ -379,8 +379,16 @@ prim_obj_map = {
     ('boolean', None): create_bool,
 
     # file
-    ('file', ''): File,
-    ('file', None): File,
+    ('file', ''): (functools.partial(create_obj, constructor=File), _2nd_pass_obj),
+    ('file', None): (functools.partial(create_obj, constructor=File), _2nd_pass_obj),
+
+    # array
+    ('array', ''): (functools.partial(create_obj, constructor=Array), _2nd_pass_obj),
+    ('array', None): (functools.partial(create_obj, constructor=Array), _2nd_pass_obj),
+
+    # model / schema Object
+    ('object', ''): (functools.partial(create_obj, constructor=Model), _2nd_pass_obj),
+    ('object', None): (functools.partial(create_obj, constructor=Model), _2nd_pass_obj),
 };
 
 
