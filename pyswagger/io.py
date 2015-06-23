@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .primitives import PrimJSONEncoder
+from .primitives.comm import PrimJSONEncoder
 from .utils import deref
 from pyswagger import errs
 from uuid import uuid4
@@ -291,7 +291,7 @@ class SwaggerResponse(object):
 
     def _convert_header(self, resp, k, v):
         if resp and resp.headers and k in resp.headers:
-            v = resp.headers[k]._prim_(v)
+            v = resp.headers[k]._prim_(v, self.__op._prim_factory)
 
         if k in self.__header:
             self.__header[k].append(v)
@@ -323,7 +323,7 @@ class SwaggerResponse(object):
 
             if r and r.schema:
                 # update data from Opeartion if succeed else from responseMessage.responseModel
-                self.__data = r.schema._prim_(self.raw)
+                self.__data = r.schema._prim_(self.raw, self.__op._prim_factory)
 
         if header != None:
             if isinstance(header, (collections.Mapping, collections.MutableMapping)):

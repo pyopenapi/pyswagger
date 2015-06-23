@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from ...spec.base import NullContext
 from ...scan import Dispatcher
 from ...errs import SchemaError
-from ...primitives import is_primitive
 from ...utils import scope_compose, get_or_none
 from ...consts import private
 from ...spec.v1_2.objects import (
@@ -18,12 +17,12 @@ import os
 import six
 
 
-def update_type_and_ref(dst, src, scope, sep):
+def update_type_and_ref(dst, src, scope, sep, app):
     ref = getattr(src, '$ref')
     if ref:
         dst.update_field('$ref', '#/definitions/' + scope_compose(scope, ref, sep=sep))
 
-    if is_primitive(src):
+    if app.prim_factory.is_primitive(getattr(src, 'type', None)):
         dst.update_field('type', src.type.lower())
     elif src.type:
         dst.update_field('$ref', '#/definitions/' + scope_compose(scope, src.type, sep=sep))
@@ -47,12 +46,12 @@ def convert_min_max(dst, src):
     _from_str('maximum')
 
 
-def convert_schema_from_datatype(obj, scope, sep):
+def convert_schema_from_datatype(obj, scope, sep, app):
     if obj == None:
         return None
 
     s = objects.Schema(NullContext())
-    update_type_and_ref(s, obj, scope, sep)
+    update_type_and_ref(s, obj, scope, sep, app)
     s.update_field('format', obj.format)
     if obj.is_set('defaultValue'):
         s.update_field('default', obj.defaultValue)
@@ -61,17 +60,17 @@ def convert_schema_from_datatype(obj, scope, sep):
     s.update_field('enum', obj.enum)
     if obj.items:
         i = objects.Schema(NullContext())
-        update_type_and_ref(i, obj.items, scope, sep)
+        update_type_and_ref(i, obj.items, scope, sep, app)
         i.update_field('format', obj.items.format)
         s.update_field('items', i)
 
     return s
 
-def convert_items(o):
+def convert_items(o, app):
     item = objects.Items(NullContext())
     if getattr(o, '$ref'):
         raise SchemaError('Can\'t have $ref for Items')
-    if not is_primitive(o):
+    if not app.prim_factory.is_primitive(getattr(o, 'type', None)):
         raise SchemaError('Non primitive type is not allowed for Items')
     item.update_field('type', o.type.lower())
     item.update_field('format', o.format)
@@ -172,7 +171,7 @@ class Upgrade(object):
         o.update_field('responses', {})
         resp = objects.Response(NullContext())
         if obj.type != 'void':
-            resp.update_field('schema', convert_schema_from_datatype(obj, scope, sep=self.__sep))
+            resp.update_field('schema', convert_schema_from_datatype(obj, scope, self.__sep, app))
         o.responses['default'] = resp
 
         path = obj._parent_.basePath + obj.path
@@ -222,7 +221,7 @@ class Upgrade(object):
             o.update_field('in', obj.paramType)
 
         if 'body' == getattr(o, 'in'):
-            o.update_field('schema', convert_schema_from_datatype(obj, scope, sep=self.__sep))
+            o.update_field('schema', convert_schema_from_datatype(obj, scope, self.__sep, app))
         else:
             if getattr(obj, '$ref'):
                 raise SchemaError('Can\'t have $ref in non-body Parameters')
@@ -231,7 +230,7 @@ class Upgrade(object):
                 o.update_field('type', 'array')
                 o.update_field('collectionFormat', 'csv')
                 o.update_field('uniqueItems', obj.uniqueItems)
-                o.update_field('items', convert_items(obj))
+                o.update_field('items', convert_items(obj, app))
                 if obj.is_set("defaultValue"):
                     o.update_field('default', [obj.defaultValue])
                 o.items.update_field('enum', obj.enum)
@@ -246,7 +245,7 @@ class Upgrade(object):
             if obj.items:
                 o.update_field('collectionFormat', 'csv')
                 o.update_field('uniqueItems', obj.uniqueItems)
-                o.update_field('items', convert_items(obj.items))
+                o.update_field('items', convert_items(obj.items, app))
 
         path = obj._parent_._parent_.basePath + obj._parent_.path 
         method = obj._parent_.method.lower()
@@ -265,7 +264,7 @@ class Upgrade(object):
 
         props = {}
         for name, prop in six.iteritems(obj.properties):
-            props[name] = convert_schema_from_datatype(prop, scope, sep=self.__sep)
+            props[name] = convert_schema_from_datatype(prop, scope, self.__sep, app)
             props[name].update_field('description', prop.description)
         o.update_field('properties', props)
         o.update_field('required', obj.required)
