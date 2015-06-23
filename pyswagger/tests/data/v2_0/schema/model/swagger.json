@@ -44,7 +44,29 @@
                   },
                   "collectionFormat":"ssv"
                }
-            ]
+            ],
+            "responses":{
+               "default":{
+                  "headers":{
+                     "test":{
+                        "type":"array",
+                        "items":{
+                           "type":"array",
+                           "items":{
+                              "type":"array",
+                              "items":{
+                                 "type":"integer",
+                                 "format":"int64"
+                              },
+                              "collectionFormat":"pipes"
+                           },
+                           "collectionFormat":"csv"
+                        },
+                     "collectionFormat":"ssv"
+                     }
+                  }
+               }
+            }
          },
          "put":{
             "parameters":[

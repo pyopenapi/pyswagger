@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp, primitives, errs
+from pyswagger import SwaggerApp, primitives, errs, io
 from ..utils import get_test_data_folder
 from pyswagger.spec.v2_0 import objects
 from pyswagger.utils import jp_compose
@@ -216,10 +216,30 @@ class HeaderTestCase(unittest.TestCase):
                 ]
             ], self.app.prim_factory)), '1|2,3|4,5|6 7|8,9|10 11|12,13|14')
 
-        def test_header_in_response(self):
-            """ header in response """
-            # TODO: we didn't implement converting from
-            # '1,1,1,1' to array yet.
+    def test_header_in_response(self):
+        """ header in response """
+        resp = io.SwaggerResponse(self.app.s('/t').get)
+
+        resp.apply_with(status=200, raw=None, header=dict(
+            test='1|2,3|4,5|6 7|8,9|10 11|12,13|14'
+        ))
+        # note that the test case here is the same as the one above,
+        # difference is we would wrap an additional array in header
+        self.assertEqual(resp.header['test'], [[
+            [
+                [1,2],
+                [3,4],
+                [5,6]
+            ],
+            [
+                [7,8],
+                [9,10]
+            ],
+            [
+                [11,12],
+                [13,14]
+            ]
+        ]])
 
 
 class AdditionalPropertiesTestCase(unittest.TestCase):

@@ -18,8 +18,22 @@ class Array(list):
     def apply_with(self, obj, val, ctx):
         """
         """
+        self.__collection_format = getattr(obj, 'collectionFormat', 'csv')
+
         if isinstance(val, six.string_types):
-            val = json.loads(val)
+            try:
+                val = json.loads(val)
+            except Exception as e:
+                if self.__collection_format == 'csv':
+                    val = val.split(',')
+                elif self.__collection_format == 'ssv':
+                    val = val.split(' ')
+                elif self.__collection_format == 'tsv':
+                    val = val.split('\t')
+                elif self.__collection_format == 'pipes':
+                    val = val.split('|')
+                else:
+                    raise e
 
         val = set(val) if obj.uniqueItems else val
 
@@ -33,7 +47,6 @@ class Array(list):
         if obj.maxItems and len(self) > obj.maxItems:
             raise ValidationError('Array should be less than {0}, not {1}'.format(obj.maxItems, len(self)))
 
-        self.__collection_format = getattr(obj, 'collectionFormat', 'csv')
         return val
 
     def __str__(self):

@@ -195,6 +195,9 @@ class Header(six.with_metaclass(FieldMeta, BaseSchema)):
         'description': None,
     }
 
+    def _prim_(self, v, prim_factory):
+        return prim_factory.produce(self, v)
+
 
 class Response(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ Response Object
