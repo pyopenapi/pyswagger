@@ -46,7 +46,6 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
     - [ ] Schema.allowEmptyValue
     - [ ] A scanner to validate schema
   - [ ] A WebSocket client
-  - [ ] Pluggable primitive system, allowing to use new 'type' & 'format' in Swagger.
   - [ ] dump extension field
 
 ---------
@@ -58,6 +57,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - [Access the Response](docs/md/tutorial/response.md)
 - [Testing a Local Server](docs/md/tutorial/local.md)
 - [Converting Document into another version](docs/md/tutorial/converter.md)
+- [Exntending Primitive Factory for user-defined primitives](docs/md/tutorial/extend_prim.md)
 
 ---------
 
