@@ -1,0 +1,26 @@
+{
+   "swagger":"2.0",
+   "host":"http://test.com",
+   "basePath":"/v1",
+   "paths":{},
+   "definitions":{
+      "m1":{
+         "properties":{
+            "_id":{
+               "type":"encoded_integer"
+            },
+            "name":{
+               "type":"string",
+               "format":"special_encoded"
+            },
+            "job":{
+                "type":"string",
+                "enum":[
+                   "teacher",
+                   "student"
+                ]
+            }
+         }
+      }
+   }
+}

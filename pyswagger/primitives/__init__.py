@@ -78,9 +78,57 @@ class SwaggerPrimitive(object):
         r = self._map.get(_type, None)
         return (None, None) if r == None else r.get(_format, (None, None))
 
-    def set(self, _type, creater, _format=None, _2nd_pass=None):
-        # TODO: implement it
-        pass
+    def register(self, _type, _format, creater, _2nd_pass=None):
+        """ register a type/format handler when producing primitives
+
+        example function to create a byte primitive:
+        ```python
+        def create_byte(obj, val, ctx):
+            # val is the value used to create this primitive, for example, a
+            # dict would be used to create a Model and list would be used to
+            # create an Array
+
+            # obj in the spec used to create primitives, they are
+            # Header, Items, Schema, Parameter in Swagger 2.0.
+
+            # ctx is parsing context when producing primitives. Some primitves needs
+            # multiple passes to produce(ex. Model), when we need to keep some globals
+            # between passes, we should place them in ctx
+            return base64.urlsafe_b64encode(val)
+        ```
+
+        example function of 2nd pass:
+        ```python
+        def validate_int(obj, ret, val, ctx):
+            # val, obj, ctx are the same as those in creater
+
+            # ret is the object returned by creater
+
+            # do some stuff
+            check_min_max(obj, val)
+
+            # remember to return val, the 'outer' val would be overwritten
+            # by the one you return, if you didn't return, it would be None.
+            return val
+        ```
+
+        pseudo function of 2nd pass in Model:
+        ```python
+        def gen_mode(obj, ret, val, ctx):
+            # - go through obj.properties to create properties of this model, and add
+            #   them to 'ret'.
+            # - remove those values used in this pass in 'val'
+            # - return val
+        ```
+
+        :param _type str: type in json-schema
+        :param _format str: format in json-schema
+        :param creater function: a function to create a primitive.
+        :param _2nd_pass function: a function used in 2nd pass when producing primitive.
+        """
+        if _type not in self._map:
+            self._map[_type] = {}
+        self._map[_type][_format] = (creater, _2nd_pass)
 
     def produce(self, obj, val, ctx=None):
         """ factory function to create primitives

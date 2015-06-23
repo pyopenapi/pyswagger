@@ -2,6 +2,7 @@ from pyswagger import SwaggerApp, primitives, errs
 from ..utils import get_test_data_folder
 from pyswagger.spec.v2_0 import objects
 from pyswagger.utils import jp_compose
+from pyswagger.primitives import SwaggerPrimitive
 import os
 import unittest
 import datetime
@@ -313,3 +314,58 @@ class ParameterTestCase(unittest.TestCase):
         p = self.app.resolve('#/paths/~1t/put')
         self.assertRaises(ValueError, p, p1='tom', p2='mary', p3='qoo', p4='unknown') 
 
+
+class PrimitiveExtensionTestCase(unittest.TestCase):
+    """ test for extending primitives """
+
+    @classmethod
+    def setUpClass(kls):
+        factory = SwaggerPrimitive()
+        def decode_int(obj, val, ctx):
+            # minus 1
+            return int(val) - 1
+
+        def decode_str(obj, val, ctx):
+            # remove the last char
+            return str(val)[:-1]
+
+        def str_no_validate(obj, val, ctx):
+            # same as the one used in pyswagger, but no validation
+            return str(val)
+
+        factory.register('encoded_integer', None, decode_int)
+        factory.register('string', 'special_encoded', decode_str)
+        factory.register('string', None, str_no_validate, _2nd_pass=None)
+
+        kls.app = SwaggerApp.load(get_test_data_folder(
+            version='2.0',
+            which=os.path.join('schema', 'extension'),
+        ), prim=factory)
+        kls.app.prepare()
+
+    def test_extend(self):
+        """ extend primitives with user defined type/format handler """
+        m1 = self.app.resolve('#/definitions/m1')
+        v = m1._prim_({
+            "_id": 100,
+            "name": 'Ms',
+        }, self.app.prim_factory)
+        self.assertEqual(v._id, 99)
+        self.assertEqual(v.name, 'M')
+
+    def test_overwrite(self):
+        """ overrite type/format handler used in pyswagger """
+        m1 = self.app.resolve('#/definitions/m1')
+        v = m1._prim_({
+            "job":"man"
+        }, self.app.prim_factory)
+        # should not raise
+        self.assertEqual(v.job, "man")
+
+        app = SwaggerApp.create(get_test_data_folder(
+            version='2.0',
+            which=os.path.join('schema', 'extension')
+        ))
+        m1 = app.resolve('#/definitions/m1')
+        self.assertRaises(errs.ValidationError, m1._prim_, {'job':'man'}, app.prim_factory)
+        # should raise
