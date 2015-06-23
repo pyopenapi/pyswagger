@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from .getter import UrlGetter, LocalGetter
+from .primitives import SwaggerPrimitive
 from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
 from .spec.v2_0.objects import Operation
@@ -32,12 +33,14 @@ class SwaggerApp(object):
         sc_path: ('/', '#/paths')
     }
 
-    def __init__(self, url=None, app_cache=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR):
+    def __init__(self, url=None, app_cache=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None):
         """ constructor
 
         :param url str: url of swagger.json
         :param dict app_cache: a url map shared by SwaggerApp(s), mapping from url to SwaggerApp
         :param func url_load_hook: a way to redirect url to a accessible place. for self testing.
+        :param sep str: separator used by pyswager.utils.ScopeDict
+        :param prim pyswagger.primitives.SwaggerPrimitive: factory for primitives in Swagger.
         """
 
         logger.info('init with url: {0}'.format(url))
@@ -62,6 +65,9 @@ class SwaggerApp(object):
 
         # allow init App-wised SCOPE_SEPARATOR
         self.__sep = sep
+
+        # init a default SwaggerPrimitive as factory for primitives
+        self.__prim = prim if prim else SwaggerPrimitive()
 
     @property
     def root(self):
@@ -138,6 +144,14 @@ class SwaggerApp(object):
         """ internal usage
         """
         return self.__app_cache
+
+    @property
+    def prim_factory(self):
+        """ primitive factory used by this app
+
+        :type: pyswagger.primitives.SwaggerPrimitive
+        """
+        return self.__prim
 
     def _load_obj(self, url, getter=None, parser=None):
         """
@@ -252,7 +266,7 @@ class SwaggerApp(object):
         s.scan(root=self.__root, route=[PatchObject()])
 
     @classmethod
-    def load(kls, url, getter=None, parser=None, app_cache=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR):
+    def load(kls, url, getter=None, parser=None, app_cache=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None):
         """ load json as a raw SwaggerApp
 
         :param str url: url of path of Swagger API definition
@@ -263,6 +277,7 @@ class SwaggerApp(object):
         :param dict app_cache: the cache shared by related SwaggerApp
         :param func url_load_hook: hook to patch the url to load json
         :param str sep: scope-separater used in this SwaggerApp
+        :param prim pyswager.primitives.SwaggerPrimitive: factory for primitives in Swagger
         :return: the created SwaggerApp object
         :rtype: SwaggerApp
         :raises ValueError: if url is wrong
@@ -272,7 +287,7 @@ class SwaggerApp(object):
         logger.info('load with [{0}]'.format(url))
 
         url = utils.normalize_url(url)
-        app = kls(url, app_cache=app_cache, url_load_hook=url_load_hook, sep=sep)
+        app = kls(url, app_cache=app_cache, url_load_hook=url_load_hook, sep=sep, prim=prim)
 
         app._load_obj(url, getter, parser)
 

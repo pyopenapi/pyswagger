@@ -98,5 +98,5 @@ class CircularRefTestCase(unittest.TestCase):
         )
 
         s = app.resolve('#/definitions/s1')
-        self.assertRaises(errs.CycleDetectionError, primitives.prim_factory, s, {})
+        self.assertRaises(errs.CycleDetectionError, app.prim_factory.produce, s, {})
  

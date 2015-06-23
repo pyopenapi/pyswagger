@@ -40,6 +40,9 @@ class PatchObject(object):
         # schemes
         obj.update_field('cached_schemes', app.schemes if len(obj.schemes) == 0 else obj.schemes)
 
+        # primitive factory
+        setattr(obj, '_prim_factory', app.prim_factory)
+
     @Disp.register([PathItem])
     def _path_item(self, path, obj, app):
         """

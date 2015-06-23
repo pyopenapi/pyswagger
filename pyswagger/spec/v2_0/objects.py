@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from ..base import BaseObj, FieldMeta
 from ...utils import deref
 from ...io import SwaggerRequest, SwaggerResponse
-from ...primitives import prim_factory, Array
+from ...primitives import Array
 import six
 import copy
 
@@ -55,8 +55,8 @@ class Items(six.with_metaclass(FieldMeta, BaseSchema)):
         'collectionFormat': None,
     }
 
-    def _prim_(self, v):
-        return prim_factory(self, v)
+    def _prim_(self, v, prim_factory):
+        return prim_factory.produce(self, v)
 
 
 class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
@@ -88,8 +88,8 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
         'name': None,
     }
 
-    def _prim_(self, v):
-        return prim_factory(self, v)
+    def _prim_(self, v, prim_factory):
+        return prim_factory.produce(self, v)
 
 
 class Swagger(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
@@ -181,9 +181,9 @@ class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
         'norm_ref': None,
     }
 
-    def _prim_(self, v):
+    def _prim_(self, v, prim_factory):
         i = getattr(self, 'in')
-        return prim_factory(self.schema, v) if i == 'body' else prim_factory(self, v)
+        return prim_factory.produce(self.schema, v) if i == 'body' else prim_factory.produce(self, v)
 
 
 class Header(six.with_metaclass(FieldMeta, BaseSchema)):
@@ -261,7 +261,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
                     # do not provide value for parameters that use didn't specify.
                     return
 
-            c = p._prim_(v)
+            c = p._prim_(v, self._prim_factory)
             i = getattr(p, 'in')
 
             if p.type == 'file':
