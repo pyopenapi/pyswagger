@@ -1,10 +1,11 @@
-from pyswagger import SwaggerApp
+from pyswagger import SwaggerApp, utils
 from .utils import get_test_data_folder
 from pyswagger.spec.base import BaseObj
 import pyswagger
 import unittest
 import httpretty
 import os
+import six
 
 
 class SwaggerCoreTestCase(unittest.TestCase):
@@ -56,4 +57,46 @@ class SwaggerCoreTestCase(unittest.TestCase):
         app = SwaggerApp.create('http://10.0.0.10:8080/swaggerapi/api/v1beta2')
         self.assertTrue(app.schemes, ['http'])
         self.assertTrue(isinstance(app.root, BaseObj))
+
+    def test_no_host_basePath(self):
+        """ test case for swagger.json without
+        'host' and 'basePath' defined
+        """
+        path = get_test_data_folder(
+            version='2.0',
+            which=os.path.join('patch', 'no_host_schemes')
+        )
+        fu = utils.normalize_url(path) # file uri version of path
+
+        # load swagger.json from a file path
+        app = SwaggerApp.create(path)
+        req, _ = app.s('t1').get()
+        self.assertEqual(req.url, path+'/t1')
+        self.assertEqual(req.schemes, ['file'])
+        req.prepare(scheme='file', handle_files=False)
+        self.assertEqual(req.url, fu+'/t1')
+
+        # load swagger.json from a file uri
+        self.assertNotEqual(six.moves.urllib.parse.urlparse(fu).scheme, '')
+        app = SwaggerApp.create(fu)
+        req, _ = app.s('t1').get()
+        self.assertEqual(req.url, path+'/t1')
+        self.assertEqual(req.schemes, ['file'])
+        req.prepare(scheme='file', handle_files=False)
+        self.assertEqual(req.url, fu+'/t1')
+
+        # load swagger.json from a remote uri
+        def _hook(url):
+            # no matter what url, return the path of local swagger.json
+            return fu
+
+        url = 'test.com/api/v1'
+        app = SwaggerApp.load('https://'+url, url_load_hook=_hook)
+        app.prepare()
+        # try to make a SwaggerRequest and verify its url
+        req, _ = app.s('t1').get()
+        self.assertEqual(req.url, url+'/t1')
+        self.assertEqual(req.schemes, ['https'])
+        req.prepare(scheme='https', handle_files=False)
+        self.assertEqual(req.url, 'https://'+url+'/t1')
 

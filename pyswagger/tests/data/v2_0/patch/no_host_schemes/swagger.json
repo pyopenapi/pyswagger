@@ -1,0 +1,22 @@
+{
+   "swagger":"2.0",
+   "produces":[
+      "application/json"
+   ],
+   "consumes":[
+      "application/json"
+   ],
+   "paths":{
+      "/t1":{
+         "get":{
+            "responses":{
+               "default":{
+                  "description":"void"
+               }
+            }
+         }
+      }
+   },
+   "definitions":{
+   }
+}

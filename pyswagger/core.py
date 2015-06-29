@@ -261,6 +261,9 @@ class SwaggerApp(object):
         if hasattr(self.__root, 'schemes') and self.__root.schemes:
             if len(self.__root.schemes) > 0:
                 self.__schemes = self.__root.schemes
+            else:
+                # extract schemes from the url to load spec
+                self.__schemes = [six.moves.urlparse(self.__url).schemes]
 
         s.scan(root=self.__root, route=[Resolve()])
         s.scan(root=self.__root, route=[PatchObject()])

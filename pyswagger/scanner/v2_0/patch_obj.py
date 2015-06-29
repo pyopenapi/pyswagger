@@ -49,7 +49,13 @@ class PatchObject(object):
         """
         k = jp_split(path)[-1] # key to the dict containing PathItem(s)
         if isinstance(app.root, Swagger):
-            url = app.root.host + (app.root.basePath or '') + k
+            host = app.root.host
+            if not host:
+                # deduce host from url to load the Swagger spec
+                host = six.moves.urllib.parse.urlunparse(('',) + six.moves.urllib.parse.urlparse(app.url)[1:])
+                host = host[2:] if host[:2] == '//' else host
+
+            url = host + (app.root.basePath or '') + k
             base_path = app.root.basePath
         else:
             url = None
