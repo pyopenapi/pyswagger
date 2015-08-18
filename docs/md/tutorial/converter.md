@@ -24,7 +24,7 @@ with open('./swagger.yaml', 'w') as w:
 
 There are inconsistency between Swagger 1.2 and 2.0.
 
-# 'collectionFormat' is used instead of 'allowMultiple', below is an example of conversion.
+### 'collectionFormat' is used instead of 'allowMultiple', below is an example of conversion.
 
 ```json
 {
@@ -52,11 +52,11 @@ would be converted to
 
 Notice that array is used instead of 'allowMultiple'.
 
-# basePath
+### basePath
 
 Multiple basePath(s) are allowed in Swagger 1.2, however, only one is allowed in Swagger 2.0. If you define different basePath in resource files, pyswagger would raise an Exception and refuse to proceed.
 
-# Migration Guide
+### Migration Guide
 
 For more information, refer to [migration guide](https://github.com/swagger-api/swagger-spec/wiki/Swagger-1.2-to-2.0-Migration-Guide).
 
