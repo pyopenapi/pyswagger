@@ -77,7 +77,7 @@ The return value when calling an Operation is a pair of (SwaggerRequest, Swagger
 just pass it to 'request' function of client. Below is a full example of 'getUserByName'
 ```python
 from pyswagger import SwaggerApp
-from pyswagger.contrib.client.request import Client
+from pyswagger.contrib.client.requests import Client
 
 app = SwaggerApp.create('/path/to/your/resource/file/swagger.json')
 client = Client()
