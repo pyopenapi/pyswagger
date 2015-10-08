@@ -20,6 +20,12 @@ class TypeReduce(object):
         scope = obj.tags[0] if obj.tags and len(obj.tags) > 0 else None
         name = obj.operationId if obj.operationId else None
 
+        # in swagger 2.0, both 'operationId' and 'tags' are optional.
+        # When 'operationId' is empty, it causes 'scope_compose' return something
+        # duplicated with other Operations with the same tag.
+        if not name:
+            return
+
         new_scope = scope_compose(scope, name, sep=self.__sep)
         if new_scope:
             if new_scope in self.op.keys():

@@ -1,6 +1,7 @@
-from pyswagger import SwaggerApp, utils
+from pyswagger import SwaggerApp, utils, errs
 from ..utils import get_test_data_folder
 import unittest
+import os
 
 def _check(u, op):
     u.assertEqual(op.operationId, 'addPet')
@@ -45,3 +46,10 @@ class OperationAccessTestCase(unittest.TestCase):
                 self.app.resolve(utils.jp_compose(['#', 'paths', '/user/{username}'])).get.operationId,
                 'getUserByName'
         )
+
+    def test_empty_operation_id(self):
+        """ when operationId is empty, should not raise SchemaError """
+        try:
+            app = SwaggerApp.create(get_test_data_folder(version="2.0", which=os.path.join("schema", "emptyOp")))
+        except errs.SchemaError:
+            self.fail("SchemaError is raised when 'operationId' is empty and 'tags' is not")
