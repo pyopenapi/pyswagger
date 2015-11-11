@@ -162,14 +162,13 @@ class SwaggerApp(object):
             # look into cache first
             return
 
+        # apply hook when use this url to load
+        # note that we didn't cache SwaggerApp with this local_url
+        local_url = url if not self.__url_load_hook else self.__url_load_hook(url)
+
+        logger.info('{0} patch to {1}'.format(url, local_url))
+
         if not getter:
-            # apply hook when use this url to load
-            # note that we didn't cache SwaggerApp with this local_url
-
-            local_url = url if not self.__url_load_hook else self.__url_load_hook(url)
-
-            logger.info('{0} patch to {1}'.format(url, local_url))
-
             getter = UrlGetter
             p = six.moves.urllib.parse.urlparse(local_url)
             if p.scheme == 'file' and p.path:
