@@ -117,6 +117,7 @@ All exported API are described in following sections. ![A diagram about relation
 - [Marcin Goliński](https://github.com/mjgolinski)
 - [Andrey Mikhailov](https://github.com/zlovred)
 - [Telepenin Nikolay](https://github.com/prefer)
+- [WangJiannan](https://github.com/WangJiannan)
 
 ---------
 
