@@ -246,10 +246,10 @@ def jr_split(s):
         '#'+p.fragment if p.fragment else '#'
     )
 
-def deref(obj):
+def deref(obj, guard=None):
     """ dereference $ref
     """
-    cur, guard = obj, CycleGuard()
+    cur, guard = obj, guard or CycleGuard()
     while cur and getattr(cur, 'ref_obj', None) != None:
         # cycle guard
         guard.update(cur)

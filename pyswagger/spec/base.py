@@ -277,9 +277,10 @@ class BaseObj(object):
 
         return obj
 
-    def merge(self, other, ctx):
+    # TODO: test case for exclude
+    def merge(self, other, ctx, exclude=[]):
         """ merge properties from other object,
-        only merge from 'not None' to 'None'.
+        only merge from 'not-default' to 'default'.
 
         :param BaseObj other: the source object to be merged from.
         :param Context ctx: the parsing context
@@ -290,6 +291,8 @@ class BaseObj(object):
         for name, default in itertools.chain(
                 six.iteritems(self.__swagger_fields__),
                 six.iteritems(self.__internal_fields__)):
+            if name in exclude:
+                continue
             v = getattr(other, name)
             if v == default or getattr(self, name) != default:
                 continue
