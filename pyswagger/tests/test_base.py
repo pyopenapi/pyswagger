@@ -184,6 +184,22 @@ class SwaggerBaseTestCase(unittest.TestCase):
         _chk_parent(o2, o3)
         _chk_parent(o1, o3)
 
+    def test_merge_exclude(self):
+        """ test 'exclude' in merge """
+        tmp = {'t': {}}
+        obj = {'a': [{}, {}, {}], 'b': {'/a': {}, '~b': {}, 'cc': {}}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(obj)
+        o = tmp['t']
+
+        o1, o2 = TestObj(base.NullContext()), TestObj(base.NullContext())
+        o1.merge(o, TestContext)
+        o2.merge(o, TestContext, exclude=['b'])
+        self.assertEqual(len(o1.a), 3)
+        self.assertEqual(len(o2.a), 3)
+        self.assertEqual(len(o1.b), 3)
+        self.assertEqual(len(o2.b), 0)
+
     def test_resolve(self):
         """ test resolve function """
         tmp = {'t': {}}

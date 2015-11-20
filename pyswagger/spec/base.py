@@ -277,7 +277,6 @@ class BaseObj(object):
 
         return obj
 
-    # TODO: test case for exclude
     def merge(self, other, ctx, exclude=[]):
         """ merge properties from other object,
         only merge from 'not-default' to 'default'.
