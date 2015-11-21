@@ -1,2 +1,3 @@
 six>=1.6.0
 pyaml>=15.03.1
+validate_email>=1.3

@@ -68,13 +68,25 @@ class SchemaTestCase(unittest.TestCase):
             id=1,
             skill_id=2,
             location="home",
-            skill_name="coding"
+            skill_name="coding",
+            email="a@a.com"
         ), self.app.prim_factory)
         self.assertTrue(isinstance(v, primitives.Model))
         self.assertEqual(v.id, 1)
         self.assertEqual(v.skill_id, 2)
         self.assertEqual(v.location, "home")
         self.assertEqual(v.skill_name, "coding")
+
+        self.assertRaises(
+            errs.ValidationError,
+            e._prim_, dict(
+                id=1,
+                skill_id=2,
+                location="home",
+                skill_name="coding",
+                email="a..a@a.com"
+            ), self.app.prim_factory
+        )
 
     def test_model_boss(self):
         """ test model with allOf and properties
