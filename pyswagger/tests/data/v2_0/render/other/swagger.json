@@ -1,0 +1,35 @@
+{
+   "swagger":"2.0",
+   "host":"test.com",
+   "basePath":"/v1",
+   "paths":{
+
+   },
+   "definitions":{
+      "bool.1":{
+         "type":"boolean"
+      },
+      "float.1":{
+         "allOf":[
+            {
+               "type":"number"
+            },
+            {
+               "maximum":100,
+               "minimum":50,
+               "multipleOf":5
+            },
+            {
+               "format":"float"
+            }
+         ]
+      },
+      "integer.1":{
+         "type":"integer",
+         "format":"int32",
+         "maximum":50,
+         "minimum":10,
+         "multipleOf":5
+      }
+   }
+}
