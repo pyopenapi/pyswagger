@@ -279,7 +279,8 @@ class BaseObj(object):
 
     def merge(self, other, ctx, exclude=[]):
         """ merge properties from other object,
-        only merge from 'not-default' to 'default'.
+        - for child object, only merge from 'not-default' to 'default'.
+        - for others, merge (list, dict, primitives)
 
         :param BaseObj other: the source object to be merged from.
         :param Context ctx: the parsing context
@@ -292,8 +293,9 @@ class BaseObj(object):
                 six.iteritems(self.__internal_fields__)):
             if name in exclude:
                 continue
+
             v = getattr(other, name)
-            if v == default or getattr(self, name) != default:
+            if v == default:
                 continue
 
             childs = [(n, ct, cctx) for n, (ct, cctx) in six.iteritems(ctx.__swagger_child__) if n == name]
@@ -301,8 +303,19 @@ class BaseObj(object):
                 # we don't need to make a copy,
                 # since everything under SwaggerApp should be
                 # readonly.
-                self.update_field(name, v)
+                if isinstance(v, list):
+                    self.update_field(name, list(set((getattr(self, name) or []) + v)))
+                elif isinstance(v, dict):
+                    d = copy.copy(v)
+                    d.update(getattr(self, name) or {})
+                    self.update_field(name, d)
+                elif getattr(self, name) == default:
+                    self.update_field(name, v)
                 continue
+            else:
+                # for child, stop when src object has something
+                if getattr(self, name) != default:
+                    continue
 
             ct, cctx = childs[0][1], childs[0][2]
             self.update_field(name,

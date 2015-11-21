@@ -19,8 +19,16 @@
             },
             {
                "type":"array"
+            },
+            {
+                "required": ["c", "d"]
+            },
+            {
+                "enum": ["c", "d"]
             }
-         ]
+         ],
+         "required": ["a", "b"],
+         "enum": ["a", "b"]
       },
       "s2":{
          "properties":{

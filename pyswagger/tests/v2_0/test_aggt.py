@@ -24,6 +24,8 @@ class AggregateTestCase(unittest.TestCase):
         self.assertEqual(5, s1.minItems)
         self.assertEqual('string', getattr(s1.items, 'type'))
         self.assertEqual('array', getattr(s1, 'type'))
+        self.assertEqual(sorted(s1.required), sorted(["a", "b", "c", "d"]))
+        self.assertEqual(sorted(s1.enum), sorted(["a", "b", "c", "d"]))
 
     def test_object_properties_merge(self):
         """ Schema.properties should be merged """

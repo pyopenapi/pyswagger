@@ -48,7 +48,7 @@ def _merge(obj, app, prefix, ctx):
 
     while (len(to_resolve)):
         o = to_resolve.pop()
-        o.merge(o.ref_obj, ctx)
+        o.merge(o.ref_obj, ctx, exclude=['$ref'])
 
 
 class Resolve(object):
