@@ -31,12 +31,11 @@ class AggregateTestCase(unittest.TestCase):
         """ Schema.properties should be merged """
         s2 = self.app.resolve('#/definitions/s2').final
         self.assertEqual('object', getattr(s2, 'type'))
-        self.assertIn('password', s2.properties)
-        self.assertIn('age', s2.properties)
+        self.assertTrue('password' in s2.properties, 'should has password')
+        self.assertTrue('age' in s2.properties, 'should has age')
         self.assertEqual('string', getattr(s2.properties['password'], 'type'))
-        self.assertIn('age', s2.properties)
-        self.assertIn('address', s2.properties)
-        self.assertIn('major', s2.properties)
+        self.assertTrue('address' in s2.properties, 'should has address')
+        self.assertTrue('major' in s2.properties, 'should has major')
 
     def test_cycle_detection(self):
         """ cyclic reference should be detected
@@ -50,7 +49,14 @@ class AggregateTestCase(unittest.TestCase):
         """ allOf composite with '$ref'
         """
         s3 = self.app.resolve('#/definitions/s3').final
-        self.assertIn('name', s3.properties)
-        self.assertIn('age', s3.properties)
-        self.assertIn('phone', s3.properties)
+        self.assertTrue('name' in s3.properties, 'should has name')
+        self.assertTrue('age' in s3.properties, 'should has age')
+        self.assertTrue('phone' in s3.properties, 'should has phone')
+
+    def test_schema_allof_with_items(self):
+        """ make sure items is correctly merged
+        """
+        s4 = self.app.resolve('#/definitions/s4').final
+        self.assertEqual('integer', s4.items.final.type)
+        self.assertEqual('int32', s4.items.final.format)
 

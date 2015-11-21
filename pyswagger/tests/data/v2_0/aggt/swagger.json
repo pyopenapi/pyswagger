@@ -117,6 +117,36 @@
                }
             }
          ]
+      },
+      "s4":{
+         "allOf":[
+            {
+               "$ref":"#/definitions/s4.1"
+            }
+         ]
+      },
+      "s4.1":{
+         "allOf":[
+            {
+               "$ref":"#/definitions/s4.2"
+            },
+            {
+               "$ref":"#/definitions/s4.3"
+            }
+         ]
+      },
+      "s4.2":{
+         "type":"array"
+      },
+      "s4.3":{
+         "items":{
+            "allOf":[
+               {
+                  "type":"integer",
+                  "format":"int32"
+               }
+            ]
+         }
       }
    }
 }
