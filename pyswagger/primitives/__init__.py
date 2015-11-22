@@ -14,6 +14,8 @@ from .render import Renderer
 import functools
 import json
 
+# TODO: enum is suitable for all types, not only string
+
 
 class SwaggerPrimitive(object):
     """ primitive factory

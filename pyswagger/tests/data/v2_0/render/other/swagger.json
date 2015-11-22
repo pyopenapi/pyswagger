@@ -30,6 +30,34 @@
          "maximum":50,
          "minimum":10,
          "multipleOf":5
+      },
+      "enum.string":{
+         "type":"string",
+         "enum":[
+            "green",
+            "red",
+            "blue",
+            "yellow"
+         ]
+      },
+      "enum.integer":{
+          "type":"integer",
+          "format":"int32",
+          "enum":[
+              1,
+              2,
+              5,
+              10,
+              56,
+              763
+          ]
+      },
+      "enum.boolean":{
+          "type":"boolean",
+          "enum":[
+              true,
+              false
+          ]
       }
    }
 }

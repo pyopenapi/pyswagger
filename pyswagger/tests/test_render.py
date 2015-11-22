@@ -80,11 +80,10 @@ class StringTestCase(unittest.TestCase):
                 self.app.resolve('#/definitions/email.1'),
                 opt=self.rnd.default()
             )
-            print e
             self.assertTrue(isinstance(e, six.string_types), 'should be string, not {0}'.format(e))
             self.assertTrue(validate_email(e), 'should be a email, not {0}'.format(e))
-        
 
+       
 class OtherTestCase(unittest.TestCase):
     """ render 'integer/float/bool' types """
     @classmethod
@@ -125,6 +124,39 @@ class OtherTestCase(unittest.TestCase):
         )
         self.assertTrue(isinstance(b, bool), 'should be bool, not {0}'.format(b))
 
+    def test_enum_string(self):
+        obj = self.app.resolve('#/definitions/enum.string')
+        for _ in xrange(50):
+            e = self.rnd.render(
+                obj,
+                opt=self.rnd.default()
+            )
+            self.assertTrue(isinstance(e, six.string_types), 'should be a string, not {0}'.format(e))
+            self.assertTrue(e in obj.enum, 'should be one of {0}, not {1}'.format(obj.enum, e))
+ 
+    def test_enum_integer(self):
+        obj = self.app.resolve('#/definitions/enum.integer')
+        for _ in xrange(50):
+            e = self.rnd.render(
+                obj,
+                opt=self.rnd.default()
+            )
+            self.assertTrue(isinstance(e, six.integer_types), 'should be a integer, not {0}'.format(e))
+            self.assertTrue(e in obj.enum, 'should be one of {0}, not {1}'.format(obj.enum, e))
+ 
+    def test_enum_boolean(self):
+        obj = self.app.resolve('#/definitions/enum.boolean')
+        for _ in xrange(50):
+            e = self.rnd.render(
+                obj,
+                opt=self.rnd.default()
+            )
+            self.assertTrue(isinstance(e, bool), 'should be a boolean, not {0}'.format(e))
+            self.assertTrue(e in obj.enum, 'should be one of {0}, not {1}'.format(obj.enum, e))
+
+    def test_enum_uuid(self):
+        pass
+        # TODO: add test case when pyswagger support uuid
 
 class ArrayTestCase(unittest.TestCase):
     """ render 'array' types """

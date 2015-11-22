@@ -13,8 +13,8 @@ import time
 # TODO: patternProperties
 # TODO: pattern
 # TODO: maxProperties, minProperties
-# TODO: enum
 # TODO: binary
+# TODO: enum of object, array
 
 # min/max of integer
 maxInt32 = 1 << 31 - 1
@@ -56,6 +56,7 @@ def _bool_(obj, _):
     return random.randint(0, 1) == 0
 
 def _uuid_(obj, _):
+    # TODO: pyswagger didn't support uuid yet
     return uuid.uuid4()
 
 names = list(string.letters) + ['_', '-'] + list(string.digits)
@@ -181,10 +182,13 @@ class Renderer(object):
                 out.append(self._generate(obj.items, opt))
 
         elif type_ != None:
-            g = self._get(getattr(obj, 'type', None), getattr(obj, 'format', None))
-            if not g:
-                raise Exception('Unable to locate generator: {0}'.format(obj))
-            out = g(obj, opt)
+            if len(obj.enum or []) > 0:
+                out = random.choice(obj.enum)
+            else:
+                g = self._get(getattr(obj, 'type', None), getattr(obj, 'format', None))
+                if not g:
+                    raise Exception('Unable to locate generator: {0}'.format(obj))
+                out = g(obj, opt)
         else:
             raise Exception('No type info available:{0}, {1}'.format(obj.type, obj.format))
 
