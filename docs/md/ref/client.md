@@ -7,6 +7,8 @@ To make a request, you need to create a pair of request/response from **SwaggerA
 - **dict** corresponds to _Model_
 - **list** corresponds to _Array_
 - **datetime.datetime**, timestamp(float or int), or ISO8601-string for _date-time_ and _date_
+- email is supported by providing a valid email in string
+- **uuid.UUID**, uuid-string in hex, byte for _uuid_
 - _File_ type is a little bit complex, but just similar to [request](https://github.com/kennethreitz/requests), which uses a dict containing file info.
 ```python
 YouFile = {
