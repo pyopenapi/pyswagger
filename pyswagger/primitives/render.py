@@ -14,7 +14,6 @@ import time
 
 # TODO: patternProperties
 # TODO: pattern
-# TODO: maxProperties, minProperties
 # TODO: binary
 # TODO: enum of object, array
 
@@ -163,7 +162,8 @@ class Renderer(object):
         return None if r == None else r.get(_format, None)
 
     def _generate(self, obj, opt):
-        obj = deref(obj).final
+        obj = deref(obj)
+        obj = obj.final if isinstance(obj, Schema) else obj
         type_ = getattr(obj, 'type', None)
         out = None
         if type_ == 'object':
@@ -242,12 +242,19 @@ class Renderer(object):
         else:
             raise ValueError('Not a Schema/Parameter: {0}'.format(param))
 
-    def render_all(self, params, include=None, exclude=[], opt=None):
+    def render_all(self, op, exclude=[], opt=None):
         """
         """
-        if not instance(params, Operation):
+        opt = self.default() if opt == None else opt
+        if not isinstance(op, Operation):
             raise ValueError('Not a Operation: {0}'.format(params))
-        if not isinstance(include, list) or not isinstance(exclude, list):
-            raise ValueError('Not a list: {0},{1}'.format(include, exclude))
         if not isinstance(opt, dict):
             raise ValueError('Not a dict: {0}'.format(opt))
+
+        out = {}
+        for p in op.parameters:
+            if not p.required:
+                if random.randint(0, 1) == 0:
+                    continue
+            out.update({p.name: self.render(p)})
+        return out

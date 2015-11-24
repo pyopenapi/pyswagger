@@ -11,6 +11,7 @@ import uuid
 import time
 import string
 import datetime
+import json
 
 
 class StringTestCase(unittest.TestCase):
@@ -117,7 +118,6 @@ class OtherTestCase(unittest.TestCase):
             self.assertTrue(f <= 100, 'should be less than 100, not {0}'.format(f))
             self.assertTrue(f >= 50, 'should be greater than 50, not {0}'.format(f))
             self.assertTrue((f % 5) == 0, 'should be moduleable by 5, not {0}'.format(f))
-
 
     def test_bool(self):
         b = self.rnd.render(
@@ -298,11 +298,135 @@ class ObjectTestCase(unittest.TestCase):
                 self.assertTrue('email' not in v, 'email is not in required list, and it\'s minimal')
 
 class ParameterTestCase(unittest.TestCase):
-    """ render all parameters """
+    """ test case for rendering a single Parameter,
+    type/format specific tests are covered by other
+    test cases.
+    """
+
     @classmethod
     def setUpClass(kls):
         kls.app = SwaggerApp.create(get_test_data_folder(
             version='2.0',
-            which=path.join('render', 'params')
+            which=path.join('render', 'parameter')
         ))
+        kls.rnd = Renderer()
+
+    def test_header(self):
+        v = self.rnd.render(
+            self.app.resolve('#/parameters/header.string'),
+            opt=self.rnd.default()
+        )
+        self.assertTrue(isinstance(v, six.string_types), 'should be string, not {0}'.format(str(type(v))))
+
+    def test_path(self):
+        v = self.rnd.render(
+            self.app.resolve('#/parameters/path.string'),
+            opt=self.rnd.default()
+        )
+        self.assertTrue(isinstance(v, six.string_types), 'should be string, not {0}'.format(str(type(v))))
+
+    def test_query(self):
+        v = self.rnd.render(
+            self.app.resolve('#/parameters/query.string'),
+            opt=self.rnd.default()
+        )
+        self.assertTrue(isinstance(v, six.string_types), 'should be string, not {0}'.format(str(type(v))))
+
+    def test_body(self):
+        v = self.rnd.render(
+            self.app.resolve('#/parameters/body.string'),
+            opt=self.rnd.default()
+        )
+        self.assertTrue(isinstance(v, six.string_types), 'should be string, not {0}'.format(str(type(v))))
+
+    def test_form(self):
+        v = self.rnd.render(
+            self.app.resolve('#/parameters/form.string'),
+            opt=self.rnd.default()
+        )
+        self.assertTrue(isinstance(v, six.string_types), 'should be string, not {0}'.format(str(type(v))))
+
+    # TODO: support file
+
+
+class OperationTestCase(unittest.TestCase):
+    """ test case for rendering an Operation """
+    @classmethod
+    def setUpClass(kls):
+        kls.app = SwaggerApp.create(get_test_data_folder(
+            version='2.0',
+            which=path.join('render', 'operation')
+        ))
+        kls.rnd = Renderer()
+
+    def test_set_1(self):
+        """ test query, header, path parameter """
+        op = self.app.s("api.1/{path_email}").get
+        ps = self.rnd.render_all(op)
+
+        # checking generated parameter set
+        self.assertTrue(isinstance(ps, dict), 'should be a dict, not {0}'.format(ps))
+        self.assertTrue("path_email" in ps, 'path_email should be in set, but {0}'.format(ps))
+        self.assertTrue(isinstance(ps['path_email'], six.string_types), 'should be string, not {0}'.format(str(type(ps['path_email']))))
+        self.assertTrue(validate_email(ps['path_email']), 'should be a valid email, not {0}'.format(ps['path_email']))
+        self.assertTrue("header.uuid" in ps, 'header.uuid should be in set, but {0}'.format(ps))
+        self.assertTrue(isinstance(ps['header.uuid'], uuid.UUID), 'should be an uuid.UUID, not {0}'.format(str(type(ps['header.uuid']))))
+        self.assertTrue("query.integer" in ps, 'query.integer should be in set, but {0}'.format(ps))
+        self.assertTrue(isinstance(ps['query.integer'], six.integer_types), 'should be int, not {0}'.format(str(type(ps['query.integer']))))
+
+        # ok to be passed into Operation object
+        req, resp = op(**ps)
+        req.prepare(scheme='http', handle_files=False)
+
+        # query
+        found_query = False
+        for v in req.query:
+            if v[0] == 'query.integer':
+                found_query = True
+                break
+        self.assertEqual(found_query, True)
+
+        # header
+        found_header = False
+        for k, v in six.iteritems(req.header):
+            if k == 'header.uuid':
+                found_header = True
+                break
+        self.assertEqual(found_header, True)
+
+        # path
+        self.assertTrue(validate_email(req.path[len('/api.1/'):]), 'should contain a valid email, not {0}'.format(req.path))
+
+    def test_body(self):
+        """ test body parameter """
+        op = self.app.s('api.1').post
+        ps = self.rnd.render_all(op)
+
+        self.assertTrue(isinstance(ps, dict), 'should be a dict, not {0}'.format(str(type(ps))))
+        self.assertTrue('body.object' in ps, 'should contain body.object, not {0}'.format(ps))
+        self.assertTrue(isinstance(ps['body.object'], dict), 'should be dict, not {0}'.format(str(type(ps['body.object']))))
+
+        req, resp = op(**ps)
+        req.prepare(scheme='http', handle_files=False)
+
+        # body
+        v = json.loads(req.data)
+        self.assertTrue(validate_email(v['contact']), 'should have a valid email in contact, not {0}'.format(v))
+        self.assertTrue(isinstance(v['name'], six.string_types), 'should have a string in name, not {0}'.format(v))
+        self.assertTrue(isinstance(v['id'], six.integer_types), 'should have a int in id, not {0}'.format(v))
+
+    def test_form(self):
+        """ test form (urlencode) """
+        op = self.app.s('api.1').put
+        ps = self.rnd.render_all(op)
+
+        self.assertTrue(isinstance(ps, dict), 'should be a dict, not {0}'.format(str(type(ps))))
+        self.assertTrue('form.email' in ps, 'should contain body.object, not {0}'.format(ps))
+        self.assertTrue(validate_email(ps['form.email']), 'should be valid email, not {0}'.format(ps['form.email']))
+
+        req, resp = op(**ps)
+        req.prepare(scheme='http', handle_files=False)
+
+        # form(urlencode)
+        self.assertEqual(req.data, six.moves.urllib.parse.urlencode(ps))
 
