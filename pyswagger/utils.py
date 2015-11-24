@@ -98,6 +98,9 @@ class CycleGuard(object):
         self.__visited.append(i)
 
 
+# TODO: this function and datetime don't handle leap-second.
+#       check if dateutil handle it or not
+
 class FixedTZ(datetime.tzinfo):
     """ tzinfo implementation without consideration of
     daylight-saving-time.

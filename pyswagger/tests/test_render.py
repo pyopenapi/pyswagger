@@ -2,11 +2,13 @@ from __future__ import absolute_import
 from pyswagger import SwaggerApp
 from pyswagger.primitives import Renderer
 from .utils import get_test_data_folder
+from ..utils import from_iso8601
 from os import path
 from validate_email import validate_email
 import unittest
 import six
 import uuid
+import time
 import string
 import datetime
 
@@ -155,8 +157,39 @@ class OtherTestCase(unittest.TestCase):
             self.assertTrue(e in obj.enum, 'should be one of {0}, not {1}'.format(obj.enum, e))
 
     def test_enum_uuid(self):
-        pass
-        # TODO: add test case when pyswagger support uuid
+        obj = self.app.resolve('#/definitions/enum.uuid')
+        for _ in xrange(50):
+            e = self.rnd.render(
+                obj,
+                opt=self.rnd.default()
+            )
+            self.assertTrue(isinstance(e, uuid.UUID), 'should be an uuid, not {0}'.format(e))
+            self.assertTrue(str(e) in obj.enum, 'should be an element in enum, not {0}'.format(e))
+
+    def test_enum_date(self):
+        obj = self.app.resolve('#/definitions/enum.date')
+        for _ in xrange(50):
+            e = self.rnd.render(
+                obj,
+                opt=self.rnd.default()
+            )
+            self.assertTrue(isinstance(e, datetime.date), 'should be a datetime.date, not {0}'.format(e))
+            self.assertTrue(e.isoformat() in obj.enum, 'should be an element in enum, not {0}'.format(e))
+
+    def test_enum_datetime(self):
+        # note: can't compare non-timezone datetime with timezone'd' datetime
+        # note: isoformat() of datetime is not unique
+        # therefore, I compare their timestamp here.
+        obj = self.app.resolve('#/definitions/enum.datetime')
+        es = [time.mktime(from_iso8601(t).timetuple()) for t in obj.enum]
+        for _ in xrange(50):
+            e = self.rnd.render(
+                obj,
+                opt=self.rnd.default()
+            )
+            self.assertTrue(isinstance(e, datetime.datetime), 'should be a datetime.datetime, not {0}'.format(e))
+            self.assertTrue(time.mktime(e.timetuple()) in es, 'should be an element in enum, not {0}'.format(e))
+
 
 class ArrayTestCase(unittest.TestCase):
     """ render 'array' types """

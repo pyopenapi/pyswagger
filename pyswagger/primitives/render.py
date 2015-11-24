@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 from ..spec.v2_0.objects import Parameter, Operation, Schema
-from ..utils import deref
+from ..utils import deref, from_iso8601
+from decimal import Decimal
+from validate_email import validate_email
 import random
 import six
 import sys
@@ -22,7 +24,7 @@ minInt32 = -maxInt32
 maxInt64 = 1 << 63 - 1
 minInt64 = -maxInt64
 
-def _int_(obj, _):
+def _int_(obj, _, val=None):
     max_ = maxInt32 if getattr(obj, 'format') in ['int32', None] else maxInt64
     max_ = obj.maximum if obj.maximum else max_
     max_ = max_-1 if obj.exclusiveMaximum else max_
@@ -31,13 +33,27 @@ def _int_(obj, _):
     min_ = obj.minimum if obj.minimum else min_
     min_ = min_+1 if obj.exclusiveMinimum else min_
 
-    out = random.randint(min_, max_)
-    return out - (out % obj.multipleOf) if isinstance(obj.multipleOf, six.integer_types) and obj.multipleOf != 0 else out
+    if val:
+        if val < min_ or val > max_:
+            raise ValueError('should between {0} - {1}, but {2}'.foramt(min_, max_, val))
+        if obj.multipleOf and val % int(obj.multipleOf) != 0:
+            raise ValueError('should be multiple of {0}, but {1}'.format(obj.multipleOf, val))
+        return val
+    else:
+        out = random.randint(min_, max_)
+        return out - (out % obj.multipleOf) if isinstance(obj.multipleOf, six.integer_types) and obj.multipleOf != 0 else out
 
-def _float_(obj, _):
+def _float_(obj, _, val=None):
     # TODO: exclusiveMaximum == False is not implemented.
     max_ = obj.maximum if obj.maximum else sys.float_info.max
     min_ = obj.minimum if obj.minimum else sys.float_info.min
+
+    if val:
+        if val < min_ or val > max_:
+            raise ValueError('should between {0} - {1}, but {2}'.foramt(min_, max_, out))
+        if obj.multipleOf and Decimal(val) % Decimal(obj.multipleOf) != Decimal(0):
+            raise ValueError('should be multiple of {0}, but {1}'.format(obj.multipleOf, val))
+        return val
 
     out = None
     while out == None:
@@ -48,16 +64,16 @@ def _float_(obj, _):
             out = None
     return float(out)
 
-def _str_(obj, opt):
+def _str_(obj, opt, val=None):
     # note: length is 0~100, characters are limited to ASCII
-    return ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_str_length']))])
+    return str(val) if val else ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_str_length']))])
 
-def _bool_(obj, _):
-    return random.randint(0, 1) == 0
+def _bool_(obj, _, val=None):
+    return bool(val) if val else random.randint(0, 1) == 0
 
-def _uuid_(obj, _):
+def _uuid_(obj, _, val=None):
     # TODO: pyswagger didn't support uuid yet
-    return uuid.uuid4()
+    return uuid.UUID(val) if val else uuid.uuid4()
 
 names = list(string.letters) + ['_', '-'] + list(string.digits)
 def _email_name_():
@@ -65,7 +81,12 @@ def _email_name_():
     + ''.join([random.choice(names) for _ in xrange(random.randint(1, 30))]) \
     + random.choice(string.letters)
 
-def _email_(obj, _):
+def _email_(obj, _, val=None):
+    if val:
+        if not validate_email(val):
+            raise ValueError('should be a valid email, not {0}'.format(val))
+        return val
+
     host_length = random.randint(2, 100)
     region_length = random.randint(2, 30)
     return '.'.join([_email_name_() for _ in xrange(random.randint(1, 4))]) \
@@ -76,24 +97,27 @@ def _email_(obj, _):
         + random.choice(string.letters) \
         + ''.join([random.choice(names) for _ in xrange(region_length)])
 
-def _byte_(obj, opt):
-    return base64.b64encode( 
+def _byte_(obj, opt, val=None):
+    return val if val else base64.b64encode( 
         ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_byte_length']))])
     )
 
 max_date = time.mktime(datetime.date.max.timetuple())
 min_date = time.mktime(datetime.date.min.timetuple())
-def _date_(obj, _):
-    return datetime.date.fromtimestamp(
+def _date_(obj, _, val=None):
+    return from_iso8601(val).date() if val else datetime.date.datetime.date.fromtimestamp(
         random.uniform(min_date, max_date)
     )
 
 max_datetime = time.mktime(datetime.datetime.max.utctimetuple())
 min_datetime = time.mktime(datetime.datetime.min.utctimetuple())
-def _date_time_(obj, _):
-    return datetime.datetime.utcfromtimestamp(
+def _date_time_(obj, _, val=None):
+    return from_iso8601(val) if val else datetime.datetime.utcfromtimestamp(
         random.uniform(min_datetime, max_datetime)
     )
+
+def _file_(obj, opt, val=None):
+    raise NotImplementedError()
 
 class Renderer(object):
     """
@@ -106,19 +130,14 @@ class Renderer(object):
 
         # init map of generators
         self._map = {
-            # int
             'integer': {
                 'int32': _int_,
                 'int64': _int_,
             },
-
-            # float
             'number': {
                 'float': _float_,
                 'double': _float_,
             },
-
-            # string
             'string': {
                 '': _str_,
                 None: _str_,
@@ -129,14 +148,14 @@ class Renderer(object):
                 'uuid': _uuid_,
                 'email': _email_,
             },
-
-            # bool
             'boolean': {
                 '': _bool_,
                 None: _bool_,
             },
-
-            # TODO: file
+            'file': {
+                '': _file_,
+                None: _file_,
+            }
         }
 
     def _get(self, _type, _format=None):
@@ -182,13 +201,14 @@ class Renderer(object):
                 out.append(self._generate(obj.items, opt))
 
         elif type_ != None:
+            out = None
             if len(obj.enum or []) > 0:
                 out = random.choice(obj.enum)
-            else:
-                g = self._get(getattr(obj, 'type', None), getattr(obj, 'format', None))
-                if not g:
-                    raise Exception('Unable to locate generator: {0}'.format(obj))
-                out = g(obj, opt)
+
+            g = self._get(getattr(obj, 'type', None), getattr(obj, 'format', None))
+            if not g:
+                raise Exception('Unable to locate generator: {0}'.format(obj))
+            out = g(obj, opt, out)
         else:
             raise Exception('No type info available:{0}, {1}'.format(obj.type, obj.format))
 
