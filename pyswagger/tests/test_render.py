@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from pyswagger import SwaggerApp
-from pyswagger.primitives import Renderer
+from pyswagger.primitives import Renderer, File
 from .utils import get_test_data_folder
 from ..utils import from_iso8601
 from os import path
@@ -12,6 +12,8 @@ import time
 import string
 import datetime
 import json
+import cStringIO
+import io
 
 
 class StringTestCase(unittest.TestCase):
@@ -346,7 +348,41 @@ class ParameterTestCase(unittest.TestCase):
         )
         self.assertTrue(isinstance(v, six.string_types), 'should be string, not {0}'.format(str(type(v))))
 
-    # TODO: support file
+    def test_file(self):
+        v = self.rnd.render(
+            self.app.resolve('#/parameters/form.file'),
+            opt=self.rnd.default()
+        )
+        self.assertTrue(isinstance(v, dict), 'should be a dict, not {0}'.format(str(type(v))))
+        self.assertEqual(v['header']['Content-Type'], 'text/plain')
+        self.assertEqual(v['header']['Content-Transfer-Encoding'], 'binary')
+        self.assertEqual(v['filename'], '')
+        self.assertTrue(hasattr(v['data'].read, '__call__'), 'should have a read function')
+
+        # register several file objects
+        p = [get_test_data_folder(
+            version='2.0',
+            which=path.join('render', 'parameter')
+        ), get_test_data_folder(
+            version='2.0',
+            which=path.join('render', 'other')
+        ), get_test_data_folder(
+            version='2.0',
+            which=path.join('render', 'object')
+        )]
+        opt = self.rnd.default()
+        for pp in p:
+            opt['files'].append(dict(
+            header={},
+            filename=pp,
+            data=None
+        ))
+        for _ in xrange(50):
+            v = self.rnd.render(
+                self.app.resolve('#/parameters/form.file'),
+                opt=opt
+            )
+            self.assertTrue(v['filename'] in p, 'filename should be registered, not {0}'.format(v['filename']))
 
 
 class OperationTestCase(unittest.TestCase):
@@ -430,3 +466,15 @@ class OperationTestCase(unittest.TestCase):
         # form(urlencode)
         self.assertEqual(req.data, six.moves.urllib.parse.urlencode(ps))
 
+    def test_file(self):
+        """ test form (file) """
+        op = self.app.s('api.2').post
+        ps = self.rnd.render_all(op)
+
+        self.assertTrue(hasattr(ps['thumbnail']['data'].read, '__call__'), '\'data\' should be readable')
+
+        req, resp = op(**ps)
+        req.prepare(scheme='http', handle_files=False)
+
+        # file
+        self.assertTrue(isinstance(req.files['thumbnail'], File), 'should be a File, not {0}'.format(req.files))

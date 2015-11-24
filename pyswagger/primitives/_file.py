@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from ..errs import ValidationError
 
 
 class File(object):
@@ -25,5 +26,7 @@ class File(object):
         self.header = val.get('header', {})
         self.data = val.get('data', None)
         self.filename = val.get('filename', '')
-
-
+        if self.data == None and self.filename == '':
+            raise ValidationError('should have file name or file object, not: {0}, {1}'.format(
+                self.data, self.filename
+            ))

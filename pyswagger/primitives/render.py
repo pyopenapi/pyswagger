@@ -11,6 +11,7 @@ import uuid
 import base64
 import datetime
 import time
+import cStringIO
 
 # TODO: patternProperties
 # TODO: pattern
@@ -71,7 +72,6 @@ def _bool_(obj, _, val=None):
     return bool(val) if val else random.randint(0, 1) == 0
 
 def _uuid_(obj, _, val=None):
-    # TODO: pyswagger didn't support uuid yet
     return uuid.UUID(val) if val else uuid.uuid4()
 
 names = list(string.letters) + ['_', '-'] + list(string.digits)
@@ -115,8 +115,19 @@ def _date_time_(obj, _, val=None):
         random.uniform(min_datetime, max_datetime)
     )
 
-def _file_(obj, opt, val=None):
-    raise NotImplementedError()
+def _file_(obj, opt, _):
+    if len(opt['files'] or []) > 0:
+        return random.choice(opt['files'])
+    return dict( 
+        header={
+            'Content-Type': 'text/plain',
+            'Content-Transfer-Encoding': 'binary'
+        },
+        filename='',
+        data=cStringIO.StringIO(
+            ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_file_length']))])
+        )
+    )
 
 class Renderer(object):
     """
@@ -223,7 +234,9 @@ class Renderer(object):
             max_str_length=100,
             max_byte_length=100,
             max_array_length=100,
+            max_file_length=200,
             minimal=False,
+            files=[]
         ) 
 
     def render(self, param, opt=None):
