@@ -36,6 +36,19 @@ class StringTestCase(unittest.TestCase):
             self.assertTrue(isinstance(s, six.string_types), 'should be string, not {0}'.format(s))
             self.assertTrue(len(s) <= opt['max_str_length'])
 
+    def test_string_min_max(self):
+        obj = self.app.resolve('#/definitions/string.2')
+        for _ in xrange(50):
+            s = self.rnd.render(
+                obj,
+                opt=self.rnd.default()
+            )
+            self.assertTrue(isinstance(s, six.string_types), 'should be string, not {0}'.format(s))
+            self.assertTrue(
+                len(s) <= obj.maxLength and len(s) >= obj.minLength,
+                'should be between {0}-{1}, not {2}'.format(obj.minLength, obj.maxLength, len(s))
+            )
+
     def test_password(self):
         opt = self.rnd.default()
         for _ in xrange(50):
@@ -253,9 +266,9 @@ class ObjectTestCase(unittest.TestCase):
         kls.rnd = Renderer()
 
     def test_required(self):
-        """ make sure required works """
+        """ make sure minimal_property works """
         opt = self.rnd.default()
-        opt['minimal'] = True
+        opt['minimal_property'] = True
         for _ in xrange(50):
             o = self.rnd.render(
                 self.app.resolve('#/definitions/user'),
@@ -266,7 +279,7 @@ class ObjectTestCase(unittest.TestCase):
             self.assertTrue('name' in o, 'name is in required list')
             self.assertTrue('email' not in o, 'email is not in required list, and it\'s minimal')
 
-        opt['minimal'] = False
+        opt['minimal_property'] = False
         yes = no = 0
         for _ in xrange(50):
             o = self.rnd.render(
@@ -285,7 +298,7 @@ class ObjectTestCase(unittest.TestCase):
     def test_additionalProperties(self):
         """ test additionalProperties """
         opt = self.rnd.default()
-        opt['minimal'] = True
+        opt['minimal_property'] = True
         for _ in xrange(50):
             o = self.rnd.render(
                 self.app.resolve('#/definitions/object.addp'),
@@ -298,6 +311,28 @@ class ObjectTestCase(unittest.TestCase):
                 self.assertTrue('id' in v, 'id is in required list')
                 self.assertTrue('name' in v, 'name is in required list')
                 self.assertTrue('email' not in v, 'email is not in required list, and it\'s minimal')
+
+    def test_template(self):
+        """ make sure object_template works """
+        id_ = uuid.uuid4()
+        opt = self.rnd.default()
+        opt['object_template'].update({
+            'id': id_,
+            'name': 'test-user'
+        })
+        obj = self.app.resolve('#/definitions/comment')
+        for _ in xrange(50):
+            o = self.rnd.render(
+                obj,
+                opt=opt
+            )
+            self.assertEqual(o['id'], id_)
+            self.assertEqual(o['name'], 'test-user')
+            self.assertTrue(
+                len(o['comment']) >= obj.minLength and len(o['comment']) <= obj.maxLength,
+                'should between {0}-{1}, not {2}'.format(obj.minLength, obj.maxLength, len(o['comment']))
+            )
+            self.assertTrue(isinstance(o['time'], datetime.datetime), 'should be a datetime, not {0}'.format(str(type(o['time']))))
 
 class ParameterTestCase(unittest.TestCase):
     """ test case for rendering a single Parameter,
@@ -478,3 +513,45 @@ class OperationTestCase(unittest.TestCase):
 
         # file
         self.assertTrue(isinstance(req.files['thumbnail'], File), 'should be a File, not {0}'.format(req.files))
+
+    def test_template(self):
+        """ make sure template works """
+        op = self.app.s("api.1/{path_email}").get
+        opt = self.rnd.default()
+        opt['parameter_template'].update({
+            'path_email': 'a123@b.com'
+        })
+        for _ in xrange(50):
+            ps = self.rnd.render_all(op, opt=opt)
+            self.assertEqual(ps['path_email'], 'a123@b.com')
+
+        # test object in body
+        opt['object_template'].update({
+            'name': 'user123'
+        })
+        op = self.app.s('api.1').post
+        for _ in xrange(50):
+            ps = self.rnd.render_all(op, opt=opt)
+            self.assertEqual(ps['body.object']['name'], 'user123')
+
+    def test_minimal(self):
+        """ make sure minimal_parameter works """
+        op = self.app.s('api.1').get
+        opt = self.rnd.default()
+        opt['minimal_parameter'] = True
+        for _ in xrange(50):
+            ps = self.rnd.render_all(op, opt=opt)
+            self.assertTrue('p1' not in ps, 'p1 should not existed')
+            self.assertTrue('p2' in ps, 'p2 should exist')
+            self.assertTrue('p3' in ps, 'p3 should exist')
+
+        opt['minimal_parameter'] = False
+        count = 0
+        for _ in xrange(50):
+            ps = self.rnd.render_all(op, opt=opt)
+            if 'p1' in ps:
+                count = count + 1
+            self.assertTrue('p2' in ps, 'p2 should exist')
+            self.assertTrue('p3' in ps, 'p3 should exist')
+        self.assertTrue(count > 0, 'count should be larger than zero, not {0}'.format(count))
+

@@ -9,6 +9,11 @@
       "string.1":{
          "type":"string"
       },
+      "string.2":{
+         "type":"string",
+         "minLength":10,
+         "maxLength":50
+      },
       "password.1":{
          "type":"string",
          "format":"password"

@@ -3,118 +3,148 @@
    "host":"test.com",
    "basePath":"/v1",
    "paths":{
-       "/api.1/{path_email}":{
-           "get":{
-               "parameters":[
+      "/api.1/{path_email}":{
+         "get":{
+            "parameters":[
                {
-                   "name":"path_email",
-                   "in":"path",
-                   "required":true,
-                   "type":"string",
-                   "format":"email"
+                  "name":"path_email",
+                  "in":"path",
+                  "required":true,
+                  "type":"string",
+                  "format":"email"
                },
                {
-                   "name":"header.uuid",
-                   "in":"header",
-                   "required":true,
-                   "type":"string",
-                   "format":"uuid"
+                  "name":"header.uuid",
+                  "in":"header",
+                  "required":true,
+                  "type":"string",
+                  "format":"uuid"
                },
                {
-                   "name":"query.integer",
-                   "in":"query",
-                   "required":true,
-                   "type":"integer",
-                   "format":"int32"
+                  "name":"query.integer",
+                  "in":"query",
+                  "required":true,
+                  "type":"integer",
+                  "format":"int32"
                }
-               ],
-               "responses":{
-                   "default":{
-                       "description":"successful operation"
-                   }
+            ],
+            "responses":{
+               "default":{
+                  "description":"successful operation"
                }
-           }
-        },
-       "/api.1":{
-           "post":{
-               "parameters":[
+            }
+         }
+      },
+      "/api.1":{
+         "post":{
+            "parameters":[
                {
-                   "name":"body.object",
-                   "in":"body",
-                   "required":true,
-                   "schema":{
-                       "$ref":"#/definitions/body.object.1"
-                   }
+                  "name":"body.object",
+                  "in":"body",
+                  "required":true,
+                  "schema":{
+                     "$ref":"#/definitions/body.object.1"
+                  }
                }
-               ],
-               "responses":{
-                   "default":{
-                       "description":"successful operation"
-                   }
+            ],
+            "responses":{
+               "default":{
+                  "description":"successful operation"
                }
-           },
-           "put":{
-               "consumes":[
-                   "application/x-www-form-urlencoded"
-               ],
-               "parameters":[
+            }
+         },
+         "put":{
+            "consumes":[
+               "application/x-www-form-urlencoded"
+            ],
+            "parameters":[
                {
-                   "name":"form.email",
-                   "in":"formData",
-                   "required":true,
-                   "type":"string",
-                   "format":"email"
+                  "name":"form.email",
+                  "in":"formData",
+                  "required":true,
+                  "type":"string",
+                  "format":"email"
                }
-               ],
-               "responses":{
-                   "default":{
-                       "description":"successful operation"
-                   }
+            ],
+            "responses":{
+               "default":{
+                  "description":"successful operation"
                }
-           }
-       },
-       "/api.2":{
-           "post":{
-               "consumes":[
-                   "multipart/form-data"
-               ],
-               "parameters":[
+            }
+         },
+         "get":{
+            "parameters":[
                {
-                   "name":"thumbnail",
-                   "in":"formData",
-                   "required":true,
-                   "type":"file"
+                  "name":"p1",
+                  "in":"query",
+                  "required":false,
+                  "type":"string",
+                  "format":"email"
+               },
+               {
+                  "name":"p2",
+                  "in":"query",
+                  "required":true,
+                  "type":"string",
+                  "format":"email"
+               },
+               {
+                  "name":"p3",
+                  "in":"query",
+                  "required":true,
+                  "type":"string",
+                  "format":"email"
                }
-               ],
-               "responses":{
-                   "default":{
-                       "description":"successful operation"
-                   }
+            ],
+            "responses":{
+               "default":{
+                  "description":"successful operation"
                }
-           }
-       }
+            }
+         }
+      },
+      "/api.2":{
+         "post":{
+            "consumes":[
+               "multipart/form-data"
+            ],
+            "parameters":[
+               {
+                  "name":"thumbnail",
+                  "in":"formData",
+                  "required":true,
+                  "type":"file"
+               }
+            ],
+            "responses":{
+               "default":{
+                  "description":"successful operation"
+               }
+            }
+         }
+      }
    },
    "definitions":{
-       "body.object.1":{
-           "type":"object",
-           "properties":{
-               "name":{
-                   "type":"string"
-               },
-               "id":{
-                   "type":"integer",
-                   "format":"int32"
-               },
-               "contact":{
-                   "type":"string",
-                   "format":"email"
-               }
-           },
-           "required":[
-               "name",
-               "id",
-               "contact"
-           ]
-       }
+      "body.object.1":{
+         "type":"object",
+         "properties":{
+            "name":{
+               "type":"string"
+            },
+            "id":{
+               "type":"integer",
+               "format":"int32"
+            },
+            "contact":{
+               "type":"string",
+               "format":"email"
+            }
+         },
+         "required":[
+            "name",
+            "id",
+            "contact"
+         ]
+      }
    }
 }

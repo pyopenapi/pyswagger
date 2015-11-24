@@ -65,8 +65,16 @@ def _float_(obj, _, val=None):
     return float(out)
 
 def _str_(obj, opt, val=None):
+    max_ = obj.maxLength if obj.maxLength else opt['max_str_length']
+    min_ = obj.minLength if obj.minLength else 0
+
+    if val:
+        if len(val) < min_ or len(val) > max_:
+            raise ValueError('should between {0} - {1}, but {2}'.format(min_, max_, len(val)))
+        return str(val)
+
     # note: length is 0~100, characters are limited to ASCII
-    return str(val) if val else ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_str_length']))])
+    return ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(min_, max_))])
 
 def _bool_(obj, _, val=None):
     return bool(val) if val else random.randint(0, 1) == 0
@@ -104,7 +112,7 @@ def _byte_(obj, opt, val=None):
 max_date = time.mktime(datetime.date.max.timetuple())
 min_date = time.mktime(datetime.date.min.timetuple())
 def _date_(obj, _, val=None):
-    return from_iso8601(val).date() if val else datetime.date.datetime.date.fromtimestamp(
+    return from_iso8601(val).date() if val else datetime.date.fromtimestamp(
         random.uniform(min_date, max_date)
     )
 
@@ -176,6 +184,7 @@ class Renderer(object):
         obj = deref(obj)
         obj = obj.final if isinstance(obj, Schema) else obj
         type_ = getattr(obj, 'type', None)
+        template = opt['object_template']
         out = None
         if type_ == 'object':
             out = {}
@@ -183,8 +192,11 @@ class Renderer(object):
             min_ = obj.minProperties if obj.minProperties else None
             count = 0
             for name, prop in six.iteritems(obj.properties or {}):
+                if name in template:
+                    out[name] = template[name]
+                    continue
                 if not name in obj.required:
-                    if random.randint(0, 1) == 0 or opt['minimal']:
+                    if random.randint(0, 1) == 0 or opt['minimal_property']:
                         continue
                 out[name] = self._generate(prop, opt)
                 count = count + 1
@@ -227,36 +239,63 @@ class Renderer(object):
 
     @staticmethod
     def default():
+        """ return default options, available options:
+        - max_name_length: maximum length of name for additionalProperties
+        - max_prop_count: maximum count of properties (count of fixed properties + additional properties)
+        - max_str_length: maximum length of string type
+        - max_byte_length: maximum length of byte type
+        - max_file_length: maximum length of file, in byte
+        - minimal_property: only generate 'required' properties
+        - minimal_parameter: only generate 'required' parameter
+        - files: registered file object: refer to pyswagger.primitives.File for details
+        - object_template: dict of default values assigned for properties when 'name' matched
+        - parameter_template: dict of default values assigned for parameters when 'name matched
+
+        :return: options
+        :rtype: dict
+        """
         return dict(
-            max_depth=10,
             max_name_length=64,
             max_prop_count=32,
             max_str_length=100,
             max_byte_length=100,
             max_array_length=100,
             max_file_length=200,
-            minimal=False,
-            files=[]
+            minimal_property=False,
+            minimal_parameter=False,
+            files=[],
+            object_template={},
+            parameter_template={},
         ) 
 
-    def render(self, param, opt=None):
-        """
+    def render(self, obj, opt=None):
+        """ render a Schema/Parameter
+
+        :param obj Schema/Parameter: the swagger spec object
+        :param opt dict: render option
+        :return: values that can be passed to Operation.__call__
+        :rtype: depends on type of 'obj'
         """
         opt = self.default() if opt == None else opt
         if not isinstance(opt, dict):
             raise ValueError('Not a dict: {0}'.format(opt))
 
-        if isinstance(param, Parameter):
-            if getattr(param, 'in', None) == 'body':
-                return self._generate(param.schema, opt)
-            return self._generate(param, opt)
-        elif isinstance(param, Schema):
-            return self._generate(param, opt)
+        if isinstance(obj, Parameter):
+            if getattr(obj, 'in', None) == 'body':
+                return self._generate(obj.schema, opt)
+            return self._generate(obj, opt=opt)
+        elif isinstance(obj, Schema):
+            return self._generate(obj, opt)
         else:
-            raise ValueError('Not a Schema/Parameter: {0}'.format(param))
+            raise ValueError('Not a Schema/Parameter: {0}'.format(obj))
 
     def render_all(self, op, exclude=[], opt=None):
-        """
+        """ render a set of parameter for an Operation
+
+        :param op Operation: the swagger spec object
+        :param opt dict: render option
+        :return: a set of parameters that can be passed to Operation.__call__
+        :rtype: dict
         """
         opt = self.default() if opt == None else opt
         if not isinstance(op, Operation):
@@ -264,10 +303,15 @@ class Renderer(object):
         if not isinstance(opt, dict):
             raise ValueError('Not a dict: {0}'.format(opt))
 
+        template = opt['parameter_template']
         out = {}
         for p in op.parameters:
+            if p.name in template:
+                out.update({p.name: template[p.name]})
+                continue
             if not p.required:
-                if random.randint(0, 1) == 0:
+                if random.randint(0, 1) == 0 or opt['minimal_parameter']:
                     continue
-            out.update({p.name: self.render(p)})
+            out.update({p.name: self.render(p, opt=opt)})
         return out
+

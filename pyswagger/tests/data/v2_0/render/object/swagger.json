@@ -35,6 +35,32 @@
          },
          "minProperties":20,
          "maxProperties":50
+      },
+      "comment":{
+         "type":"object",
+         "properties":{
+            "id":{
+               "type":"string",
+               "format":"uuid"
+            },
+            "name":{
+               "type":"string"
+            },
+            "comment":{
+               "type":"string",
+               "minLength":10
+            },
+            "time":{
+               "type":"string",
+               "format":"date-time"
+            }
+         },
+         "required":[
+            "id",
+            "name",
+            "comment",
+            "time"
+         ]
       }
    }
 }
