@@ -7,7 +7,7 @@ from .spec.v2_0.objects import Operation
 from .scan import Scanner
 from .scanner import TypeReduce, CycleDetector
 from .scanner.v1_2 import Upgrade
-from .scanner.v2_0 import AssignParent, Resolve, PatchObject, YamlFixer
+from .scanner.v2_0 import AssignParent, Resolve, PatchObject, YamlFixer, Aggregate
 from pyswagger import utils, errs, consts
 import inspect
 import base64
@@ -266,6 +266,7 @@ class SwaggerApp(object):
 
         s.scan(root=self.__root, route=[Resolve()])
         s.scan(root=self.__root, route=[PatchObject()])
+        s.scan(root=self.__root, route=[Aggregate()])
 
     @classmethod
     def load(kls, url, getter=None, parser=None, app_cache=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None):

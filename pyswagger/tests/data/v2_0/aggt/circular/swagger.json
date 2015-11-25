@@ -1,0 +1,26 @@
+{
+   "swagger":"2.0",
+   "host":"test.com",
+   "basePath":"/v1",
+   "paths":{
+   },
+   "definitions":{
+      "s3":{
+         "$ref":"#/definitions/s3.1"
+      },
+      "s3.1":{
+         "allOf":[
+            {
+               "$ref":"#/definitions/s3.2"
+            }
+         ]
+      },
+      "s3.2":{
+         "allOf":[
+            {
+               "$ref":"#/definitions/s3"
+            }
+         ]
+      }
+   }
+}

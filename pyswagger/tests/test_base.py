@@ -105,7 +105,9 @@ class SwaggerBaseTestCase(unittest.TestCase):
             __swagger_fields__ = {
                 'ma': None,
                 'mb': None,
-                'mc': {}
+                'mc': {},
+                'md': {},
+                'mf': [],
             }
 
         class MergeContext(base.Context):
@@ -118,11 +120,17 @@ class SwaggerBaseTestCase(unittest.TestCase):
 
 
         tmp = {'t': {}}
-        obj2 = {'mb':{'a':[{}, {}, {}]}}
+        obj2 = {
+            'mb':{'a':[{}, {}, {}]},
+            'md':{'2': 2},
+            'mf':[2, 3]
+        }
         obj1 = {
             'ma':{'a':[{}, {}, {}, {}]},
             'mb':{'a':[{}, {}]},
-            'mc':{'/a': {'a': [{}], 'b': {'bb': {}}, 'c': {'cc': [{}]}, 'd': {}}}
+            'mc':{'/a': {'a': [{}], 'b': {'bb': {}}, 'c': {'cc': [{}]}, 'd': {}}},
+            'md':{'1': 1},
+            'mf':[1, 2]
         }
         o3 = MergeObj(base.NullContext())
 
@@ -149,6 +157,8 @@ class SwaggerBaseTestCase(unittest.TestCase):
             self.assertNotEqual(id(o_to.mc['/a'].c['cc'][0]), id(o_from.mc['/a'].c['cc'][0]))
             self.assertTrue(o_to.mc['/a'].d, ChildObj)
             self.assertNotEqual(id(o_to.mc['/a'].d), id(o1.mc['/a'].d))
+            self.assertEqual(o_to.md, {'1': 1, '2': 2})
+            self.assertEqual(sorted(o_to.mf), sorted([1, 2, 3]))
 
         def _chk_parent(o_from, o_to):
             for v in o_to.ma.a:
@@ -183,6 +193,22 @@ class SwaggerBaseTestCase(unittest.TestCase):
         _chk_parent(o1, o2)
         _chk_parent(o2, o3)
         _chk_parent(o1, o3)
+
+    def test_merge_exclude(self):
+        """ test 'exclude' in merge """
+        tmp = {'t': {}}
+        obj = {'a': [{}, {}, {}], 'b': {'/a': {}, '~b': {}, 'cc': {}}}
+        with TestContext(tmp, 't') as ctx:
+            ctx.parse(obj)
+        o = tmp['t']
+
+        o1, o2 = TestObj(base.NullContext()), TestObj(base.NullContext())
+        o1.merge(o, TestContext)
+        o2.merge(o, TestContext, exclude=['b'])
+        self.assertEqual(len(o1.a), 3)
+        self.assertEqual(len(o2.a), 3)
+        self.assertEqual(len(o1.b), 3)
+        self.assertEqual(len(o2.b), 0)
 
     def test_resolve(self):
         """ test resolve function """

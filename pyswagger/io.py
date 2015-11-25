@@ -152,6 +152,7 @@ class SwaggerRequest(object):
         """
 
         # combine path parameters into path
+        # TODO: 'dot' is allowed in swagger, but it won't work in python-format
         self.__path = self.__path.format(**self.__p['path'])
 
         # combine path parameters into url

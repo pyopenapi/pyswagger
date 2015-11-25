@@ -1,0 +1,42 @@
+{
+   "swagger":"2.0",
+   "host":"test.com",
+   "basePath":"/v1",
+   "paths":{
+
+   },
+   "definitions":{
+      "string.1":{
+         "type":"string"
+      },
+      "string.2":{
+         "type":"string",
+         "minLength":10,
+         "maxLength":50
+      },
+      "password.1":{
+         "type":"string",
+         "format":"password"
+      },
+      "uuid.1":{
+         "type":"string",
+         "format":"uuid"
+      },
+      "byte.1":{
+         "type":"string",
+         "format":"byte"
+      },
+      "date.1":{
+         "type":"string",
+         "format":"date"
+      },
+      "datetime.1":{
+         "type":"string",
+         "format":"date-time"
+      },
+      "email.1":{
+         "type":"string",
+         "format":"email"
+      }
+   }
+}

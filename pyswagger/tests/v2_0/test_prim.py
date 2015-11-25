@@ -68,13 +68,25 @@ class SchemaTestCase(unittest.TestCase):
             id=1,
             skill_id=2,
             location="home",
-            skill_name="coding"
+            skill_name="coding",
+            email="a@a.com"
         ), self.app.prim_factory)
         self.assertTrue(isinstance(v, primitives.Model))
         self.assertEqual(v.id, 1)
         self.assertEqual(v.skill_id, 2)
         self.assertEqual(v.location, "home")
         self.assertEqual(v.skill_name, "coding")
+
+        self.assertRaises(
+            errs.ValidationError,
+            e._prim_, dict(
+                id=1,
+                skill_id=2,
+                location="home",
+                skill_name="coding",
+                email="a..a@a.com"
+            ), self.app.prim_factory
+        )
 
     def test_model_boss(self):
         """ test model with allOf and properties
@@ -169,6 +181,29 @@ class SchemaTestCase(unittest.TestCase):
         dv = d._prim_(dict(bool_val=True), self.app.prim_factory) 
         # try to access it
         self.assertEqual(dv.bool_val, True)
+
+    def test_email(self):
+        """ test string in email format """
+        d = self.app.resolve('#/definitions/email')
+
+        dv = d._prim_('a@a.com', self.app.prim_factory)
+        self.assertEqual(dv, 'a@a.com')
+        self.assertRaises(errs.ValidationError, d._prim_, 'a@a..com', self.app.prim_factory)
+
+    def test_uuid(self):
+        """ test string in uuid format """
+        d = self.app.resolve('#/definitions/uuid')
+
+        # string
+        dv = d._prim_('12345678-1234-5678-1234-567812345678', self.app.prim_factory)
+        self.assertTrue(isinstance(dv, primitives.UUID), 'should be an primitives.UUID, not {0}'.format(str(type(dv))))
+        self.assertEqual(str(dv), '12345678-1234-5678-1234-567812345678')
+
+        # byte
+        dv = d._prim_(six.b('\x78\x56\x34\x12\x34\x12\x78\x56\x12\x34\x56\x78\x12\x34\x56\x78'), self.app.prim_factory)
+        self.assertTrue(isinstance(dv, primitives.UUID), 'should be an primitives.UUID, not {0}'.format(dv))
+        self.assertEqual(dv.v.bytes, six.b('\x78\x56\x34\x12\x34\x12\x78\x56\x12\x34\x56\x78\x12\x34\x56\x78'))
+
 
 class HeaderTestCase(unittest.TestCase):
     """ test for Header object """

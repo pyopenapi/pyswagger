@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from ..utils import deref, CycleGuard
 from ._int import create_int, validate_int
-from ._str import create_str, validate_str
+from ._str import create_str, validate_str, validate_email_
 from ._bool import create_bool
 from ._byte import Byte
 from ._time import Date, Datetime
@@ -9,9 +9,13 @@ from ._file import File
 from ._float import create_float, validate_float
 from ._array import Array
 from ._model import Model
+from ._uuid import UUID
 from .comm import create_obj, _2nd_pass_obj
+from .render import Renderer
 import functools
 import json
+
+# TODO: enum is suitable for all types, not only string
 
 
 class SwaggerPrimitive(object):
@@ -41,8 +45,8 @@ class SwaggerPrimitive(object):
 
                 # TODO: add validation for email, uuid
                 # TODO: add convertion of uuid from python's one
-                'email': (create_str, validate_str),
-                'uuid': (create_str, validate_str),
+                'email': (create_str, validate_email_),
+                'uuid': (functools.partial(create_obj, constructor=UUID), _2nd_pass_obj),
 
                 'byte': (functools.partial(create_obj, constructor=Byte), _2nd_pass_obj),
                 'date': (functools.partial(create_obj, constructor=Date), _2nd_pass_obj),

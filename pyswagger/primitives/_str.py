@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from ..errs import ValidationError
+from validate_email import validate_email
 
 
 def validate_str(obj, ret, val, ctx):
@@ -18,4 +19,8 @@ def create_str(obj, v, ctx=None):
     validate_str(obj, r, v, ctx)
     return r
 
+def validate_email_(obj, ret, val, ctx):
+    if not validate_email(ret):
+        raise ValidationError('{0} is not a valid email for {1}'.format(ret, obj))
 
+    return val

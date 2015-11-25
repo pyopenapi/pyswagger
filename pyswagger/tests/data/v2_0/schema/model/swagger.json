@@ -196,6 +196,10 @@
             },
             "location":{
                "type":"string"
+            },
+            "email":{
+                "type":"string",
+                "format":"email"
             }
          }
       },
@@ -293,6 +297,14 @@
           },
           "maxItems":5,
           "minItems":2
+      },
+      "email":{
+          "type":"string",
+          "format":"email"
+      },
+      "uuid":{
+          "type":"string",
+          "format":"uuid"
       }
    }
 }
