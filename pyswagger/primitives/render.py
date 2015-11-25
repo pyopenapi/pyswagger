@@ -11,7 +11,6 @@ import uuid
 import base64
 import datetime
 import time
-import cStringIO
 
 # TODO: patternProperties
 # TODO: pattern
@@ -82,11 +81,11 @@ def _bool_(obj, _, val=None):
 def _uuid_(obj, _, val=None):
     return uuid.UUID(val) if val else uuid.uuid4()
 
-names = list(string.letters) + ['_', '-'] + list(string.digits)
+names = list(string.ascii_letters) + ['_', '-'] + list(string.digits)
 def _email_name_():
-    return random.choice(string.letters) \
+    return random.choice(string.ascii_letters) \
     + ''.join([random.choice(names) for _ in xrange(random.randint(1, 30))]) \
-    + random.choice(string.letters)
+    + random.choice(string.ascii_letters)
 
 def _email_(obj, _, val=None):
     if val:
@@ -98,10 +97,10 @@ def _email_(obj, _, val=None):
     region_length = random.randint(2, 30)
     return '.'.join([_email_name_() for _ in xrange(random.randint(1, 4))]) \
         + '@' \
-        + random.choice(string.letters) \
+        + random.choice(string.ascii_letters) \
         + ''.join([random.choice(names) for _ in xrange(host_length)]) \
         + '.' \
-        + random.choice(string.letters) \
+        + random.choice(string.ascii_letters) \
         + ''.join([random.choice(names) for _ in xrange(region_length)])
 
 def _byte_(obj, opt, val=None):
@@ -110,6 +109,7 @@ def _byte_(obj, opt, val=None):
     )
 
 max_date = time.mktime(datetime.date.max.timetuple())
+print(datetime.date.min.timetuple()) 
 min_date = time.mktime(datetime.date.min.timetuple())
 def _date_(obj, _, val=None):
     return from_iso8601(val).date() if val else datetime.date.fromtimestamp(
@@ -132,7 +132,7 @@ def _file_(obj, opt, _):
             'Content-Transfer-Encoding': 'binary'
         },
         filename='',
-        data=cStringIO.StringIO(
+        data=six.cStringIO.StringIO(
             ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_file_length']))])
         )
     )
@@ -205,7 +205,7 @@ class Renderer(object):
                 # TODO: additionalProperties == True is not handled
 
                 # generate random properties
-                more = random.randint(min_, max_+1) - count
+                more = random.randint(min_, max_) - count
                 if more > 0:
                     # generate a random string as property-name
                     for _ in xrange(more):
