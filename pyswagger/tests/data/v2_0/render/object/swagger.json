@@ -48,7 +48,7 @@
             },
             "comment":{
                "type":"string",
-               "minLength":10
+               "format":"email"
             },
             "time":{
                "type":"string",

@@ -59,7 +59,7 @@ def _float_(obj, _, val=None):
         out = min_ + (max_ - min_) * random.random()
         if obj.multipleOf and obj.multipleOf != 0:
             out = int(out / obj.multipleOf) * obj.multipleOf 
-        if obj <= min_ and obj.exclusiveMinimum:
+        if out <= min_ and obj.exclusiveMinimum:
             out = None
     return float(out)
 
@@ -84,7 +84,7 @@ def _uuid_(obj, _, val=None):
 names = list(string.ascii_letters) + ['_', '-'] + list(string.digits)
 def _email_name_():
     return random.choice(string.ascii_letters) \
-    + ''.join([random.choice(names) for _ in xrange(random.randint(1, 30))]) \
+    + ''.join([random.choice(names) for _ in six.moves.xrange(random.randint(1, 30))]) \
     + random.choice(string.ascii_letters)
 
 def _email_(obj, _, val=None):
@@ -95,29 +95,28 @@ def _email_(obj, _, val=None):
 
     host_length = random.randint(2, 100)
     region_length = random.randint(2, 30)
-    return '.'.join([_email_name_() for _ in xrange(random.randint(1, 4))]) \
+    return '.'.join([_email_name_() for _ in six.moves.xrange(random.randint(1, 4))]) \
         + '@' \
         + random.choice(string.ascii_letters) \
-        + ''.join([random.choice(names) for _ in xrange(host_length)]) \
+        + ''.join([random.choice(names) for _ in six.moves.xrange(host_length)]) \
         + '.' \
         + random.choice(string.ascii_letters) \
-        + ''.join([random.choice(names) for _ in xrange(region_length)])
+        + ''.join([random.choice(names) for _ in six.moves.xrange(region_length)])
 
 def _byte_(obj, opt, val=None):
     return val if val else base64.b64encode( 
-        ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_byte_length']))])
+        six.b(''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_byte_length']))]))
     )
 
 max_date = time.mktime(datetime.date.max.timetuple())
-print(datetime.date.min.timetuple()) 
-min_date = time.mktime(datetime.date.min.timetuple())
+min_date = time.mktime(datetime.date(1970, 1, 1).timetuple())
 def _date_(obj, _, val=None):
     return from_iso8601(val).date() if val else datetime.date.fromtimestamp(
         random.uniform(min_date, max_date)
     )
 
 max_datetime = time.mktime(datetime.datetime.max.utctimetuple())
-min_datetime = time.mktime(datetime.datetime.min.utctimetuple())
+min_datetime = time.mktime(datetime.datetime(1970, 1, 1).utctimetuple())
 def _date_time_(obj, _, val=None):
     return from_iso8601(val) if val else datetime.datetime.utcfromtimestamp(
         random.uniform(min_datetime, max_datetime)
@@ -132,7 +131,7 @@ def _file_(obj, opt, _):
             'Content-Transfer-Encoding': 'binary'
         },
         filename='',
-        data=six.cStringIO.StringIO(
+        data=six.moves.cStringIO(
             ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_file_length']))])
         )
     )
@@ -208,10 +207,10 @@ class Renderer(object):
                 more = random.randint(min_, max_) - count
                 if more > 0:
                     # generate a random string as property-name
-                    for _ in xrange(more):
+                    for _ in six.moves.xrange(more):
                         while True:
                             length = random.randint(0, opt['max_name_length'])
-                            name = ''.join([random.choice(string.ascii_letters) for _ in xrange(length)])
+                            name = ''.join([random.choice(string.ascii_letters) for _ in six.moves.xrange(length)])
                             if name not in out:
                                 out[name] = self._generate(obj.additionalProperties, opt)
                                 break
@@ -220,7 +219,7 @@ class Renderer(object):
             min_ = obj.minItems if obj.minItems else 0
             max_ = obj.maxItems if obj.maxItems else opt['max_array_length']
             out = []
-            for _ in xrange(random.randint(min_, max_)):
+            for _ in six.moves.xrange(random.randint(min_, max_)):
                 out.append(self._generate(obj.items, opt))
 
         elif type_ != None:

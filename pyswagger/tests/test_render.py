@@ -12,7 +12,6 @@ import time
 import string
 import datetime
 import json
-import cStringIO
 import io
 
 
@@ -28,7 +27,7 @@ class StringTestCase(unittest.TestCase):
 
     def test_string(self):
         opt = self.rnd.default()
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             s = self.rnd.render(
                 self.app.resolve('#/definitions/string.1'),
                 opt=opt
@@ -38,7 +37,7 @@ class StringTestCase(unittest.TestCase):
 
     def test_string_min_max(self):
         obj = self.app.resolve('#/definitions/string.2')
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             s = self.rnd.render(
                 obj,
                 opt=self.rnd.default()
@@ -51,7 +50,7 @@ class StringTestCase(unittest.TestCase):
 
     def test_password(self):
         opt = self.rnd.default()
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             s = self.rnd.render(
                 self.app.resolve('#/definitions/password.1'),
                 opt=opt
@@ -67,15 +66,16 @@ class StringTestCase(unittest.TestCase):
         self.assertTrue(isinstance(u, uuid.UUID), 'should be UUID, not {0}'.format(u))
 
     def test_byte(self):
-        b64s = list(string.digits) + list(string.letters) + ['/', '+']
+        b64s = list(string.digits) + list(string.ascii_letters) + ['/', '+']
         bt = self.rnd.render(
             self.app.resolve('#/definitions/byte.1'),
             opt=self.rnd.default()
         )
         # verify it's base64
         self.assertTrue(len(bt) % 4 == 0, 'not a base64 string, {0}'.format(bt))
-        idx = bt.find('=')
-        for v in bt[:idx if idx != -1 else len(bt)]:
+        decoded = bt.decode('utf-8')
+        idx = decoded.find('=')
+        for v in decoded[:idx if idx != -1 else len(decoded)]:
             self.assertTrue(v in b64s, 'should be an allowed char, not {0}'.format(v))
 
     def test_date(self):
@@ -93,7 +93,7 @@ class StringTestCase(unittest.TestCase):
         self.assertTrue(isinstance(d, datetime.datetime), 'should be a datetime.date, not {0}'.format(d))
 
     def test_email(self):
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             e = self.rnd.render(
                 self.app.resolve('#/definitions/email.1'),
                 opt=self.rnd.default()
@@ -113,7 +113,7 @@ class OtherTestCase(unittest.TestCase):
         kls.rnd = Renderer()
 
     def test_integer(self):
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             i = self.rnd.render(
                 self.app.resolve('#/definitions/integer.1'),
                 opt=self.rnd.default()
@@ -124,7 +124,7 @@ class OtherTestCase(unittest.TestCase):
             self.assertTrue((i % 5) == 0, 'should be moduleable by 5, not {0}'.format(i))
 
     def test_float(self):
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             f = self.rnd.render(
                 self.app.resolve('#/definitions/float.1'),
                 opt=self.rnd.default()
@@ -143,7 +143,7 @@ class OtherTestCase(unittest.TestCase):
 
     def test_enum_string(self):
         obj = self.app.resolve('#/definitions/enum.string')
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             e = self.rnd.render(
                 obj,
                 opt=self.rnd.default()
@@ -153,7 +153,7 @@ class OtherTestCase(unittest.TestCase):
  
     def test_enum_integer(self):
         obj = self.app.resolve('#/definitions/enum.integer')
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             e = self.rnd.render(
                 obj,
                 opt=self.rnd.default()
@@ -163,7 +163,7 @@ class OtherTestCase(unittest.TestCase):
  
     def test_enum_boolean(self):
         obj = self.app.resolve('#/definitions/enum.boolean')
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             e = self.rnd.render(
                 obj,
                 opt=self.rnd.default()
@@ -173,7 +173,7 @@ class OtherTestCase(unittest.TestCase):
 
     def test_enum_uuid(self):
         obj = self.app.resolve('#/definitions/enum.uuid')
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             e = self.rnd.render(
                 obj,
                 opt=self.rnd.default()
@@ -183,7 +183,7 @@ class OtherTestCase(unittest.TestCase):
 
     def test_enum_date(self):
         obj = self.app.resolve('#/definitions/enum.date')
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             e = self.rnd.render(
                 obj,
                 opt=self.rnd.default()
@@ -197,7 +197,7 @@ class OtherTestCase(unittest.TestCase):
         # therefore, I compare their timestamp here.
         obj = self.app.resolve('#/definitions/enum.datetime')
         es = [time.mktime(from_iso8601(t).timetuple()) for t in obj.enum]
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             e = self.rnd.render(
                 obj,
                 opt=self.rnd.default()
@@ -269,7 +269,7 @@ class ObjectTestCase(unittest.TestCase):
         """ make sure minimal_property works """
         opt = self.rnd.default()
         opt['minimal_property'] = True
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             o = self.rnd.render(
                 self.app.resolve('#/definitions/user'),
                 opt=opt
@@ -281,7 +281,7 @@ class ObjectTestCase(unittest.TestCase):
 
         opt['minimal_property'] = False
         yes = no = 0
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             o = self.rnd.render(
                 self.app.resolve('#/definitions/user'),
                 opt=opt
@@ -299,7 +299,7 @@ class ObjectTestCase(unittest.TestCase):
         """ test additionalProperties """
         opt = self.rnd.default()
         opt['minimal_property'] = True
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             o = self.rnd.render(
                 self.app.resolve('#/definitions/object.addp'),
                 opt=opt
@@ -321,17 +321,14 @@ class ObjectTestCase(unittest.TestCase):
             'name': 'test-user'
         })
         obj = self.app.resolve('#/definitions/comment')
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             o = self.rnd.render(
                 obj,
                 opt=opt
             )
             self.assertEqual(o['id'], id_)
             self.assertEqual(o['name'], 'test-user')
-            self.assertTrue(
-                len(o['comment']) >= obj.minLength and len(o['comment']) <= obj.maxLength,
-                'should between {0}-{1}, not {2}'.format(obj.minLength, obj.maxLength, len(o['comment']))
-            )
+            self.assertTrue(validate_email(o['comment']))
             self.assertTrue(isinstance(o['time'], datetime.datetime), 'should be a datetime, not {0}'.format(str(type(o['time']))))
 
 class ParameterTestCase(unittest.TestCase):
@@ -412,7 +409,7 @@ class ParameterTestCase(unittest.TestCase):
             filename=pp,
             data=None
         ))
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             v = self.rnd.render(
                 self.app.resolve('#/parameters/form.file'),
                 opt=opt
@@ -521,7 +518,7 @@ class OperationTestCase(unittest.TestCase):
         opt['parameter_template'].update({
             'path_email': 'a123@b.com'
         })
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             ps = self.rnd.render_all(op, opt=opt)
             self.assertEqual(ps['path_email'], 'a123@b.com')
 
@@ -530,7 +527,7 @@ class OperationTestCase(unittest.TestCase):
             'name': 'user123'
         })
         op = self.app.s('api.1').post
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             ps = self.rnd.render_all(op, opt=opt)
             self.assertEqual(ps['body.object']['name'], 'user123')
 
@@ -539,7 +536,7 @@ class OperationTestCase(unittest.TestCase):
         op = self.app.s('api.1').get
         opt = self.rnd.default()
         opt['minimal_parameter'] = True
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             ps = self.rnd.render_all(op, opt=opt)
             self.assertTrue('p1' not in ps, 'p1 should not existed')
             self.assertTrue('p2' in ps, 'p2 should exist')
@@ -547,7 +544,7 @@ class OperationTestCase(unittest.TestCase):
 
         opt['minimal_parameter'] = False
         count = 0
-        for _ in xrange(50):
+        for _ in six.moves.xrange(50):
             ps = self.rnd.render_all(op, opt=opt)
             if 'p1' in ps:
                 count = count + 1
