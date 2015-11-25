@@ -253,11 +253,10 @@ def deref(obj, guard=None):
     """ dereference $ref
     """
     cur, guard = obj, guard or CycleGuard()
+    guard.update(cur)
     while cur and getattr(cur, 'ref_obj', None) != None:
-        # cycle guard
-        guard.update(cur)
-
         cur = cur.ref_obj
+        guard.update(cur)
     return cur
 
 def get_dict_as_tuple(d):

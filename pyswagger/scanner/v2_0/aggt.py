@@ -7,30 +7,37 @@ from ...spec.v2_0.parser import SchemaContext
 from ...utils import deref, CycleGuard
 import six
 
-def _compose(obj):
-    if obj.final != None:
-        return
+def _compose(obj, guard=None):
+    guard = CycleGuard() if not guard else guard
 
-    guard = CycleGuard()
     try:
         obj = deref(obj, guard=guard)
     except CycleDetectionError:
-        pass
+        return
+
+    if obj.final != None:
+        return
 
     if obj.items != None:
-        _compose(obj.items)
+        _compose(obj.items, guard)
     for v in six.itervalues(obj.properties):
-        _compose(v)
-    for v in obj.allOf:
-        _compose(v)
+        _compose(v, guard)
+    for v in (obj.allOf or []):
+        _compose(v, guard)
 
     final = Schema(NullContext())
     final.update_field('additionalProperties', obj.additionalProperties)
     final.merge(obj, SchemaContext)
 
+    # those 'allOf' are visited by the last CycleGuard,
+    # we need use a new one
+    guard = CycleGuard()
     stk = list(obj.allOf)
     while len(stk) > 0:
-        o = deref(stk.pop(), guard=guard)
+        try:
+            o = deref(stk.pop(), guard=guard)
+        except CycleDetectionError:
+            continue
         o = o.final if o.final else o
         final.merge(o, SchemaContext, exclude=['$ref', 'allOf'])
         for n, p in six.iteritems(o.properties):
