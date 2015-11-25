@@ -1,6 +1,6 @@
 ## Access the Response
 The return value of 'request' function of each client implementation is a pyswagger.io.SwaggerResponse object.
-You need to access the result of your request via its interface
+You need to access the result of your request via its interface (note: this sample requires [requests](https://github.com/kennethreitz/requests) ready on your environment)
 
 ```python
 from pyswagger import SwaggerApp

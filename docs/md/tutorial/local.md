@@ -1,6 +1,6 @@
 ## Testing a Local Server
 
-As a backend developer, you will need to test your API before shipping. We provide a simple way to patch the url before client actually making a request
+As a backend developer, you will need to test your API before shipping. We provide a simple way to patch the url before client actually making a request. (note: this sample requires [requests](https://github.com/kennethreitz/requests) installed on your environment.)
 
 ```python
 from pyswagger import SwaggerApp

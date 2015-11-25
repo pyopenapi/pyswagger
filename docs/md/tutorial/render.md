@@ -1,6 +1,6 @@
 ## Rendering Random Requests for BlackBox Testing
 
-pyswagger could be used to generate random inputs to test your own APIs. Below is an example to demonstrate such use-case.
+pyswagger could be used to generate random inputs to test your own APIs. Below is an example to demonstrate such use-case. (note: this sample requires [request](https://github.com/kennethreitz/requests) ready on your environment)
 
 ```python
 from pyswagger import SwaggerApp

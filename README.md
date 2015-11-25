@@ -62,6 +62,9 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 ---------
 
 ##Quick Start
+
+Before running this script, please make sure [requests](https://github.com/kennethreitz/requests) is installed on your environment.
+
 ```python
 from pyswagger import SwaggerApp, SwaggerSecurity
 from pyswagger.contrib.client.requests import Client
@@ -101,6 +104,22 @@ We support pip installtion.
 ```bash
 pip install pyswagger
 ```
+
+Additional dependencies must be prepared before firing a request. If you are going to access a remote/local web server, you must install [requests](https://github.com/kennethreitz/requests) first.
+```bash
+pip install requests
+```
+
+If you want to test a local tornado server, please make sure tornado is ready on your environment
+``` bash
+pip install tornado
+```
+
+We also provide native client for flask app, but to use it, flask is also required
+``` bash
+pip install flask
+```
+
 
 ---------
 
