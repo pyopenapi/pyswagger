@@ -69,6 +69,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         """ Pet.findPetsByTags """
         httpretty.register_uri(httpretty.GET, 'http://petstore.swagger.wordnik.com/api/pet/findByTags',
             status=200,
+            content_type='application/json',
             body=json.dumps([pet_Tom, pet_Qoo])
         )
 
@@ -88,6 +89,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         """ Pet.partialUpdate """
         httpretty.register_uri(httpretty.PATCH, 'http://petstore.swagger.wordnik.com/api/pet/0',
             status=200,
+            content_type='application/json',
             body=json.dumps([pet_Tom, pet_Sue])
         )
         resp = client.request(app.op['partialUpdate'](
@@ -139,6 +141,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         """ Pet.getPetById """
         httpretty.register_uri(httpretty.GET, 'http://petstore.swagger.wordnik.com/api/pet/1',
             status=200,
+            content_type='application/json',
             body=json.dumps(pet_Tom)
         )
 

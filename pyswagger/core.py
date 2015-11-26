@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from .getter import UrlGetter, LocalGetter
 from .resolve import SwaggerResolver
-from .primitives import SwaggerPrimitive
+from .primitives import SwaggerPrimitive, MimeCodec
 from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
 from .spec.v2_0.objects import Operation
@@ -33,7 +33,7 @@ class SwaggerApp(object):
         sc_path: ('/', '#/paths')
     }
 
-    def __init__(self, url=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None):
+    def __init__(self, url=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None, mime_codec=None):
         """ constructor
 
         :param url str: url of swagger.json
@@ -66,6 +66,9 @@ class SwaggerApp(object):
 
         # init a default SwaggerPrimitive as factory for primitives
         self.__prim = prim if prim else SwaggerPrimitive()
+
+        # MIME codec
+        self.__mime_codec = mime_codec or MimeCodec()
 
     @property
     def root(self):
@@ -144,6 +147,14 @@ class SwaggerApp(object):
         :type: pyswagger.primitives.SwaggerPrimitive
         """
         return self.__prim
+
+    @property
+    def mime_codec(self):
+        """ mime codec used by this app
+
+        :type: pyswagger.primitives.MimeCodec
+        """
+        return self.__mime_codec
 
     def load_obj(self, jref, getter=None, parser=None):
         """ load a object(those in spec._version_.objects) from a JSON reference.
@@ -244,7 +255,7 @@ class SwaggerApp(object):
         return v.errs
 
     @classmethod
-    def load(kls, url, getter=None, parser=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None):
+    def load(kls, url, getter=None, parser=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None, mime_codec=None):
         """ load json as a raw SwaggerApp
 
         :param str url: url of path of Swagger API definition
@@ -256,6 +267,7 @@ class SwaggerApp(object):
         :param func url_load_hook: hook to patch the url to load json
         :param str sep: scope-separater used in this SwaggerApp
         :param prim pyswager.primitives.SwaggerPrimitive: factory for primitives in Swagger
+        :param mime_codec pyswagger.primitives.MimeCodec: MIME codec
         :return: the created SwaggerApp object
         :rtype: SwaggerApp
         :raises ValueError: if url is wrong
@@ -265,7 +277,7 @@ class SwaggerApp(object):
         logger.info('load with [{0}]'.format(url))
 
         url = utils.normalize_url(url)
-        app = kls(url, url_load_hook=url_load_hook, sep=sep, prim=prim)
+        app = kls(url, url_load_hook=url_load_hook, sep=sep, prim=prim, mime_codec=mime_codec)
         app.__raw, app.__version = app.load_obj(url, getter=getter, parser=parser)
         if app.__version not in ['1.2', '2.0']:
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))

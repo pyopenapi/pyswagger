@@ -43,12 +43,12 @@ class Client(BaseClient):
             files=file_obj
         )
         rq = self.__s.prepare_request(rq)
-        rs = self.__s.send(rq)
+        rs = self.__s.send(rq, stream=True)
 
         resp.apply_with(
             status=rs.status_code,
             header=rs.headers,
-            raw=rs.text
+            raw=six.StringIO(rs.content).getvalue()
         )
 
         return resp

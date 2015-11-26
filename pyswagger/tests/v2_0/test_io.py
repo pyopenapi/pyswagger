@@ -16,19 +16,21 @@ class SwaggerResponseTestCase(unittest.TestCase):
 
     def test_response_schema_with_status(self):
         """ make sure schema works as expected """
-        resp = io.SwaggerResponse(self.app.s('/resp').get)
 
         # make sure exception raised
+        resp = io.SwaggerResponse(self.app.s('/resp').get)
         self.assertRaises(Exception, resp.apply_with, None, 'some string')
 
         # test for 'default'
-        resp.apply_with(0, 'test string')
+        resp = io.SwaggerResponse(self.app.s('/resp').get)
+        resp.apply_with(0, 'test string', {'content-type': 'text/plain'})
         self.assertEqual(resp.status, 0)
         self.assertEqual(resp.raw, 'test string')
         self.assertEqual(resp.data, 'test string')
 
         # test for specific status code
         r = '{"id": 0, "message": "test string 2"}'
+        resp = io.SwaggerResponse(self.app.s('/resp').get)
         resp.apply_with(404, r)
         self.assertEqual(resp.status, 404)
         self.assertEqual(resp.raw, r)

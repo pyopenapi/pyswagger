@@ -3,6 +3,7 @@ from ..utils import get_test_data_folder
 from pyswagger.primitives import Model, Array
 from pyswagger.io import SwaggerRequest
 import unittest
+import json
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
@@ -187,10 +188,12 @@ class SwaggerResponse_TestCase(unittest.TestCase):
         """ Pet.findPetsByTags """
         _, resp = app.op['findPetsByTags'](tags=[])
 
-        resp.apply_with(status=200, raw=[
+        raw = json.dumps([
             dict(id=1, name='Tom', category=dict(id=1, name='dog'), tags=[dict(id=1, name='small')]),
             dict(id=2, name='QQ', tags=[dict(id=1, name='small')])
         ])
+
+        resp.apply_with(status=200, raw=raw)
 
         d = resp.data
         self.assertTrue(isinstance(d, Array))

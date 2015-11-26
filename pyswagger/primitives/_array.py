@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from ..errs import ValidationError, SchemaError
 import functools
 import six
-import json
 
 
 class Array(list):
@@ -21,19 +20,16 @@ class Array(list):
         self.__collection_format = getattr(obj, 'collectionFormat', 'csv')
 
         if isinstance(val, six.string_types):
-            try:
-                val = json.loads(val)
-            except Exception as e:
-                if self.__collection_format == 'csv':
-                    val = val.split(',')
-                elif self.__collection_format == 'ssv':
-                    val = val.split(' ')
-                elif self.__collection_format == 'tsv':
-                    val = val.split('\t')
-                elif self.__collection_format == 'pipes':
-                    val = val.split('|')
-                else:
-                    raise e
+            if self.__collection_format == 'csv':
+                val = val.split(',')
+            elif self.__collection_format == 'ssv':
+                val = val.split(' ')
+            elif self.__collection_format == 'tsv':
+                val = val.split('\t')
+            elif self.__collection_format == 'pipes':
+                val = val.split('|')
+            else:
+                raise SchemaError("Unsupported collection format '{0}' when converting array: {1}".format(self.__collection_format, val))
 
         val = set(val) if obj.uniqueItems else val
 

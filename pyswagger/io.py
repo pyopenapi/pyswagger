@@ -1,10 +1,9 @@
 from __future__ import absolute_import
 from .primitives.comm import PrimJSONEncoder
-from .utils import final
+from .utils import final, deref
 from pyswagger import errs
 from uuid import uuid4
 import six
-import json
 import io, codecs
 import collections
 import logging
@@ -27,9 +26,6 @@ class SwaggerRequest(object):
 
         :param Operation op: the related Operation object
         :param dict params: parameter set provided by user
-        :param produces: list of 'Content-Type' from parent object
-        :param consumes: list of 'Accepts' from parent object
-        :param authorizations: list of required authorizations from parent object
         """
 
         self.__op = op
@@ -38,34 +34,45 @@ class SwaggerRequest(object):
         self.__path = self.__op.path
         self.__header = {}
 
-        # update 'accept' header section
-        accepts = 'application/json'
-        if accepts and self.__op.produces and accepts not in self.__op.produces:
-            accepts = self.__op.produces[0]
+        self.__consume = None
+        self.__produce = None
 
-        if accepts:
-            self.__header.update({'Accept': accepts})
+    def consume(self, consume):
+        self.__consume = consume
+        return self
+
+    def produce(self, produce):
+        self.__produce = produce
+        return self
 
     def _prepare_forms(self):
         """ private function to prepare content for paramType=form
         """
         content_type = 'application/x-www-form-urlencoded'
         if self.__op.consumes and content_type not in self.__op.consumes:
-            raise errs.SchemaError('unable to locate content-type: {0}'.format(content_type))
+            raise errs.SchemaError('content type {0} does not present in {1}'.format(content_type, self.__op.consumes))
 
         return content_type, six.moves.urllib.parse.urlencode(self.__p['formData'])
 
     def _prepare_body(self):
         """ private function to prepare content for paramType=body
         """
-        content_type = 'application/json'
+        content_type = self.__consume
+        if not content_type:
+            content_type = self.__op.consumes[0] if self.__op.consumes else 'application/json'
         if self.__op.consumes and content_type not in self.__op.consumes:
-            raise errs.SchemaError('unable to locate content-type: {0}'.format(content_type))
+            raise errs.SchemaError('content type {0} does not present in {1}'.format(content_type, self.__op.consumes))
 
-        for v in six.itervalues(self.__p['body']):
-            # according to spec, payload should be one and only,
-            # so we just return the first value in dict.
-            return content_type, json.dumps(v, cls=PrimJSONEncoder)
+        # according to spec, payload should be one and only,
+        # so we just return the first value in dict.
+        for parameter in self.__op.parameters:
+            if getattr(parameter, 'in') == 'body':
+                schema = deref(parameter.schema)
+                _type = schema.type
+                _format = schema.format
+                name = schema.name
+                body = self.__p['body'][parameter.name]
+                return content_type, self.__op._mime_codec.marshal(content_type, body, _type=_type, _format=_format, name=name)
         return None, None
 
     def _prepare_files(self, encoding):
@@ -73,7 +80,7 @@ class SwaggerRequest(object):
         """
         content_type = 'multipart/form-data'
         if self.__op.consumes and content_type not in self.__op.consumes:
-            raise errs.SchemaError('unable to locate content-type: {0}'.format(content_type))
+            raise errs.SchemaError('content type {0} does not present in {1}'.format(content_type, self.__op.consumes))
 
         boundary = uuid4().hex
         content_type += '; boundary={0}'
@@ -183,6 +190,14 @@ class SwaggerRequest(object):
 
         if content_type:
             self.__header.update({'Content-Type': content_type})
+
+        accept = self.__produce
+        if not accept and self.__op.produces:
+            accept = self.__op.produces[0]
+        if accept:
+            if self.__op.produces and accept not in self.__op.produces:
+                raise errs.SchemaError('accept {0} does not present in {1}'.format(accept, self.__op.produces))
+            self.__header.update({'Accept': accept})
 
         return self
 
@@ -316,6 +331,14 @@ class SwaggerResponse(object):
         r = (final(self.__op.responses.get(str(self.__status), None)) or
              final(self.__op.responses.get('default', None)))
 
+        if header != None:
+            if isinstance(header, (collections.Mapping, collections.MutableMapping)):
+                for k, v in six.iteritems(header):
+                    self._convert_header(r, k, v)
+            else:
+                for k, v in header:
+                    self._convert_header(r, k, v)
+
         if raw != None:
             # update 'raw'
             self.__raw = raw
@@ -325,15 +348,17 @@ class SwaggerResponse(object):
 
             if r and r.schema:
                 # update data from Opeartion if succeed else from responseMessage.responseModel
-                self.__data = r.schema._prim_(self.raw, self.__op._prim_factory)
-
-        if header != None:
-            if isinstance(header, (collections.Mapping, collections.MutableMapping)):
-                for k, v in six.iteritems(header):
-                    self._convert_header(r, k, v)
-            else:
-                for k, v in header:
-                    self._convert_header(r, k, v)
+                content_type = 'application/json'
+                for k, v in six.iteritems(self.header):
+                    if k.lower() == 'content-type':
+                        content_type = v[0].lower()
+                        break
+                schema = deref(r.schema)
+                _type = schema.type
+                _format = schema.format
+                name = schema.name
+                data = self.__op._mime_codec.unmarshal(content_type, self.raw, _type=_type, _format=_format, name=name)
+                self.__data = r.schema._prim_(data, self.__op._prim_factory)
 
         return self
 

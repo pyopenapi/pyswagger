@@ -29,6 +29,7 @@ class ModelInteritanceTestCase(unittest.TestCase):
         httpretty.register_uri(
             httpretty.GET, 'http://petstore.swagger.wordnik.com/api/user/mary',
             status=200,
+            content_type='application/json',
             body=json.dumps(uwi_mary)
             )
 
@@ -50,6 +51,7 @@ class ModelInteritanceTestCase(unittest.TestCase):
         httpretty.register_uri(
             httpretty.GET, 'http://petstore.swagger.wordnik.com/api/user/kevin',
             status=200,
+            content_type='application/json',
             body=json.dumps(uwi_kevin)
             )
 

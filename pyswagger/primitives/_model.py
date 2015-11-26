@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import json
 import six
 
 class Model(dict):
@@ -19,15 +18,8 @@ class Model(dict):
         """ recursivly apply Schema object
 
         :param obj.Model obj: model object to instruct how to create this model
-        :param val: things used to construct this model
-        :type val: dict of json string in str or byte
+        :param dict val: things used to construct this model
         """
-        if isinstance(val, six.string_types):
-            val = json.loads(val)
-        elif isinstance(val, six.binary_type):
-            # TODO: encoding problem...
-            val = json.loads(val.decode('utf-8'))
-
         for k, v in six.iteritems(val):
             if k in obj.properties:
                 pobj = obj.properties.get(k)

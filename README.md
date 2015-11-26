@@ -59,6 +59,8 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - [Testing a Local Server](docs/md/tutorial/local.md)
 - [Converting Document into another version](docs/md/tutorial/converter.md)
 - [Exntending Primitive Factory for user-defined primitives](docs/md/tutorial/extend_prim.md)
+- [Rendering Random Requests for BlackBox Testing](docs/md/tutorial/render.md)
+- [Operation MIME Support](docs/md/tutorial/mime.md)
 
 ---------
 
