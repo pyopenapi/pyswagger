@@ -552,3 +552,11 @@ class OperationTestCase(unittest.TestCase):
             self.assertTrue('p3' in ps, 'p3 should exist')
         self.assertTrue(count > 0, 'count should be larger than zero, not {0}'.format(count))
 
+    def test_exclude(self):
+        """ make sure exclude works """
+        op = self.app.s('api.1').get
+        opt = self.rnd.default()
+        opt['minimal_parameter'] = False
+        for _ in six.moves.xrange(50):
+            ps = self.rnd.render_all(op, exclude=['p1'], opt=opt)
+            self.assertTrue('p1' not in ps, 'p1 should be excluded')

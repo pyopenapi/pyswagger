@@ -5,12 +5,12 @@ pyswagger could be used to generate random inputs to test your own APIs. Below i
 ```python
 from pyswagger import SwaggerApp
 from pyswagger.primitives import Renderer
-from pyswagger.contrib.client.request import Client
+from pyswagger.contrib.client.requests import Client
 
 # create a SwaggerApp with a local resource file
 app = SwaggerApp.create('/path/to/your/resource/file/swagger.json')
 # init client
-cilent = Client()
+client = Client()
 # init renderer
 renderer = Renderer()
 
