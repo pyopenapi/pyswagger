@@ -186,6 +186,7 @@ class Renderer(object):
         template = opt['object_template']
         out = None
         if type_ == 'object':
+            max_p = opt['max_property']
             out = {}
             max_ = obj.maxProperties if obj.maxProperties else opt['max_prop_count']
             min_ = obj.minProperties if obj.minProperties else None
@@ -194,7 +195,7 @@ class Renderer(object):
                 if name in template:
                     out[name] = template[name]
                     continue
-                if not name in obj.required:
+                if not max_p and not name in obj.required:
                     if random.randint(0, 1) == 0 or opt['minimal_property']:
                         continue
                 out[name] = self._generate(prop, opt)
@@ -250,6 +251,8 @@ class Renderer(object):
         - files: registered file object: refer to pyswagger.primitives.File for details
         - object_template: dict of default values assigned for properties when 'name' matched
         - parameter_template: dict of default values assigned for parameters when 'name matched
+        - max_property: all properties are generated, ignore 'required'
+        - max_parameter: all parameters are generated, ignore 'required'
 
         :return: options
         :rtype: dict
@@ -266,6 +269,8 @@ class Renderer(object):
             files=[],
             object_template={},
             parameter_template={},
+            max_property=False,
+            max_parameter=False,
         ) 
 
     def render(self, obj, opt=None):
@@ -304,6 +309,7 @@ class Renderer(object):
             raise ValueError('Not a dict: {0}'.format(opt))
 
         template = opt['parameter_template']
+        max_p = opt['max_parameter']
         out = {}
         for p in op.parameters:
             if p.name in exclude:
@@ -311,7 +317,7 @@ class Renderer(object):
             if p.name in template:
                 out.update({p.name: template[p.name]})
                 continue
-            if not p.required:
+            if not max_p and not p.required:
                 if random.randint(0, 1) == 0 or opt['minimal_parameter']:
                     continue
             out.update({p.name: self.render(p, opt=opt)})

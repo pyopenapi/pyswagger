@@ -331,6 +331,21 @@ class ObjectTestCase(unittest.TestCase):
             self.assertTrue(validate_email(o['comment']))
             self.assertTrue(isinstance(o['time'], datetime.datetime), 'should be a datetime, not {0}'.format(str(type(o['time']))))
 
+    def test_max_property(self):
+        """ make sure max_property works """
+        opt = self.rnd.default()
+        opt['max_property'] = True
+        obj = self.app.resolve('#/definitions/user2')
+        for _ in six.moves.xrange(50):
+            o = self.rnd.render(
+                obj,
+                opt=opt
+            )
+            self.assertTrue('id' in o, 'should have id')
+            self.assertTrue('name' in o, 'should have name')
+            self.assertTrue('email' in o, 'should have email')
+
+
 class ParameterTestCase(unittest.TestCase):
     """ test case for rendering a single Parameter,
     type/format specific tests are covered by other
@@ -551,6 +566,17 @@ class OperationTestCase(unittest.TestCase):
             self.assertTrue('p2' in ps, 'p2 should exist')
             self.assertTrue('p3' in ps, 'p3 should exist')
         self.assertTrue(count > 0, 'count should be larger than zero, not {0}'.format(count))
+
+    def test_max_parameter(self):
+        """ make sure max_parameter works """
+        op = self.app.s('api.2').get
+        opt = self.rnd.default()
+        opt['max_parameter'] = True
+        for _ in six.moves.xrange(50):
+            ps = self.rnd.render_all(op, opt=opt)
+            self.assertTrue('p1' in ps, 'p1 should exists')
+            self.assertTrue('p2' in ps, 'p2 should exists')
+            self.assertTrue('p2' in ps, 'p3 should exists')
 
     def test_exclude(self):
         """ make sure exclude works """
