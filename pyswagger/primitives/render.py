@@ -243,6 +243,7 @@ class Renderer(object):
         - max_prop_count: maximum count of properties (count of fixed properties + additional properties)
         - max_str_length: maximum length of string type
         - max_byte_length: maximum length of byte type
+        - max_array_length: maximum length of array
         - max_file_length: maximum length of file, in byte
         - minimal_property: only generate 'required' properties
         - minimal_parameter: only generate 'required' parameter
@@ -298,13 +299,15 @@ class Renderer(object):
         """
         opt = self.default() if opt == None else opt
         if not isinstance(op, Operation):
-            raise ValueError('Not a Operation: {0}'.format(params))
+            raise ValueError('Not a Operation: {0}'.format(op))
         if not isinstance(opt, dict):
             raise ValueError('Not a dict: {0}'.format(opt))
 
         template = opt['parameter_template']
         out = {}
         for p in op.parameters:
+            if p.name in exclude:
+                continue
             if p.name in template:
                 out.update({p.name: template[p.name]})
                 continue
