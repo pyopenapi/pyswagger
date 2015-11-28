@@ -150,6 +150,15 @@ class OtherTestCase(unittest.TestCase):
             )
             self.assertTrue(isinstance(e, six.string_types), 'should be a string, not {0}'.format(e))
             self.assertTrue(e in obj.enum, 'should be one of {0}, not {1}'.format(obj.enum, e))
+
+        opt = self.rnd.default()
+        # value from enum should not validate
+        opt['max_str_length'] = 1
+        for _ in six.moves.xrange(50):
+            e = self.rnd.render(
+                obj,
+                opt=opt
+            )
  
     def test_enum_integer(self):
         obj = self.app.resolve('#/definitions/enum.integer')
@@ -204,6 +213,17 @@ class OtherTestCase(unittest.TestCase):
             )
             self.assertTrue(isinstance(e, datetime.datetime), 'should be a datetime.datetime, not {0}'.format(e))
             self.assertTrue(time.mktime(e.timetuple()) in es, 'should be an element in enum, not {0}'.format(e))
+
+    def test_enum_email(self):
+        """ always trust enum when rendering """
+        obj = self.app.resolve('#/definitions/enum.email')
+        for _ in six.moves.xrange(50):
+            e = self.rnd.render(
+                obj,
+                opt=self.rnd.default()
+            )
+            self.assertTrue(isinstance(e, six.string_types), 'should be a string, not {0}'.format(str(type(e))))
+            self.assertTrue(e in obj.enum, 'should be an element in enum, not {0}'.format(e))
 
 
 class ArrayTestCase(unittest.TestCase):

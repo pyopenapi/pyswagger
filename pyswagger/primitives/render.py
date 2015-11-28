@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from ..spec.v2_0.objects import Parameter, Operation, Schema
 from ..utils import deref, from_iso8601
 from decimal import Decimal
-from validate_email import validate_email
 import random
 import six
 import sys
@@ -24,6 +23,9 @@ maxInt64 = 1 << 63 - 1
 minInt64 = -maxInt64
 
 def _int_(obj, _, val=None):
+    if val:
+        return val
+
     max_ = maxInt32 if getattr(obj, 'format') in ['int32', None] else maxInt64
     max_ = obj.maximum if obj.maximum else max_
     max_ = max_-1 if obj.exclusiveMaximum else max_
@@ -32,27 +34,16 @@ def _int_(obj, _, val=None):
     min_ = obj.minimum if obj.minimum else min_
     min_ = min_+1 if obj.exclusiveMinimum else min_
 
-    if val:
-        if val < min_ or val > max_:
-            raise ValueError('should between {0} - {1}, but {2}'.foramt(min_, max_, val))
-        if obj.multipleOf and val % int(obj.multipleOf) != 0:
-            raise ValueError('should be multiple of {0}, but {1}'.format(obj.multipleOf, val))
-        return val
-    else:
-        out = random.randint(min_, max_)
-        return out - (out % obj.multipleOf) if isinstance(obj.multipleOf, six.integer_types) and obj.multipleOf != 0 else out
+    out = random.randint(min_, max_)
+    return out - (out % obj.multipleOf) if isinstance(obj.multipleOf, six.integer_types) and obj.multipleOf != 0 else out
 
 def _float_(obj, _, val=None):
+    if val:
+        return val
+
     # TODO: exclusiveMaximum == False is not implemented.
     max_ = obj.maximum if obj.maximum else sys.float_info.max
     min_ = obj.minimum if obj.minimum else sys.float_info.min
-
-    if val:
-        if val < min_ or val > max_:
-            raise ValueError('should between {0} - {1}, but {2}'.foramt(min_, max_, out))
-        if obj.multipleOf and Decimal(val) % Decimal(obj.multipleOf) != Decimal(0):
-            raise ValueError('should be multiple of {0}, but {1}'.format(obj.multipleOf, val))
-        return val
 
     out = None
     while out == None:
@@ -64,13 +55,11 @@ def _float_(obj, _, val=None):
     return float(out)
 
 def _str_(obj, opt, val=None):
+    if val:
+        return val
+
     max_ = obj.maxLength if obj.maxLength else opt['max_str_length']
     min_ = obj.minLength if obj.minLength else 0
-
-    if val:
-        if len(val) < min_ or len(val) > max_:
-            raise ValueError('should between {0} - {1}, but {2}'.format(min_, max_, len(val)))
-        return str(val)
 
     # note: length is 0~100, characters are limited to ASCII
     return ''.join([random.choice(string.ascii_letters) for _ in range(random.randint(min_, max_))])
@@ -89,8 +78,6 @@ def _email_name_():
 
 def _email_(obj, _, val=None):
     if val:
-        if not validate_email(val):
-            raise ValueError('should be a valid email, not {0}'.format(val))
         return val
 
     host_length = random.randint(2, 100)

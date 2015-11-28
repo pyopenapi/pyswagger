@@ -43,6 +43,7 @@
       "enum.integer":{
          "type":"integer",
          "format":"int32",
+         "maximum":1,
          "enum":[
             1,
             2,
@@ -88,6 +89,14 @@
             "2006-04-30T03:01:38",
             "1994-11-05T13:15:30Z"
          ]
+      },
+      "enum.email":{
+          "type":"string",
+          "format":"email",
+          "enum":[
+             "a@a..com",
+             "b@b..com"
+          ]
       }
    }
 }
