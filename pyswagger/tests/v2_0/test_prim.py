@@ -1,6 +1,7 @@
 from pyswagger import SwaggerApp, primitives, errs, io
 from ..utils import get_test_data_folder
-from pyswagger.spec.v2_0 import objects
+from pyswagger.spec.v2_0 import objects, parser
+from pyswagger.spec import base
 from pyswagger.utils import jp_compose
 from pyswagger.primitives import SwaggerPrimitive
 import os
@@ -283,6 +284,28 @@ class AdditionalPropertiesTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(kls):
         kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'additionalProperties')))
+
+    def test_merge(self):
+        """ verify merge along with additionalProperties """
+        # Schema
+        addp = self.app.resolve('#/definitions/add_prop')
+        final = objects.Schema(base.NullContext())
+        final.merge(addp, parser.SchemaContext)
+
+        # True
+        addp = self.app.resolve('#/definitions/add_prop_bool')
+        final = objects.Schema(base.NullContext())
+        final.merge(addp, parser.SchemaContext)
+
+        # False
+        addp = self.app.resolve('#/definitions/add_prop_false')
+        final = objects.Schema(base.NullContext())
+        final.merge(addp, parser.SchemaContext)
+
+        # nested with allOf
+        addp = self.app.resolve('#/definitions/add_prop_nested')
+        final = objects.Schema(base.NullContext())
+        final.merge(addp, parser.SchemaContext)
 
     def test_with_schema(self):
         m = self.app.prim_factory.produce(

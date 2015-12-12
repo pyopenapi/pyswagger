@@ -26,7 +26,6 @@ def _compose(obj, guard=None):
         _compose(v, guard)
 
     final = Schema(NullContext())
-    final.update_field('additionalProperties', obj.additionalProperties)
     final.merge(obj, SchemaContext)
 
     # those 'allOf' are visited by the last CycleGuard,

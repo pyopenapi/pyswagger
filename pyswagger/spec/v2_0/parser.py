@@ -83,7 +83,7 @@ class AdditionalPropertiesContext(Context):
     def produce(self):
         """
         """
-        if self._obj != None:
+        if self.is_produced(self._obj):
             return self._obj
         else:
             return AdditionalPropertiesContext._TmpObj(self)
