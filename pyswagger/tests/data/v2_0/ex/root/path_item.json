@@ -1,0 +1,16 @@
+{
+   "get":{
+      "responses":{
+         "default":{
+            "description":"relative, path_item, get, response"
+         }
+      }
+   },
+   "put":{
+      "responses":{
+         "default":{
+            "description":"relative, path_item, put, response"
+         }
+      }
+   }
+}

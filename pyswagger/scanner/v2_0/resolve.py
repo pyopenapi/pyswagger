@@ -23,7 +23,7 @@ def _resolve(obj, app, prefix, parser):
         return
 
     r = getattr(obj, '$ref')
-    ro = app.resolve(normalize_jr(r, prefix), parser)
+    ro = app.resolve(normalize_jr(r, prefix, app.url), parser)
 
     if not ro:
         raise ReferenceError('Unable to resolve: {0}'.format(r))

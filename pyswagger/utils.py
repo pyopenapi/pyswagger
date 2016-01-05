@@ -320,10 +320,15 @@ def normalize_jr(jr, prefix, url=None):
     if p.scheme != '':
         return jr
 
+    # fix implicit reference,
     # it's a JSON reference without url
-
-    # fix implicit reference
-    jr = jp_compose(jr, base=prefix) if jr.find('#') == -1 else jr
+    if jr.find('#') == -1:
+        if prefix == '#/paths':
+            # relative reference to files next to this one
+            p = six.moves.urllib.parse.urlparse(url)
+            return six.moves.urllib.parse.urlunparse(p[:2]+(os.path.join(os.path.dirname(p.path), jr),)+p[3:])
+        else:
+            jr = jp_compose(jr, base=prefix)
 
     # prepend url
     if url:

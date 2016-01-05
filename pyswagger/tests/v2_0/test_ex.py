@@ -90,3 +90,14 @@ class ExternalDocumentTestCase(unittest.TestCase):
         p_ = self.app.resolve('#/definitions/s3')
         self.assertEqual(p_.__repr__(), original_p.items.ref_obj.__repr__())
 
+    def test_relative_path_item(self):
+        """ make sure that relative file schema works
+           https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#relative-schema-file-example
+        """
+        def chk(obj):
+            self.assertEqual(obj.get.responses['default'].description, 'relative, path_item, get, response')
+            self.assertEqual(obj.put.responses['default'].description, 'relative, path_item, put, response')
+
+        chk(self.app.s('relative'))
+        chk(self.app.resolve('file:///root/path_item.json'))
+

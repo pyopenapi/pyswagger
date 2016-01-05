@@ -11,7 +11,7 @@ import functools
 import six
 
 def _out(app, prefix, path):
-    obj = app.resolve(normalize_jr(path, prefix))
+    obj = app.resolve(normalize_jr(path, prefix, app.url))
     r = getattr(obj, 'norm_ref')
     return [r] if r else []
 

@@ -18,6 +18,9 @@
       },
       "/partial":{
          "$ref":"file:///partial/path_item/swagger.json"
+      },
+      "/relative":{
+         "$ref":"path_item.json"
       }
    },
    "definitions":{
