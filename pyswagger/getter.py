@@ -37,11 +37,12 @@ class Getter(six.Iterator):
             raise ValueError('Unknown types: [{0}]'.format(str(type(obj))))
 
         # a very simple logic to distinguish json and yaml
-        if obj.startswith('{'):
-            obj = json.loads(obj)
-        elif obj.startswith('---'):
-            obj = yaml.load(obj)
-        else:
+        try:
+            if obj.startswith('{'):
+                obj = json.loads(obj)
+            else:
+                obj = yaml.load(obj)
+        except ValueError:
             raise Exception('Unknown format startswith {0} ...'.format(obj[:10]))
 
         # find urls to retrieve from resource listing file
