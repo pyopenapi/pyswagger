@@ -44,7 +44,7 @@ class PatchObject(object):
         setattr(obj, '_prim_factory', app.prim_factory)
 
         # inherit service-wide security requirements
-        if obj.security == None:
+        if obj.security == None and isinstance(app.root, Swagger):
             obj.update_field('security', app.root.security)
 
     @Disp.register([PathItem])
