@@ -43,6 +43,10 @@ class PatchObject(object):
         # primitive factory
         setattr(obj, '_prim_factory', app.prim_factory)
 
+        # inherit service-wide security requirements
+        if obj.security == None:
+            obj.update_field('security', app.root.security)
+
     @Disp.register([PathItem])
     def _path_item(self, path, obj, app):
         """

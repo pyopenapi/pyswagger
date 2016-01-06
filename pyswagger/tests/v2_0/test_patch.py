@@ -63,6 +63,20 @@ class PatchObjTestCase(unittest.TestCase):
         self.assertEqual(p.get.cached_schemes, self.app.root.schemes)
         self.assertEqual(p.get.cached_schemes, ['http', 'https'])
 
+    def test_operation_security(self):
+        """ test patch Operation with Swagger.security """
+        p = self.app.s('/op_security')
+
+        # when security is something, do not overwrite
+        self.assertTrue(len(p.put.security) == 1)
+        self.assertTrue("internalApiKey" in p.put.security[0])
+        # when security is [], do not overwrite
+        self.assertEqual(p.get.security, [])
+        # when security is not provided, overwrite with global
+        self.assertTrue(len(p.post.security) == 2)
+        self.assertTrue("githubAccessCode" in p.post.security[0])
+        self.assertTrue("internalApiKey" in p.post.security[1])
+
     def test_path_item(self):
         """ test patch PathItem """
         p = self.app.s('/pc')
