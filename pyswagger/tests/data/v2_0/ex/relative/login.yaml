@@ -1,0 +1,17 @@
+post:
+  operationId: post_login
+  summary: Log a user in
+  description: Insert username and password, receive token
+  parameters:
+    - name: login_form
+      in: body
+      required: true
+      schema:
+        $ref: 'definitions/Login.yaml'
+  responses:
+    '200':
+      description: Login result containing a session token
+      schema:
+        $ref: 'definitions/LoginResults.yaml'
+    '403':
+      description: Returned when credentials are incorrect

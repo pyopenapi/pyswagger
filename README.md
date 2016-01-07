@@ -24,6 +24,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - [Contributors](README.md#contributors)
 - [Contribution Guideline](README.md#contribution-guildeline)
 - [FAQ](README.md#faq)
+- [Changes](CHANGES.md)
 
 ---------
 

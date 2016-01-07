@@ -18,12 +18,12 @@ from ...utils import normalize_jr
 def is_resolved(obj):
     return getattr(obj, '$ref') == None or obj.ref_obj != None
 
-def _resolve(obj, app, prefix, parser):
+def _resolve(obj, app, parser):
     if is_resolved(obj):
         return
 
     r = getattr(obj, '$ref')
-    ro = app.resolve(normalize_jr(r, prefix, app.url), parser)
+    ro = app.resolve(normalize_jr(r, app.url), parser)
 
     if not ro:
         raise ReferenceError('Unable to resolve: {0}'.format(r))
@@ -31,9 +31,9 @@ def _resolve(obj, app, prefix, parser):
         raise TypeError('Referenced Type mismatch: {0}'.format(r))
 
     obj.update_field('ref_obj', ro)
-    obj.update_field('norm_ref', normalize_jr(r, prefix, app.url))
+    obj.update_field('norm_ref', normalize_jr(r, app.url))
 
-def _merge(obj, app, prefix, ctx):
+def _merge(obj, app, ctx):
     """ resolve $ref as ref_obj, and merge ref_obj to self.
     This operation should be carried in a cascade manner.
     """
@@ -41,7 +41,7 @@ def _merge(obj, app, prefix, ctx):
     cur = obj
     to_resolve = []
     while not is_resolved(cur):
-        _resolve(cur, app, prefix, ctx)
+        _resolve(cur, app, ctx)
 
         to_resolve.append(cur)
         cur = cur.ref_obj if cur.ref_obj else cur
@@ -59,15 +59,15 @@ class Resolve(object):
 
     @Disp.register([Schema])
     def _schema(self, _, obj, app):
-        _resolve(obj, app, '#/definitions', SchemaContext)
+        _resolve(obj, app, SchemaContext)
 
     @Disp.register([Parameter])
     def _parameter(self, _, obj, app):
-        _resolve(obj, app, '#/parameters', ParameterContext)
+        _resolve(obj, app, ParameterContext)
 
     @Disp.register([Response])
     def _response(self, _, obj, app):
-        _resolve(obj, app, '#/responses', ResponseContext)
+        _resolve(obj, app, ResponseContext)
 
     @Disp.register([PathItem])
     def _path_item(self, _, obj, app):
@@ -75,5 +75,5 @@ class Resolve(object):
         # $ref in PathItem is 'merge', not 'replace'
         # we need to merge properties of others if missing
         # in current object.
-        _merge(obj, app, '#/paths', PathItemContext)
+        _merge(obj, app, PathItemContext)
 

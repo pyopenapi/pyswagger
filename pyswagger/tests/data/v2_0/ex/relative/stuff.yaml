@@ -1,0 +1,18 @@
+post:
+  operationId: post_stuff
+  security:
+    - session_token: []
+  description: does some stuff
+  parameters:
+    - name: stuff_form
+      in: body
+      required: true
+      schema:
+        $ref: 'definitions/Stuff.yaml'
+  responses:
+    '200':
+      description: Results of doing the stuff
+      schema:
+        $ref: 'definitions/StuffResults.yaml'
+    '403':
+      description: Returned when token is incorrect

@@ -140,14 +140,12 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.normalize_url('/tmp/local/test in space.txt'), 'file:///tmp/local/test%20in%20space.txt')
 
     def test_normalize_jr(self):
-        self.assertEqual(utils.normalize_jr(None, ''), None)
-        self.assertEqual(utils.normalize_jr('User', '#/definitions'), '#/definitions/User')
-        self.assertEqual(utils.normalize_jr('User', '#/definitions', 'http://test.com/api'), 'http://test.com/api#/definitions/User')
-        self.assertEqual(utils.normalize_jr('#/definitions/User', '#/definitions', 'http://test.com/api'), 'http://test.com/api#/definitions/User')
-        self.assertEqual(utils.normalize_jr(
-            'http://test.com/api#/definitions/User', ''),
-            'http://test.com/api#/definitions/User'
-        )
+        self.assertEqual(utils.normalize_jr(None), None)
+        self.assertEqual(utils.normalize_jr(None, 'http://test.com/api/swagger.json'), None)
+        self.assertEqual(utils.normalize_jr('User.json', 'http://test.com/api/swagger.json'), 'http://test.com/api/User.json')
+        self.assertEqual(utils.normalize_jr('definitions/User.json', 'http://test.com/api/swagger.json'), 'http://test.com/api/definitions/User.json')
+        self.assertEqual(utils.normalize_jr('#/definitions/User', 'http://test.com/api/swagger.json'), 'http://test.com/api/swagger.json#/definitions/User')
+        self.assertEqual(utils.normalize_jr('#/definitions/User'), '#/definitions/User')
 
     def test_get_swagger_version(self):
         self.assertEqual(utils.get_swagger_version({'swaggerVersion': '1.2'}), '1.2')

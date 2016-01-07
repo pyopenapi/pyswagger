@@ -1,0 +1,16 @@
+swagger: '2.0'
+info:
+  title: Acme Internal API
+  description: Docs for working with secret stuff
+  version: 0.0.1
+host: api.acme.com
+basePath: /v1
+schemes:
+  - https
+produces:
+  - application/json
+paths:
+  '/login':
+    $ref: 'login.yaml'
+  '/secret_stuff':
+    $ref: 'secret_stuff.yaml'

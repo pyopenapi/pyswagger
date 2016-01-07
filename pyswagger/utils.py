@@ -302,41 +302,40 @@ def normalize_url(url):
 
     return url
 
-def normalize_jr(jr, prefix, url=None):
+def normalize_jr(jr, url=None):
     """ normalize JSON reference, also fix
     implicit reference of JSON pointer.
     input:
-    - User
     - #/definitions/User
     - http://test.com/swagger.json#/definitions/User
     output:
     - http://test.com/swagger.json#/definitions/User
+
+    input:
+    - some_folder/User.json
+    output:
+    - http://test.com/some_folder/User.json
     """
 
     if jr == None:
         return jr
 
-    p = six.moves.urllib.parse.urlparse(jr)
-    if p.scheme != '':
-        return jr
+    idx = jr.find('#')
+    path, jp = (jr[:idx], jr[idx+1:]) if idx != -1 else (jr, None)
 
-    # fix implicit reference,
-    # it's a JSON reference without url
-    if jr.find('#') == -1:
-        if prefix == '#/paths':
-            # relative reference to files next to this one
+    if len(path) > 0:
+        p = six.moves.urllib.parse.urlparse(path)
+        if p.scheme == '' and url:
             p = six.moves.urllib.parse.urlparse(url)
-            return six.moves.urllib.parse.urlunparse(p[:2]+(os.path.join(os.path.dirname(p.path), jr),)+p[3:])
-        else:
-            jr = jp_compose(jr, base=prefix)
+            # it's the path of relative file
+            path = six.moves.urllib.parse.urlunparse(p[:2]+(os.path.join(os.path.dirname(p.path), jr),)+p[3:])
+    else:
+        path = url
 
-    # prepend url
-    if url:
-        p = six.moves.urllib.parse.urlparse(url)
-        # remember to remove the heading '#'
-        jr = six.moves.urllib.parse.urlunparse(p[:5]+(jr[1:],))
-
-    return jr
+    if path:
+        return ''.join([path, '#', jp]) if jp else path
+    else:
+        return '#' + jp
 
 def is_file_url(url):
     return url.startswith('file://')

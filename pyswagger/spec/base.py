@@ -304,7 +304,10 @@ class BaseObj(object):
                 # since everything under SwaggerApp should be
                 # readonly.
                 if isinstance(v, list):
-                    self.update_field(name, list(set((getattr(self, name) or []) + v)))
+                    try:
+                        self.update_field(name, list(set((getattr(self, name) or []) + v)))
+                    except TypeError:
+                        self.update_field(name, list((getattr(self, name) or []) + v))
                 elif isinstance(v, dict):
                     d = copy.copy(v)
                     d.update(getattr(self, name) or {})

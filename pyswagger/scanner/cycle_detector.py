@@ -10,8 +10,8 @@ from ..spec.v2_0.objects import (
 import functools
 import six
 
-def _out(app, prefix, path):
-    obj = app.resolve(normalize_jr(path, prefix, app.url))
+def _out(app, path):
+    obj = app.resolve(normalize_jr(path, app.url))
     r = getattr(obj, 'norm_ref')
     return [r] if r else []
 
@@ -37,7 +37,7 @@ def _schema_out_obj(obj, out=None):
     return out
 
 def _schema_out(app, path):
-    obj = app.resolve(normalize_jr(path, '#/definitions'))
+    obj = app.resolve(normalize_jr(path, app.url))
     return [] if obj == None else _schema_out_obj(obj)
 
 
@@ -66,7 +66,7 @@ class CycleDetector(object):
     def _parameter(self, path, _, app):
          self.cycles['parameter'] = walk(
             path,
-            functools.partial(_out, app, '#/parameters'),
+            functools.partial(_out, app),
             self.cycles['parameter']
         )
 
@@ -74,7 +74,7 @@ class CycleDetector(object):
     def _response(self, path, _, app):
         self.cycles['response'] = walk(
             path,
-            functools.partial(_out, app, '#/responses'),
+            functools.partial(_out, app),
             self.cycles['response']
         )
 
@@ -82,7 +82,7 @@ class CycleDetector(object):
     def _path_item(self, path, _, app):
         self.cycles['path_item'] = walk(
             path,
-            functools.partial(_out, app, '#/paths'),
+            functools.partial(_out, app),
             self.cycles['path_item']
         )
 

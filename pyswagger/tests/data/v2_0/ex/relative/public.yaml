@@ -1,0 +1,16 @@
+swagger: '2.0'
+info:
+  title: Acme Public API
+  description: Docs for working with normal stuff
+  version: 0.0.1
+host: api.acme.com
+basePath: /v1
+schemes:
+  - https
+produces:
+  - application/json
+paths:
+  '/login':
+    $ref: 'login.yaml'
+  '/stuff':
+    $ref: 'stuff.yaml'

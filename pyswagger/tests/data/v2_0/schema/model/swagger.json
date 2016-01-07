@@ -127,7 +127,7 @@
                "xml":{
                   "name":"category"
                },
-               "$ref":"Category"
+               "$ref":"#/definitions/Category"
             },
             "name":{
                "type":"string",
@@ -153,7 +153,7 @@
                   "wrapped":true
                },
                "items":{
-                  "$ref":"Tag"
+                  "$ref":"#/definitions/Tag"
                }
             },
             "status":{
@@ -217,10 +217,10 @@
       "Employee":{
          "allOf":[
             {
-               "$ref":"User"
+               "$ref":"#/definitions/User"
             },
             {
-               "$ref":"Skill"
+               "$ref":"#/definitions/Skill"
             }
          ]
       },
@@ -232,10 +232,10 @@
          },
          "allOf":[
             {
-               "$ref":"User"
+               "$ref":"#/definitions/User"
             },
             {
-               "$ref":"Skill"
+               "$ref":"#/definitions/Skill"
             }
          ]
       },

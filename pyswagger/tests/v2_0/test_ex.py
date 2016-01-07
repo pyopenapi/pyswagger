@@ -5,18 +5,16 @@ import os
 import six
 
 
-folder = get_test_data_folder(version='2.0', which='ex')
+def _gen_hook(folder):
+    def _hook(url):
+        p = six.moves.urllib.parse.urlparse(url)
+        if p.scheme != 'file':
+            return url
 
+        path = os.path.join(folder, p.path if not p.path.startswith('/') else p.path[1:])
+        return six.moves.urllib.parse.urlunparse(p[:2]+(path,)+p[3:])
 
-def _hook(url):
-    global folder
-
-    p = six.moves.urllib.parse.urlparse(url)
-    if p.scheme != 'file':
-        return url
-
-    path = os.path.join(folder, p.path if not p.path.startswith('/') else p.path[1:])
-    return six.moves.urllib.parse.urlunparse(p[:2]+(path,)+p[3:])
+    return _hook
 
 
 class ExternalDocumentTestCase(unittest.TestCase):
@@ -24,11 +22,9 @@ class ExternalDocumentTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        global folder
-
         kls.app = SwaggerApp.load(
             url='file:///root/swagger.json',
-            url_load_hook=_hook
+            url_load_hook=_gen_hook(get_test_data_folder(version='2.0', which='ex'))
         )
         kls.app.prepare()
 
@@ -100,4 +96,14 @@ class ExternalDocumentTestCase(unittest.TestCase):
 
         chk(self.app.s('relative'))
         chk(self.app.resolve('file:///root/path_item.json'))
+
+    def test_relative_schema(self):
+        """ test case for issue#53,
+        relative file, which root is a Schema Object
+        """
+        app = SwaggerApp.load(
+            url='file:///relative/internal.yaml',
+            url_load_hook=_gen_hook(get_test_data_folder(version='2.0', which='ex'))
+        )
+        app.prepare()
 
