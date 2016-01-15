@@ -124,10 +124,7 @@ class SwaggerUtilsTestCase(unittest.TestCase):
             '', '#'))
 
     def test_cycle_guard(self):
-        def my_id(obj):
-            return obj
-
-        c = utils.CycleGuard(identity_hook=my_id)
+        c = utils.CycleGuard()
         c.update(1)
         self.assertRaises(errs.CycleDetectionError, c.update, 1)
 

@@ -87,15 +87,13 @@ class CycleGuard(object):
     """ Guard for cycle detection
     """
 
-    def __init__(self, identity_hook=id):
+    def __init__(self):
         self.__visited = []
-        self.__hook = identity_hook
 
     def update(self, obj):
-        i = self.__hook(obj)
-        if i in self.__visited:
+        if obj in self.__visited:
             raise CycleDetectionError('Cycle detected: {0}'.format(getattr(obj, '$ref', None)))
-        self.__visited.append(i)
+        self.__visited.append(obj)
 
 
 # TODO: this function and datetime don't handle leap-second.

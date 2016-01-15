@@ -30,6 +30,10 @@ class ResolvePathItemTestCase(unittest.TestCase):
         self.assertTrue(b.put.description, 'c.put')
         self.assertTrue(b.post.description, 'd.post')
 
+        c = self.app.resolve(utils.jp_compose('/c', '#/paths'))
+        self.assertTrue(b.put.description, 'c.put')
+        self.assertTrue(b.post.description, 'd.post')
+
 
 class ResolveTestCase(unittest.TestCase):
     """ test for $ref other than PathItem """
