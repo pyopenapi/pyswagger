@@ -1,7 +1,7 @@
 {
   "models": {
     "Model": {
-      "description": "A simple model",
+      "description": "Another simple model",
       "type": "object",
       "properties": {
         "id": {
@@ -22,9 +22,6 @@
           "type": "string"
         }
       }
-    },
-    "QQ": {
-        "$ref":"definitions/models.json#/models/Model"
     }
   }
 }

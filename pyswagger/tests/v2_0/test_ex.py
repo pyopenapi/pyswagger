@@ -1,5 +1,6 @@
 from pyswagger import SwaggerApp
 from ..utils import get_test_data_folder
+from ...utils import deref, final
 from ...spec.v2_0.parser import PathItemContext
 import unittest
 import os
@@ -122,6 +123,34 @@ class ReuseTestCase(unittest.TestCase):
         )
         kls.app.prepare()
 
-    def test_basic(self):
+    def test_relative_folder(self):
+        """ make sure the url prepend on $ref should be
+        derived from the path of current document
         """
+        o = deref(self.app.resolve('#/definitions/QQ'))
+        self.assertEqual(o.description, 'Another simple model')
+
+    def test_relative_parameter(self):
+        """ make sure parameter from relative $ref
+        is correctly injected(merged) in 'final' field.
         """
+        o = final(self.app.s('pets').get.parameters[0])
+        self.assertEqual(o.description, 'Results to skip when paginating through a result set') 
+
+    def test_relative_response(self):
+        """ make sure response from relative $ref
+        is correctly injected(merged) in 'final' field.
+        """
+        o = final(self.app.s('pets').get.responses['400'])
+        self.assertEqual(o.description, 'Entity not found')
+
+    def test_relative_path_item(self):
+        """ make sure path-item from relative $ref
+        is correctly injected(merged).
+        """
+        o1 = self.app.s('health').get
+        self.assertEqual(o1.summary, 'Returns server health information')
+        # make sure these objects are not referenced, but copied.
+        o2 = self.app.resolve('file:///reuse/operations.json#/health')
+        self.assertNotEqual(id(o1), id(o2), PathItemContext)
+

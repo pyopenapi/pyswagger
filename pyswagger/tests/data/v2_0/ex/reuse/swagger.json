@@ -57,6 +57,9 @@
    "definitions":{
       "User":{
          "$ref":"definitions/models.json#/models/Model"
+      },
+      "QQ":{
+         "$ref":"definitions/models.json#/models/QQ"
       }
    }
 }
