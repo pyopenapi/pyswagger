@@ -1,0 +1,8 @@
+{
+  "NotFoundError": {
+    "description": "Entity not found",
+    "schema": {
+      "$ref": "definitions/models.json#/models/Model"
+    }
+  }
+}

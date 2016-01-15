@@ -27,8 +27,7 @@ class Getter(six.Iterator):
         if len(self.urls) == 0:
             raise StopIteration
 
-        path, name = self.urls.pop(0)
-        obj = self.load(path)
+        obj = self.load(self.urls.pop(0))
 
         # make sure data is string type
         if isinstance(obj, six.binary_type):
@@ -45,15 +44,7 @@ class Getter(six.Iterator):
         except ValueError:
             raise Exception('Unknown format startswith {0} ...'.format(obj[:10]))
 
-        # find urls to retrieve from resource listing file
-        if name == '':
-            urls = self.__find_urls(obj)
-            self.urls.extend(zip(
-                map(lambda u: self.base_path + u, urls),
-                map(lambda u: u[1:], urls)
-            ))
-
-        return obj, name
+        return obj
 
     def load(self, path):
         """ load the resource, and return for parsing.
@@ -62,25 +53,6 @@ class Getter(six.Iterator):
         :rtype: (str, dict)
         """
         raise NotImplementedError()
-
-    def __find_urls(self, obj):
-        """ helper function to located relative url in Resource Listing object.
-
-        :param dict obj: json of Resource Listing object.
-        :return: urls of resources
-        :rtype: a list of str
-        """
-        urls = []
-        if private.SCHEMA_APIS in obj:
-            # This is a Swagger 1.2 spec, need to load subsequent resource files.
-            if isinstance(obj[private.SCHEMA_APIS], list):
-                for api in obj[private.SCHEMA_APIS]:
-                    urls.append(api[private.SCHEMA_PATH])
-            else:
-                raise TypeError('Invalid type of apis: ' + type(obj[private.SCHEMA_APIS]))
-
-        return urls
-
 
 class LocalGetter(Getter):
     """ default getter implmenetation for local resource file
@@ -91,12 +63,12 @@ class LocalGetter(Getter):
         for n in private.SWAGGER_FILE_NAMES:
             if self.base_path.endswith(n):
                 self.base_path = os.path.dirname(self.base_path)
-                self.urls = [(path, '')]
+                self.urls = [path]
                 break
             else:
                 p = os.path.join(path, n)
                 if os.path.isfile(p):
-                    self.urls = [(p, '')]
+                    self.urls = [p]
                     break
         else:
             # there is no file matched predefined file name:
@@ -109,10 +81,15 @@ class LocalGetter(Getter):
             for e in [private.FILE_EXT_JSON, private.FILE_EXT_YAML]:
                 if ext.endswith(e):
                     self.base_path = os.path.dirname(path)
-                    self.urls=[(path, '')]
+                    self.urls = [path]
                     break
             else:
-                raise ValueError('Unable to locate resource file: [{0}]'.format(path))
+                for e in [private.FILE_EXT_JSON, private.FILE_EXT_YAML]:
+                    if os.path.isfile(path + '.' + e):
+                        self.urls = [path + '.' + e]
+                        break
+                else:
+                    raise ValueError('Unable to locate resource file: [{0}]'.format(path))
 
     def load(self, path):
         ret = None
@@ -147,7 +124,7 @@ class UrlGetter(Getter):
         super(UrlGetter, self).__init__(path)
         if self.base_path.endswith('/'):
             self.base_path = self.base_path[:-1]
-        self.urls = [(path, '')]
+        self.urls = [path]
 
     def load(self, path):
 

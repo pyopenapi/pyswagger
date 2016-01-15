@@ -22,7 +22,7 @@ class ConverterTestCase(unittest.TestCase):
 
         # diff for empty list or dict is allowed
         d = app.dump()
-        self.assertEqual(sorted(_diff_(origin, d)), sorted([
+        self.assertEqual(sorted(_diff_(origin, d, exclude=['$ref'])), sorted([
             ('paths/~1pet~1{petId}/get/security/0/api_key', "list", "NoneType"),
             ('paths/~1store~1inventory/get/parameters', None, None),
             ('paths/~1store~1inventory/get/security/0/api_key', "list", "NoneType"),
@@ -33,7 +33,7 @@ class ConverterTestCase(unittest.TestCase):
         tmp = {'_tmp_': {}}
         with SwaggerContext(tmp, '_tmp_') as ctx:
             ctx.parse(d)
-            
+
 
 class Converter_v1_2_TestCase(unittest.TestCase):
     """ test for convert from 1.2
@@ -64,7 +64,8 @@ class Converter_v1_2_TestCase(unittest.TestCase):
         }
         self.assertEqual(_diff_(
             expect,
-            self.app.s('/api/pet/{petId}').patch.responses['default'].schema.items.dump()
+            self.app.s('/api/pet/{petId}').patch.responses['default'].schema.items.dump(),
+            exclude=['$ref'],
         ), [])
 
         # enum
@@ -248,7 +249,8 @@ class Converter_v1_2_TestCase(unittest.TestCase):
         }
         self.assertEqual(_diff_(
             expect,
-            self.app.s('/api/pet/findByTags').get.responses['default'].dump()
+            self.app.s('/api/pet/findByTags').get.responses['default'].dump(),
+            exclude=['$ref'],
         ), [])
 
     def test_property(self):
@@ -317,7 +319,8 @@ class Converter_v1_2_TestCase(unittest.TestCase):
         d = self.app.resolve('#/definitions/pet:Pet').dump()
         self.assertEqual(_diff_(
             expect,
-            self.app.resolve('#/definitions/pet:Pet').dump()
+            self.app.resolve('#/definitions/pet:Pet').dump(),
+            exclude=['$ref'],
         ), [])
 
     def test_info(self):

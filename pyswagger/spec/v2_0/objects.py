@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ..base import BaseObj, FieldMeta
-from ...utils import deref
+from ...utils import final
 from ...io import SwaggerRequest, SwaggerResponse
 from ...primitives import Array
 import six
@@ -85,7 +85,6 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
         # pyswagger only
         'ref_obj': None,
         'final': None,
-        'norm_ref': None,
         'name': None,
     }
 
@@ -177,9 +176,7 @@ class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
     }
 
     __internal_fields__ = {
-        # pyswagger only
-        'ref_obj': None,
-        'norm_ref': None,
+        'final': None,
     }
 
     def _prim_(self, v, prim_factory):
@@ -216,8 +213,7 @@ class Response(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     }
 
     __internal_fields__ = {
-        'ref_obj': None,
-        'norm_ref': None,
+        'final': None,
     }
 
 
@@ -281,7 +277,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
             names.append(p.name)
 
         for p in self.parameters:
-            _convert_parameter(deref(p))
+            _convert_parameter(final(p))
 
         # check for unknown parameter
         unknown = set(six.iterkeys(k)) - set(names)
@@ -308,11 +304,6 @@ class PathItem(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
         'head': None,
         'patch': None,
         'parameters': [],
-    }
-
-    __internal_fields__ = {
-        'ref_obj': None,
-        'norm_ref': None,
     }
 
 

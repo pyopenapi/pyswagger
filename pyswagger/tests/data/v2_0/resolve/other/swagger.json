@@ -39,7 +39,7 @@
    },
    "responses":{
       "r1":{
-         "description":"void"
+         "description":"void, r1"
       }
    }
 }

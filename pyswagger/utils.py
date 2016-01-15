@@ -87,15 +87,13 @@ class CycleGuard(object):
     """ Guard for cycle detection
     """
 
-    def __init__(self, identity_hook=id):
+    def __init__(self):
         self.__visited = []
-        self.__hook = identity_hook
 
     def update(self, obj):
-        i = self.__hook(obj)
-        if i in self.__visited:
-            raise CycleDetectionError('Cycle detected: {0}'.format(obj.__repr__()))
-        self.__visited.append(i)
+        if obj in self.__visited:
+            raise CycleDetectionError('Cycle detected: {0}'.format(getattr(obj, '$ref', None)))
+        self.__visited.append(obj)
 
 
 # TODO: this function and datetime don't handle leap-second.
@@ -259,6 +257,9 @@ def deref(obj, guard=None):
         guard.update(cur)
     return cur
 
+def final(obj):
+    return obj.final if getattr(obj, 'final', None) else obj
+
 def get_dict_as_tuple(d):
     """ get the first item in dict,
     and return it as tuple.
@@ -302,6 +303,29 @@ def normalize_url(url):
 
     return url
 
+def url_dirname(url):
+    """ Return the folder containing the '.json' file
+    """
+    p = six.moves.urllib.parse.urlparse(url)
+    for e in [private.FILE_EXT_JSON, private.FILE_EXT_YAML]:
+        if p.path.endswith(e):
+            return six.moves.urllib.parse.urlunparse(
+                p[:2]+
+                (os.path.dirname(p.path),)+
+                p[3:]
+            )
+    return url
+
+def url_join(url, path):
+    """ url version of os.path.join
+    """
+    p = six.moves.urllib.parse.urlparse(url)
+    return six.moves.urllib.parse.urlunparse(
+        p[:2]+
+        (os.path.join(p.path, path),)+
+        p[3:]
+    )
+
 def normalize_jr(jr, url=None):
     """ normalize JSON reference, also fix
     implicit reference of JSON pointer.
@@ -328,7 +352,7 @@ def normalize_jr(jr, url=None):
         if p.scheme == '' and url:
             p = six.moves.urllib.parse.urlparse(url)
             # it's the path of relative file
-            path = six.moves.urllib.parse.urlunparse(p[:2]+(os.path.join(os.path.dirname(p.path), jr),)+p[3:])
+            path = six.moves.urllib.parse.urlunparse(p[:2]+(os.path.join(os.path.dirname(p.path), path),)+p[3:])
     else:
         path = url
 
@@ -396,7 +420,6 @@ def walk(start, ofn, cyc=None):
 
     return cyc
 
-
 def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
     """ compare 2 dict/list, return a list containing
     json-pointer indicating what's different, and what's diff exactly.
@@ -407,10 +430,10 @@ def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
     - other: (jp, src, dst)
     """
 
-    def _dict_(src, dst, ret, jp, exc, inc):
+    def _dict_(src, dst, ret, jp):
         ss, sd = set(src.keys()), set(dst.keys())
         # what's include is prior to what's exclude
-        si, se = set(inc or []), set(exc or [])
+        si, se = set(include or []), set(exclude or [])
         ss, sd = (ss & si, sd & si) if si else (ss, sd)
         ss, sd = (ss - se, sd - se) if se else (ss, sd)
 
@@ -424,7 +447,7 @@ def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
 
         # same key
         for k in ss & sd:
-            _diff_(src[k], dst[k], ret, jp_compose(k, base=jp))
+            _diff_(src[k], dst[k], ret, jp_compose(k, base=jp), exclude, include)
 
     def _list_(src, dst, ret, jp):
         if len(src) < len(dst):
@@ -462,7 +485,7 @@ def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
                 ss, sd = src, dst
 
             for idx, (s, d) in enumerate(zip(src, dst)):
-                _diff_(s, d, ret, jp_compose(str(idx), base=jp))
+                _diff_(s, d, ret, jp_compose(str(idx), base=jp), exclude, include)
 
     ret = [] if ret == None else ret
     jp = '' if jp == None else jp
@@ -471,7 +494,7 @@ def _diff_(src, dst, ret=None, jp=None, exclude=[], include=[]):
         if not isinstance(dst, dict):
             ret.append((jp, type(src).__name__, type(dst).__name__,))
         else:
-            _dict_(src, dst, ret, jp, exclude, include)
+            _dict_(src, dst, ret, jp)
     elif isinstance(src, list):
         if not isinstance(dst, list):
             ret.append((jp, type(src).__name__, type(dst).__name__,))

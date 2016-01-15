@@ -124,10 +124,7 @@ class SwaggerUtilsTestCase(unittest.TestCase):
             '', '#'))
 
     def test_cycle_guard(self):
-        def my_id(obj):
-            return obj
-
-        c = utils.CycleGuard(identity_hook=my_id)
+        c = utils.CycleGuard()
         c.update(1)
         self.assertRaises(errs.CycleDetectionError, c.update, 1)
 
@@ -189,7 +186,7 @@ class SwaggerUtilsTestCase(unittest.TestCase):
 
         # test include
         self.assertEqual(sorted(utils._diff_(dict3, dict4, include=['a'])), sorted([
-            ('a/a', 1, 2), ('a/b', 3, 2), ('a/c', 4, 5)
+            ('a/a', 1, 2)
         ]))
         # test exclude
         self.assertEqual(sorted(utils._diff_(dict3, dict4, exclude=['a'])), sorted([
@@ -210,6 +207,19 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         setattr(a.b.c, 'd', 'test string')
         self.assertEqual(utils.get_or_none(a, 'b', 'c', 'd'), 'test string')
         self.assertEqual(utils.get_or_none(a, 'b', 'c', 'd', 'e'), None)
+
+    def test_url_dirname(self):
+        """ test url_dirname
+        """
+        self.assertEqual(utils.url_dirname('https://localhost/test/swagger.json'), 'https://localhost/test')
+        self.assertEqual(utils.url_dirname('https://localhost/test/'), 'https://localhost/test/')
+        self.assertEqual(utils.url_dirname('https://localhost/test'), 'https://localhost/test')
+
+    def test_url_join(self):
+        """ test url_join
+        """
+        self.assertEqual(utils.url_join('https://localhost/test', 'swagger.json'), 'https://localhost/test/swagger.json')
+        self.assertEqual(utils.url_join('https://localhost/test/', 'swagger.json'), 'https://localhost/test/swagger.json')
 
 
 class WalkTestCase(unittest.TestCase):

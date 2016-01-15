@@ -1,0 +1,65 @@
+{
+   "swagger":"2.0",
+   "host":"test.com",
+   "basePath":"/v1",
+   "produces":[
+      "application/json"
+   ],
+   "consumes":[
+      "application/json"
+   ],
+   "schemes":[
+      "http",
+      "https"
+   ],
+   "paths":{
+      "/pets":{
+         "get":{
+            "description":"Returns all pets from the system that the user has access to",
+            "produces":[
+               "application/json"
+            ],
+            "parameters":[
+               {
+                  "$ref":"parameters/parameters.json#/query/skip"
+               },
+               {
+                  "$ref":"parameters/parameters.json#/query/limit"
+               },
+               {
+                  "in":"query",
+                  "name":"type",
+                  "description":"the types of pet to return",
+                  "required":false,
+                  "type":"string"
+               }
+            ],
+            "responses":{
+               "200":{
+                  "description":"A list of pets.",
+                  "schema":{
+                     "type":"array",
+                     "items":{
+                        "$ref":"#/definitions/User"
+                     }
+                  }
+               },
+               "400":{
+                  "$ref":"responses.json#/NotFoundError"
+               }
+            }
+         }
+      },
+      "/health":{
+         "$ref":"operations.json#/health"
+      }
+   },
+   "definitions":{
+      "User":{
+         "$ref":"definitions/models.json#/models/Model"
+      },
+      "QQ":{
+         "$ref":"definitions/models.json#/models/QQ"
+      }
+   }
+}

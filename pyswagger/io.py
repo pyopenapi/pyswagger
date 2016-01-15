@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from .primitives.comm import PrimJSONEncoder
-from .utils import deref
+from .utils import final
 from pyswagger import errs
 from uuid import uuid4
 import six
@@ -313,8 +313,8 @@ class SwaggerResponse(object):
         if status != None:
             self.__status = status
 
-        r = (deref(self.__op.responses.get(str(self.__status), None)) or
-             deref(self.__op.responses.get('default', None)))
+        r = (final(self.__op.responses.get(str(self.__status), None)) or
+             final(self.__op.responses.get('default', None)))
 
         if raw != None:
             # update 'raw'

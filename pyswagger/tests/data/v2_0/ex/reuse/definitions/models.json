@@ -1,0 +1,30 @@
+{
+  "models": {
+    "Model": {
+      "description": "A simple model",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "tag": {
+          "description": "a complex, shared property.  Note the absolute reference",
+          "$ref": "models.json#/models/Tag"
+        }
+      }
+    },
+    "Tag": {
+      "description": "A tag entity in the system",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "QQ": {
+        "$ref":"definitions/models.json#/models/Model"
+    }
+  }
+}
