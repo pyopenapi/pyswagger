@@ -1,6 +1,7 @@
 from pyswagger import SwaggerApp, utils
 from pyswagger.spec.v2_0 import objects
 from ..utils import get_test_data_folder
+from ...utils import final
 import unittest
 import os
 
@@ -50,13 +51,13 @@ class ResolveTestCase(unittest.TestCase):
         """ make sure $ref to Parameter works """
         p = self.app.s('/a').get
 
-        self.assertEqual(id(p.parameters[0].ref_obj), id(self.app.resolve('#/parameters/p1')))
+        self.assertEqual(final(p.parameters[0]).name, 'p1_d')
 
     def test_response(self):
         """ make sure $ref to Response works """
         p = self.app.s('/a').get
 
-        self.assertEqual(id(p.responses['default'].ref_obj), id(self.app.resolve('#/responses/r1')))
+        self.assertEqual(final(p.responses['default']).description, 'void, r1')
 
     def test_raises(self):
         """ make sure to raise for invalid input """

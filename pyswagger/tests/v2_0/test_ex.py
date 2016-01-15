@@ -1,5 +1,6 @@
 from pyswagger import SwaggerApp
 from ..utils import get_test_data_folder
+from ...spec.v2_0.parser import PathItemContext
 import unittest
 import os
 import six
@@ -47,7 +48,7 @@ class ExternalDocumentTestCase(unittest.TestCase):
         self.assertTrue('default' in p.get.responses)
         self.assertTrue('404' in p.get.responses)
 
-        another_p = self.app.resolve('file:///full/swagger.json#/paths/~1user')
+        another_p = self.app.resolve('file:///full/swagger.json#/paths/~1user', PathItemContext)
         self.assertNotEqual(id(p), id(another_p))
         self.assertTrue('default' in another_p.get.responses)
         self.assertTrue('404' in another_p.get.responses)
@@ -58,8 +59,9 @@ class ExternalDocumentTestCase(unittest.TestCase):
         p = self.app.resolve('#/paths/~1full')
         self.assertEqual(p.get.url, 'test.com/v1/full')
 
-        original_p = self.app.resolve('file:///full/swagger.json#/paths/~1user')
-        self.assertEqual(original_p.get.url, 'test1.com/v2/user')
+        # only root document would be patched, others are only loaded for reference
+        original_p = self.app.resolve('file:///full/swagger.json#/paths/~1user', PathItemContext)
+        self.assertEqual(original_p.get.url, None)
 
     def test_partial_path_item(self):
         """ make sure partial swagger.json with PathItem
@@ -68,7 +70,7 @@ class ExternalDocumentTestCase(unittest.TestCase):
         p = self.app.resolve('#/paths/~1partial')
         self.assertEqual(p.get.url, 'test.com/v1/partial')
 
-        original_p = self.app.resolve('file:///partial/path_item/swagger.json')        
+        original_p = self.app.resolve('file:///partial/path_item/swagger.json')
         self.assertEqual(original_p.get.url, None)
 
     def test_partial_schema(self):
@@ -107,3 +109,19 @@ class ExternalDocumentTestCase(unittest.TestCase):
         )
         app.prepare()
 
+
+class ReuseTestCase(unittest.TestCase):
+    """ test case for 'reuse', lots of partial swagger document
+        https://github.com/OAI/OpenAPI-Specification/blob/master/guidelines/REUSE.md#guidelines-for-referencing
+    """
+    @classmethod
+    def setUpClass(kls):
+        kls.app = SwaggerApp.load(
+            url='file:///reuse/swagger.json',
+            url_load_hook=_gen_hook(get_test_data_folder(version='2.0', which='ex'))
+        )
+        kls.app.prepare()
+
+    def test_basic(self):
+        """
+        """

@@ -1,19 +1,19 @@
 from __future__ import absolute_import
 from .getter import UrlGetter, LocalGetter
+from .resolve import SwaggerResolver
 from .primitives import SwaggerPrimitive
 from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
 from .spec.v2_0.objects import Operation
+from .spec.base import BaseObj
 from .scan import Scanner
 from .scanner import TypeReduce, CycleDetector
 from .scanner.v1_2 import Upgrade
-from .scanner.v2_0 import AssignParent, Resolve, PatchObject, YamlFixer, Aggregate
+from .scanner.v2_0 import AssignParent, Merge, Resolve, PatchObject, YamlFixer, Aggregate, NormalizeRef
 from pyswagger import utils, errs, consts
-import inspect
 import base64
 import six
 import weakref
-import os
 import logging
 
 
@@ -33,11 +33,10 @@ class SwaggerApp(object):
         sc_path: ('/', '#/paths')
     }
 
-    def __init__(self, url=None, app_cache=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None):
+    def __init__(self, url=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None):
         """ constructor
 
         :param url str: url of swagger.json
-        :param dict app_cache: a url map shared by SwaggerApp(s), mapping from url to SwaggerApp
         :param func url_load_hook: a way to redirect url to a accessible place. for self testing.
         :param sep str: separator used by pyswager.utils.ScopeDict
         :param prim pyswagger.primitives.SwaggerPrimitive: factory for primitives in Swagger.
@@ -54,14 +53,13 @@ class SwaggerApp(object):
         self.__schemes = []
         self.__url=url
 
-        # a map from url to SwaggerApp
-        self.__app_cache = {} if app_cache == None else app_cache
+        # a map from json-reference to
+        # - spec.BaseObj
+        # - a map from json-pointer to spec.BaseObj
+        self.__objs = {}
+        self.__resolver = SwaggerResolver(url_load_hook)
         # keep a string reference to SwaggerApp when resolve
         self.__strong_refs = []
-
-        # things to make unittest easier,
-        # all urls to load json would go through this hook
-        self.__url_load_hook = url_load_hook
 
         # allow init App-wised SCOPE_SEPARATOR
         self.__sep = sep
@@ -140,12 +138,6 @@ class SwaggerApp(object):
         return self.__url
 
     @property
-    def _app_cache(self):
-        """ internal usage
-        """
-        return self.__app_cache
-
-    @property
     def prim_factory(self):
         """ primitive factory used by this app
 
@@ -153,41 +145,18 @@ class SwaggerApp(object):
         """
         return self.__prim
 
-    def _load_obj(self, url, getter=None, parser=None):
+    def load_obj(self, jref, getter=None, parser=None):
+        """ load a object(those in spec._version_.objects) from a JSON reference.
         """
-        """
-        if url in self.__app_cache:
-            logger.info('{0} hit cache'.format(url))
-
-            # look into cache first
-            return
-
-        # apply hook when use this url to load
-        # note that we didn't cache SwaggerApp with this local_url
-        local_url = url if not self.__url_load_hook else self.__url_load_hook(url)
-
-        logger.info('{0} patch to {1}'.format(url, local_url))
-
-        if not getter:
-            getter = UrlGetter
-            p = six.moves.urllib.parse.urlparse(local_url)
-            if p.scheme == 'file' and p.path:
-                getter = LocalGetter(os.path.join(p.netloc, p.path))
-
-        if inspect.isclass(getter):
-            # default initialization is passing the url
-            # you can override this behavior by passing an
-            # initialized getter object.
-            getter = getter(local_url)
+        obj = self.__resolver.resolve(jref, getter)
 
         # get root document to check its swagger version.
-        obj, _ = six.advance_iterator(getter)
         tmp = {'_tmp_': {}}
         version = utils.get_swagger_version(obj)
         if version == '1.2':
             # swagger 1.2
             with ResourceListContext(tmp, '_tmp_') as ctx:
-                ctx.parse(getter, obj)
+                ctx.parse(obj, jref, self.__resolver, getter)
         elif version == '2.0':
             # swagger 2.0
             with SwaggerContext(tmp, '_tmp_') as ctx:
@@ -198,13 +167,55 @@ class SwaggerApp(object):
 
             version = tmp['_tmp_'].__swagger_version__ if hasattr(tmp['_tmp_'], '__swagger_version__') else version
         else:
-            raise NotImplementedError('Unsupported Swagger Version: {0} from {1}'.format(version, url))
+            raise NotImplementedError('Unsupported Swagger Version: {0} from {1}'.format(version, jref))
+
+        if not tmp['_tmp_']:
+            raise Exception('Unable to parse object from {0}'.format(jref))
 
         logger.info('version: {0}'.format(version))
 
-        self.__app_cache[url] = weakref.proxy(self) # avoid circular reference
-        self.__version = version
-        self.__raw = tmp['_tmp_']
+        return tmp['_tmp_'], version
+
+    def prepare_obj(self, obj, jref):
+        """ basic preparation of an object(those in sepc._version_.objects),
+        and cache the 'prepared' object.
+        """
+        if not obj:
+            raise Exception('unexpected, passing {0}:{1} to prepare'.format(obj, jref))
+
+        s = Scanner(self)
+        if self.version == '1.2':
+            # upgrade from 1.2 to 2.0
+            converter = Upgrade(self.__sep)
+            s.scan(root=obj, route=[converter])
+            obj = converter.swagger
+
+            if not obj:
+                raise Exception('unable to upgrade from 1.2: {0}'.format(jref))
+
+            s.scan(root=obj, route=[AssignParent()])
+
+        # normalize $ref
+        url, jp = utils.jr_split(jref)
+        s.scan(root=obj, route=[NormalizeRef(url)])
+        # fix for yaml that treat response code as number
+        s.scan(root=obj, route=[YamlFixer()], leaves=[Operation])
+
+        # cache this object
+        if url not in self.__objs:
+            if jp == '#':
+                self.__objs[url] = obj
+            else:
+                self.__objs[url] = {jp: obj}
+        else:
+            if not isinstance(self.__objs[url], dict):
+                raise Exception('it should be able to resolve with BaseObj')
+            self.__objs[url].update({jp: obj})
+
+        # pre resolve Schema Object
+        # note: make sure this object is cached before using 'Resolve' scanner
+        s.scan(root=obj, route=[Resolve()])
+        return obj
 
     def _validate(self):
         """ check if this Swagger API valid or not.
@@ -232,44 +243,8 @@ class SwaggerApp(object):
         s.scan(route=[v], root=self.__raw)
         return v.errs
 
-    def _prepare_obj(self, strict=True):
-        """
-        """
-        if self.__root:
-            return
-
-        s = Scanner(self)
-        self.validate(strict=strict)
-
-        if self.version == '1.2':
-            converter = Upgrade(self.__sep)
-            s.scan(root=self.raw, route=[converter])
-            obj = converter.swagger
-
-            # We only have to run this scanner when upgrading from 1.2.
-            # Mainly because we initial BaseObj via NullContext
-            s.scan(root=obj, route=[AssignParent()])
-
-            self.__root = obj
-        elif self.version == '2.0':
-            s.scan(root=self.raw, route=[YamlFixer()], leaves=[Operation])
-            self.__root = self.raw
-        else:
-            raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
-
-        if hasattr(self.__root, 'schemes') and self.__root.schemes:
-            if len(self.__root.schemes) > 0:
-                self.__schemes = self.__root.schemes
-            else:
-                # extract schemes from the url to load spec
-                self.__schemes = [six.moves.urlparse(self.__url).schemes]
-
-        s.scan(root=self.__root, route=[Resolve()])
-        s.scan(root=self.__root, route=[PatchObject()])
-        s.scan(root=self.__root, route=[Aggregate()])
-
     @classmethod
-    def load(kls, url, getter=None, parser=None, app_cache=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None):
+    def load(kls, url, getter=None, parser=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None):
         """ load json as a raw SwaggerApp
 
         :param str url: url of path of Swagger API definition
@@ -290,9 +265,10 @@ class SwaggerApp(object):
         logger.info('load with [{0}]'.format(url))
 
         url = utils.normalize_url(url)
-        app = kls(url, app_cache=app_cache, url_load_hook=url_load_hook, sep=sep, prim=prim)
-
-        app._load_obj(url, getter, parser)
+        app = kls(url, url_load_hook=url_load_hook, sep=sep, prim=prim)
+        app.__raw, app.__version = app.load_obj(url, getter=getter, parser=parser)
+        if app.__version not in ['1.2', '2.0']:
+            raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
 
         # update schem if any
         p = six.moves.urllib.parse.urlparse(url)
@@ -321,10 +297,22 @@ class SwaggerApp(object):
         :param bool strict: when in strict mode, exception would be raised if not valid.
         """
 
-        self._prepare_obj(strict=strict)
+        self.validate(strict=strict)
+        self.__root = self.prepare_obj(self.raw, self.__url)
+
+        if hasattr(self.__root, 'schemes') and self.__root.schemes:
+            if len(self.__root.schemes) > 0:
+                self.__schemes = self.__root.schemes
+            else:
+                # extract schemes from the url to load spec
+                self.__schemes = [six.moves.urlparse(self.__url).schemes]
+
+        s = Scanner(self)
+        s.scan(root=self.__root, route=[Merge()])
+        s.scan(root=self.__root, route=[PatchObject()])
+        s.scan(root=self.__root, route=[Aggregate()])
 
         # reducer for Operation 
-        s = Scanner(self)
         tr = TypeReduce(self.__sep)
         cy = CycleDetector()
         s.scan(root=self.__root, route=[tr, cy])
@@ -381,28 +369,40 @@ class SwaggerApp(object):
         if jref == None or len(jref) == 0:
             raise ValueError('Empty Path is not allowed')
 
+        obj = None
         url, jp = utils.jr_split(jref)
         if url:
-            if url not in self.__app_cache:
-                # This loaded SwaggerApp would be kept in app_cache.
-                app = SwaggerApp.load(url, parser=parser, app_cache=self.__app_cache, url_load_hook=self.__url_load_hook)
-                app.prepare()
+            # check cacahed object against json reference by
+            # comparing url first, and find those object prefixed with
+            # the JSON pointer.
+            o = self.__objs.get(url, None)
+            if o:
+                if isinstance(o, BaseObj):
+                    obj = o.resolve(utils.jp_split(jp)[1:])
+                elif isinstance(o, dict):
+                    for k, v in six.iteritems(o):
+                        if jp.startswith(k):
+                            obj = v.resolve(utils.jp_split(jp[len(k):])[1:])
+                            break
+                else:
+                    raise Exception('Unknown Cached Object: {0}'.format(str(type(o))))
 
-                # nothing but only keeping a strong reference of
-                # loaded SwaggerApp.
-                self.__strong_refs.append(app)
+            # this object is not loaded yet, load it
+            if obj == None:
+                obj, _ = self.load_obj(jref, parser=parser)
+                if obj:
+                    obj = self.prepare_obj(obj, jref)
+        else:
+            # a local reference, 'jref' is just a json-pointer
+            if not jp.startswith('#'):
+                raise ValueError('Invalid Path, root element should be \'#\', but [{0}]'.format(jref))
 
-            return self.__app_cache[url].resolve(jp)
-
-        if not jp.startswith('#'):
-            raise ValueError('Invalid Path, root element should be \'#\', but [{0}]'.format(jref))
-
-        obj = self.root.resolve(utils.jp_split(jp)[1:]) # heading element is #, mapping to self.root
+            obj = self.root.resolve(utils.jp_split(jp)[1:]) # heading element is #, mapping to self.root
 
         if obj == None:
             raise ValueError('Unable to resolve path, [{0}]'.format(jref))
 
-        if isinstance(obj, (six.string_types, int, list, dict)):
+        if isinstance(obj, (six.string_types, six.integer_types, list, dict)):
             return obj
         return weakref.proxy(obj)
 

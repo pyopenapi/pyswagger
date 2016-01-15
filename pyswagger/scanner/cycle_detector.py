@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from ..utils import normalize_jr, walk
+from ..utils import walk
 from ..scan import Dispatcher
 from ..spec.v2_0.objects import (
     Schema,
@@ -7,12 +7,18 @@ from ..spec.v2_0.objects import (
     Response,
     PathItem,
     )
+from ..spec.v2_0.parser import (
+    SchemaContext,
+    ParameterContext,
+    ResponseContext,
+    PathItemContext,
+    )
 import functools
 import six
 
-def _out(app, path):
-    obj = app.resolve(normalize_jr(path, app.url))
-    r = getattr(obj, 'norm_ref')
+def _out(app, parser, path):
+    obj = app.resolve(path, parser=parser)
+    r = getattr(obj, '$ref')
     return [r] if r else []
 
 def _schema_out_obj(obj, out=None):
@@ -30,14 +36,14 @@ def _schema_out_obj(obj, out=None):
     if obj.items:
         out = _schema_out_obj(obj.items, out)
 
-    r = getattr(obj, 'norm_ref')
+    r = getattr(obj, '$ref')
     if r:
         out.append(r)
 
     return out
 
 def _schema_out(app, path):
-    obj = app.resolve(normalize_jr(path, app.url))
+    obj = app.resolve(path, parser=SchemaContext)
     return [] if obj == None else _schema_out_obj(obj)
 
 
@@ -66,7 +72,7 @@ class CycleDetector(object):
     def _parameter(self, path, _, app):
          self.cycles['parameter'] = walk(
             path,
-            functools.partial(_out, app),
+            functools.partial(_out, app, ParameterContext),
             self.cycles['parameter']
         )
 
@@ -74,7 +80,7 @@ class CycleDetector(object):
     def _response(self, path, _, app):
         self.cycles['response'] = walk(
             path,
-            functools.partial(_out, app),
+            functools.partial(_out, app, ResponseContext),
             self.cycles['response']
         )
 
@@ -82,7 +88,7 @@ class CycleDetector(object):
     def _path_item(self, path, _, app):
         self.cycles['path_item'] = walk(
             path,
-            functools.partial(_out, app),
+            functools.partial(_out, app, PathItemContext),
             self.cycles['path_item']
         )
 

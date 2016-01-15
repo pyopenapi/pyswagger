@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from ..spec.v2_0.objects import Parameter, Operation, Schema
-from ..utils import deref, from_iso8601
+from ..utils import deref, final, from_iso8601
 from decimal import Decimal
 import random
 import six
@@ -167,8 +167,7 @@ class Renderer(object):
         return None if r == None else r.get(_format, None)
 
     def _generate(self, obj, opt):
-        obj = deref(obj)
-        obj = obj.final if isinstance(obj, Schema) else obj
+        obj = final(deref(obj))
         type_ = getattr(obj, 'type', None)
         template = opt['object_template']
         out = None

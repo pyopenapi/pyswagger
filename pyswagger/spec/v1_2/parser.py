@@ -19,6 +19,8 @@ from .objects import (
     Resource,
     Info,
     ResourceList)
+from ...consts import private
+from ...utils import url_dirname, url_join
 
 
 class ScopeContext(Context):
@@ -159,15 +161,29 @@ class ResourceListContext(Context):
     def __init__(self, parent, backref):
         super(ResourceListContext, self).__init__(parent, backref)
 
-    def parse(self, getter, obj):
+    def parse(self, obj, root_url, resolver, getter):
         super(ResourceListContext, self).parse(obj=obj)
+
+        resources = []
+        if private.SCHEMA_APIS in obj:
+            if isinstance(obj[private.SCHEMA_APIS], list):
+                for api in obj[private.SCHEMA_APIS]:
+                    resources.append(api[private.SCHEMA_PATH])
+            else:
+                raise TypeError('Invalid type of apis: ' + type(obj[private.SCHEMA_APIS]))
+        base = url_dirname(root_url)
+        urls = zip(
+            map(lambda u: url_join(base,  u[1:]), resources),
+            map(lambda u: u[1:], resources)
+        )
 
         # replace each element in 'apis' with Resource
         self._obj['apis'] = {}
         # get into resource object
-        for obj, name in getter:
+        for url, name in urls:
             # here we assume Resource is always a dict
             self._obj['apis'][name] = {}
+            res = resolver.resolve(url, getter)
             with ResourceContext(self._obj['apis'], name) as ctx:
-                ctx.parse(obj=obj)
+                ctx.parse(obj=res)
 
