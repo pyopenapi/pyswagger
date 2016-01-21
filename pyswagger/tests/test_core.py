@@ -71,19 +71,19 @@ class SwaggerCoreTestCase(unittest.TestCase):
         # load swagger.json from a file path
         app = SwaggerApp.create(path)
         req, _ = app.s('t1').get()
-        self.assertEqual(req.url, path+'/t1')
+        self.assertEqual(req.url, '//localhost/t1')
         self.assertEqual(req.schemes, ['file'])
         req.prepare(scheme='file', handle_files=False)
-        self.assertEqual(req.url, fu+'/t1')
+        self.assertEqual(req.url, 'file://localhost/t1')
 
         # load swagger.json from a file uri
         self.assertNotEqual(six.moves.urllib.parse.urlparse(fu).scheme, '')
         app = SwaggerApp.create(fu)
         req, _ = app.s('t1').get()
-        self.assertEqual(req.url, path+'/t1')
+        self.assertEqual(req.url, '//localhost/t1')
         self.assertEqual(req.schemes, ['file'])
         req.prepare(scheme='file', handle_files=False)
-        self.assertEqual(req.url, fu+'/t1')
+        self.assertEqual(req.url, 'file://localhost/t1')
 
         # load swagger.json from a remote uri
         def _hook(url):
@@ -95,8 +95,8 @@ class SwaggerCoreTestCase(unittest.TestCase):
         app.prepare()
         # try to make a SwaggerRequest and verify its url
         req, _ = app.s('t1').get()
-        self.assertEqual(req.url, url+'/t1')
+        self.assertEqual(req.url, '//test.com/t1')
         self.assertEqual(req.schemes, ['https'])
         req.prepare(scheme='https', handle_files=False)
-        self.assertEqual(req.url, 'https://'+url+'/t1')
+        self.assertEqual(req.url, 'https://test.com/t1')
 

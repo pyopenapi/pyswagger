@@ -156,7 +156,7 @@ class SwaggerRequest(object):
         self.__path = self.__path.format(**self.__p['path'])
 
         # combine path parameters into url
-        self.__url = ''.join([scheme, '://', self.__url.format(**self.__p['path'])])
+        self.__url = ''.join([scheme, ':', self.__url.format(**self.__p['path'])])
 
         # header parameters
         self.__header.update(self.__p['header'])

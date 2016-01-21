@@ -58,7 +58,7 @@ class ExternalDocumentTestCase(unittest.TestCase):
         """ make sure url is correctly patched
         """
         p = self.app.resolve('#/paths/~1full')
-        self.assertEqual(p.get.url, 'test.com/v1/full')
+        self.assertEqual(p.get.url, '//test.com/v1/full')
 
         # only root document would be patched, others are only loaded for reference
         original_p = self.app.resolve('file:///full/swagger.json#/paths/~1user', PathItemContext)
@@ -69,7 +69,7 @@ class ExternalDocumentTestCase(unittest.TestCase):
         loaded correctly.
         """
         p = self.app.resolve('#/paths/~1partial')
-        self.assertEqual(p.get.url, 'test.com/v1/partial')
+        self.assertEqual(p.get.url, '//test.com/v1/partial')
 
         original_p = self.app.resolve('file:///partial/path_item/swagger.json')
         self.assertEqual(original_p.get.url, None)
