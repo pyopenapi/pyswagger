@@ -21,3 +21,4 @@
   }
   ```
 - __NEW__ the root object of external documents can be any object (need to be an Swagger/PathItem object before this version)
+- fix issue: use 'netloc' only when no host provided.
