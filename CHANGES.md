@@ -2,7 +2,7 @@
 
 ###0.8.17
 
-- (deprecated) implicit dereferencing
+- (not support anymore) implicit dereferencing, which is conflict with 'relative file reference'
   ```json
   "definitions":{
     "User":{
@@ -20,3 +20,4 @@
     }
   }
   ```
+- __NEW__ the root object of external documents can be any object (need to be an Swagger/PathItem object before this version)
