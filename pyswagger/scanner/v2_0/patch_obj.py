@@ -47,6 +47,9 @@ class PatchObject(object):
         if obj.security == None and isinstance(app.root, Swagger):
             obj.update_field('security', app.root.security)
 
+        # mime_codec
+        setattr(obj, '_mime_codec', app.mime_codec)
+
     @Disp.register([PathItem])
     def _path_item(self, path, obj, app):
         """

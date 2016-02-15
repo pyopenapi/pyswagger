@@ -1,7 +1,7 @@
 ## Make your own primitive creater
 
 In pyswagger, there is a module designed to convert primitives in python to primitives in Swagger.
-We already supprt those primitives defined in Swagger spec, for user-defined primitives, we provide a
+We already support those primitives defined in Swagger spec, for user-defined primitives, we provide a
 way for users to provide primitives creater.
 
 Here is a simple example for primitive creater:

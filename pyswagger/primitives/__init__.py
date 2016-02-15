@@ -12,8 +12,8 @@ from ._model import Model
 from ._uuid import UUID
 from .comm import create_obj, _2nd_pass_obj
 from .render import Renderer
+from .codec import MimeCodec
 import functools
-import json
 
 # TODO: enum is suitable for all types, not only string
 
