@@ -170,3 +170,27 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertTrue(body.find('a test Content') != -1)
         self.assertTrue(body.find('filename="test.txt"') != -1)
 
+@pytest.mark.skipif(sys.version_info[:2] >= (3, 3), reason='httpretty corrupt in python3')
+@httpretty.activate
+class RequestsOptTestCase(unittest.TestCase):
+    """ make sure that passing options to requests won't fail """
+
+    def test_verify(self):
+        """ option for send: verify """
+        client = Client(send_opt=dict(verify=False))
+
+        # testing this client with getPetById
+        httpretty.register_uri(httpretty.GET, 'http://petstore.swagger.wordnik.com/api/pet/1',
+            status=200,
+            content_type='application/json',
+            body=json.dumps(pet_Tom)
+        )
+
+        resp = client.request(app.op['getPetById'](petId=1))
+
+        self.assertEqual(resp.status, 200)
+        self.assertTrue(isinstance(resp.data, Model))
+        self.assertEqual(resp.data,
+            {u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}], u'id': 1}
+            )
+
