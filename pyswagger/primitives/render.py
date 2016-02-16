@@ -95,14 +95,14 @@ def _byte_(obj, opt, val=None):
         six.b(''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_byte_length']))]))
     )
 
-max_date = time.mktime(datetime.date.max.timetuple())
+max_date = time.mktime(datetime.date(2038, 1, 19).timetuple())
 min_date = time.mktime(datetime.date(1970, 1, 1).timetuple())
 def _date_(obj, _, val=None):
     return from_iso8601(val).date() if val else datetime.date.fromtimestamp(
         random.uniform(min_date, max_date)
     )
 
-max_datetime = time.mktime(datetime.datetime.max.utctimetuple())
+max_datetime = time.mktime(datetime.datetime(2038, 1, 19).utctimetuple())
 min_datetime = time.mktime(datetime.datetime(1970, 1, 1).utctimetuple())
 def _date_time_(obj, _, val=None):
     return from_iso8601(val) if val else datetime.datetime.utcfromtimestamp(
