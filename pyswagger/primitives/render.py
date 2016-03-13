@@ -49,7 +49,7 @@ def _float_(obj, _, val=None):
     while out == None:
         out = min_ + (max_ - min_) * random.random()
         if obj.multipleOf and obj.multipleOf != 0:
-            out = int(out / obj.multipleOf) * obj.multipleOf 
+            out = int(out / obj.multipleOf) * obj.multipleOf
         if out <= min_ and obj.exclusiveMinimum:
             out = None
     return float(out)
@@ -91,19 +91,19 @@ def _email_(obj, _, val=None):
         + ''.join([random.choice(names) for _ in six.moves.xrange(region_length)])
 
 def _byte_(obj, opt, val=None):
-    return val if val else base64.b64encode( 
+    return val if val else base64.b64encode(
         six.b(''.join([random.choice(string.ascii_letters) for _ in range(random.randint(0, opt['max_byte_length']))]))
     )
 
 max_date = time.mktime(datetime.date(2038, 1, 19).timetuple())
-min_date = time.mktime(datetime.date(1970, 1, 1).timetuple())
+min_date = time.mktime(datetime.date(1970, 1, 2).timetuple())
 def _date_(obj, _, val=None):
     return from_iso8601(val).date() if val else datetime.date.fromtimestamp(
         random.uniform(min_date, max_date)
     )
 
 max_datetime = time.mktime(datetime.datetime(2038, 1, 19).utctimetuple())
-min_datetime = time.mktime(datetime.datetime(1970, 1, 1).utctimetuple())
+min_datetime = time.mktime(datetime.datetime(1970, 1, 2).utctimetuple())
 def _date_time_(obj, _, val=None):
     return from_iso8601(val) if val else datetime.datetime.utcfromtimestamp(
         random.uniform(min_datetime, max_datetime)
@@ -112,7 +112,7 @@ def _date_time_(obj, _, val=None):
 def _file_(obj, opt, _):
     if len(opt['files'] or []) > 0:
         return random.choice(opt['files'])
-    return dict( 
+    return dict(
         header={
             'Content-Type': 'text/plain',
             'Content-Transfer-Encoding': 'binary'
@@ -257,7 +257,7 @@ class Renderer(object):
             parameter_template={},
             max_property=False,
             max_parameter=False,
-        ) 
+        )
 
     def render(self, obj, opt=None):
         """ render a Schema/Parameter
@@ -308,4 +308,3 @@ class Renderer(object):
                     continue
             out.update({p.name: self.render(p, opt=opt)})
         return out
-
