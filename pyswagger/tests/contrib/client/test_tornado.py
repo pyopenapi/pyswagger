@@ -5,8 +5,6 @@ from pyswagger import SwaggerApp
 from pyswagger.contrib.client.tornado import TornadoClient
 from ...utils import create_pet_db, get_test_data_folder, pet_Mary
 import json
-import sys
-import pytest
 import six
 
 
@@ -99,7 +97,6 @@ app = web.Application([
 ], debug=True)
 
 
-@pytest.mark.skipif(sys.version_info[:2] >= (3, 3), reason='httpretty corrupt in python3')
 class TornadoTestCase(testing.AsyncHTTPTestCase):
     """
     """

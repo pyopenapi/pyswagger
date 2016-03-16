@@ -551,7 +551,10 @@ class BaseClient(object):
 
         :param pyswagger.io.SwaggerRequest req: current request object
         """
-        ret = self.__schemes__ & set(req.schemes)
+
+        # fix test bug when in python3 scheme, more details in commint msg
+        ret = sorted(self.__schemes__ & set(req.schemes), reverse=True)
+
         if len(ret) == 0:
             raise ValueError('No schemes available: {0}'.format(req.schemes))
         return ret
