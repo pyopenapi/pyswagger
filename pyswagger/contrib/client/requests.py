@@ -10,19 +10,25 @@ class Client(BaseClient):
 
     __schemes__ = set(['http', 'https'])
 
-    def __init__(self, auth=None, send_opt={}):
+    def __init__(self, auth=None, send_opt=None):
         """ constructor
 
         :param auth pyswagger.SwaggerAuth: auth info used when requesting
         :param send_opt dict: options used in requests.send, ex verify=False
         """
         super(Client, self).__init__(auth)
+        if send_opt is None:
+            send_opt = {}
+
         self.__s = Session()
         self.__send_opt = send_opt
 
-    def request(self, req_and_resp, opt={}):
+    def request(self, req_and_resp, opt=None):
         """
         """
+        if opt is None:
+            opt = {}
+
         req, resp = super(Client, self).request(req_and_resp, opt)
 
         # apply request-related options before preparation.
@@ -52,7 +58,7 @@ class Client(BaseClient):
         resp.apply_with(
             status=rs.status_code,
             header=rs.headers,
-            raw=six.StringIO(rs.content).getvalue()
+            raw=six.BytesIO(rs.content).getvalue()
         )
 
         return resp

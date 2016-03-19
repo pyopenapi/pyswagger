@@ -7,8 +7,6 @@ import unittest
 import httpretty
 import json
 import six
-import pytest
-import sys
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
@@ -22,7 +20,6 @@ pet_Kay = dict(id=4, name='Kay', category=dict(id=2, name='cat'), status='availa
 pet_QQQ = dict(id=1, name='QQQ', category=dict(id=1, name='dog'), tags=None, status=None)
 
 
-@pytest.mark.skipif(sys.version_info[:2] >= (3, 3), reason='httpretty corrupt in python3')
 @httpretty.activate
 class RequestsClient_Pet_TestCase(unittest.TestCase):
     """ test SwaggerClient implemented by requests """
@@ -170,7 +167,6 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertTrue(body.find('a test Content') != -1)
         self.assertTrue(body.find('filename="test.txt"') != -1)
 
-@pytest.mark.skipif(sys.version_info[:2] >= (3, 3), reason='httpretty corrupt in python3')
 @httpretty.activate
 class RequestsOptTestCase(unittest.TestCase):
     """ make sure that passing options to requests won't fail """
@@ -193,4 +189,3 @@ class RequestsOptTestCase(unittest.TestCase):
         self.assertEqual(resp.data,
             {u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}], u'id': 1}
             )
-

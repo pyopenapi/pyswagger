@@ -17,7 +17,6 @@ uwi_mary = dict(id=2, username='mary', password='456456', email='m@a.ry', phone=
 uwi_kevin = dict(id=3, username='kevin')
 
 
-@pytest.mark.skipif(sys.version_info[:2] >= (3, 3), reason='httpretty corrupt in python3')
 class ModelInteritanceTestCase(unittest.TestCase):
     """ test cases for model inheritance """
 
@@ -77,4 +76,3 @@ class ModelInteritanceTestCase(unittest.TestCase):
         self.assertEqual(m.sub_type, 'User')
         self.assertRaises(KeyError, getattr, m, 'email')
         self.assertRaises(KeyError, getattr, m, 'email')
-
