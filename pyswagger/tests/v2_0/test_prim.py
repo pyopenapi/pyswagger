@@ -380,6 +380,21 @@ class AdditionalPropertiesTestCase(unittest.TestCase):
             )
         )
 
+    def test_array_addp_without_prop(self):
+        """ special case for array of items with additionalProperties
+        and without properties
+        """
+        d = self.app.resolve('#/definitions/addp_no_prop')
+        m = self.app.prim_factory.produce(
+            d, [
+                dict(a=1, b=2, c=3),
+                dict(name='john', email='xx@gmail.com'),
+            ]
+        )
+        self.assertEqual(len(m), 2)
+        self.assertEqual(m[0], dict(a=1, b=2, c=3)) # although we didn't validate it, we should still output it.
+        self.assertEqual(m[1], dict(name='john', email='xx@gmail.com'))
+
 
 class ParameterTestCase(unittest.TestCase):
     """ test for Parameter object """

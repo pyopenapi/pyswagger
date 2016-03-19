@@ -57,6 +57,13 @@
          "allOf":[
             {"$ref":"#/definitions/int_limit"}
          ]
+      },
+      "addp_no_prop":{
+         "type":"array",
+         "items":{
+             "type":"object",
+             "additionalProperties":true
+         }
       }
    }
 }

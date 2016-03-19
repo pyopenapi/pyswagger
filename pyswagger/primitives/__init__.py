@@ -146,7 +146,7 @@ class SwaggerPrimitive(object):
         if val == None:
             return None
 
-        cleanup = ctx == None # it's the top-most call in recursive
+        ctx == None # it's the top-most call in recursive
         obj = deref(obj)
         ctx = {} if ctx == None else ctx
         if 'name' not in ctx and hasattr(obj, 'name'):
@@ -221,7 +221,7 @@ class SwaggerPrimitive(object):
                 for a in not_applied:
                     val = _apply(a, ret, val, ctx)
 
-        if ret and cleanup and hasattr(ret, 'cleanup'):
+        if ret != None and hasattr(ret, 'cleanup'):
             val = ret.cleanup(val, ctx)
 
         return ret
