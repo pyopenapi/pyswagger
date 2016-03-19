@@ -43,7 +43,7 @@
       "enum.integer":{
          "type":"integer",
          "format":"int32",
-         "maximum":1,
+         "maximum":0,
          "enum":[
             1,
             2,
@@ -95,7 +95,8 @@
           "format":"email",
           "enum":[
              "a@a..com",
-             "b@b..com"
+             "b@b..com",
+             "kk"
           ]
       }
    }
