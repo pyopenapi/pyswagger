@@ -58,3 +58,15 @@ class SwaggerResponseTestCase(unittest.TestCase):
             'A': [1],
             'B': ['222']
         })
+
+    def test_raw_body_only(self):
+        """ an option skip passing body byte stream to swagger-primitive-factory
+        """
+        r = '{"id": 0, "message": "test string 2"}'
+        resp = io.SwaggerResponse(self.app.s('/resp').get)
+        resp.raw_body_only = True 
+        resp.apply_with(404, r)
+        self.assertEqual(resp.status, 404)
+        self.assertEqual(resp.raw, r)
+        self.assertFalse(isinstance(resp.data, primitives.Model))
+

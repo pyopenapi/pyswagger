@@ -22,6 +22,10 @@ assert resp.data.username == 'Tom'
 # Raw
 assert resp.raw == '{"id": 1, "username": "Tom"}'
 
+# To disable parsing of body parameter, and handle 'raw' on your own.
+resp.raw_body_only = True
+assert resp.data == None
+
 # Header
 # header is a dict, its values are lists of values,
 # because keys in HTTP header allow duplication.

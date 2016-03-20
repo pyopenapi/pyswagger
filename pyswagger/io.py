@@ -306,6 +306,9 @@ class SwaggerResponse(object):
         self.__status = None 
         self.__header = {}
 
+        # options
+        self.__raw_body_only = False
+
     def _convert_header(self, resp, k, v):
         if resp and resp.headers and k in resp.headers:
             v = resp.headers[k]._prim_(v, self.__op._prim_factory)
@@ -346,7 +349,7 @@ class SwaggerResponse(object):
             if self.__status == None:
                 raise Exception('Update status code before assigning raw data')
 
-            if r and r.schema:
+            if r and r.schema and not self.__raw_body_only:
                 # update data from Opeartion if succeed else from responseMessage.responseModel
                 content_type = 'application/json'
                 for k, v in six.iteritems(self.header):
@@ -361,6 +364,14 @@ class SwaggerResponse(object):
                 self.__data = r.schema._prim_(data, self.__op._prim_factory)
 
         return self
+
+    def raw_body_only(self, only):
+        """ an option to disable parsing bytes-stream to
+        pyswagger primitives of body response. 'True' to enable this option
+        """
+        self.__raw_body_only = only
+
+    raw_body_only = property(None, raw_body_only)
 
     @property
     def status(self):
