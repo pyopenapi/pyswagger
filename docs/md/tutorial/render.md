@@ -21,7 +21,7 @@ input_ = renderer.render_all(
 # this generated input could be passed to Operation.__call__,
 # to get a pair of (SwaggerRequest, SwaggerResponse), or just
 # pass them to client
-resp = client.request(app.s('user').post(input_))
+resp = client.request(app.s('user').post(**input_))
 ```
 
 a _template_ could be provided in rendering options.
