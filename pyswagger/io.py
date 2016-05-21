@@ -90,6 +90,33 @@ class SwaggerRequest(object):
         body = io.BytesIO()
         w = codecs.getwriter(encoding)
 
+        def append(name, obj):
+            body.write(six.b('--{0}\r\n'.format(boundary)))
+
+            # header
+            w(body).write('Content-Disposition: form-data; name="{0}"; filename="{1}"'.format(name, obj.filename))
+            body.write(six.b('\r\n'))
+            if 'Content-Type' in obj.header:
+                w(body).write('Content-Type: {0}'.format(obj.header['Content-Type']))
+                body.write(six.b('\r\n'))
+            if 'Content-Transfer-Encoding' in obj.header:
+                w(body).write('Content-Transfer-Encoding: {0}'.format(obj.header['Content-Transfer-Encoding']))
+                body.write(six.b('\r\n'))
+            body.write(six.b('\r\n'))
+
+            # body
+            if not obj.data:
+                with open(obj.filename, 'rb') as f:
+                    body.write(f.read())
+            else:
+                data = obj.data.read()
+                if isinstance(data, six.text_type):
+                    w(body).write(data)
+                else:
+                    body.write(data)
+
+            body.write(six.b('\r\n'))
+
         for k, v in self.__p['formData']:
             body.write(six.b('--{0}\r\n'.format(boundary)))
 
@@ -103,31 +130,11 @@ class SwaggerRequest(object):
 
         # begin of file section
         for k, v in six.iteritems(self.__p['file']):
-            body.write(six.b('--{0}\r\n'.format(boundary)))
-
-            # header
-            w(body).write('Content-Disposition: form-data; name="{0}"; filename="{1}"'.format(k, v.filename))
-            body.write(six.b('\r\n'))
-            if 'Content-Type' in v.header:
-                w(body).write('Content-Type: {0}'.format(v.header['Content-Type']))
-                body.write(six.b('\r\n'))
-            if 'Content-Transfer-Encoding' in v.header:
-                w(body).write('Content-Transfer-Encoding: {0}'.format(v.header['Content-Transfer-Encoding']))
-                body.write(six.b('\r\n'))
-            body.write(six.b('\r\n'))
-
-            # body
-            if not v.data:
-                with open(v.filename, 'rb') as f:
-                    body.write(f.read())
+            if isinstance(v, list):
+                for vv in v:
+                    append(k, vv)
             else:
-                data = v.data.read()
-                if isinstance(data, six.text_type):
-                    w(body).write(data)
-                else:
-                    body.write(data)
-
-            body.write(six.b('\r\n'))
+                append(k, v)
 
         # final boundary
         body.write(six.b('--{0}--\r\n'.format(boundary)))

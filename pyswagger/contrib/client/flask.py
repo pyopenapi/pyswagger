@@ -35,11 +35,21 @@ class FlaskTestClient(BaseClient):
             data.update(req._p['formData'])
             # file
             for k, v in six.iteritems(req.files):
-                data[k] = FileStorage(
-                    name=k,
-                    filename=v.filename,
-                    stream=v.data
-                )
+                if isinstance(v, list):
+                    data[k] = []
+                    for vv in v:
+                        data[k].append(FileStorage(
+                            name=k,
+                            filename=vv.filename,
+                            stream=vv.data
+                        ))
+                else:
+                    data[k] = FileStorage(
+                        name=k,
+                        filename=v.filename,
+                        stream=v.data
+                    )
+
         else:
             data = req.data if req._p['body'] else req._p['formData']
 

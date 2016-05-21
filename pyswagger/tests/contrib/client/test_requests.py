@@ -7,6 +7,7 @@ import unittest
 import httpretty
 import json
 import six
+import os
 
 
 app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
@@ -167,6 +168,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertTrue(body.find('a test Content') != -1)
         self.assertTrue(body.find('filename="test.txt"') != -1)
 
+
 @httpretty.activate
 class RequestsOptTestCase(unittest.TestCase):
     """ make sure that passing options to requests won't fail """
@@ -189,3 +191,29 @@ class RequestsOptTestCase(unittest.TestCase):
         self.assertEqual(resp.data,
             {u'name': 'Tom', u'tags': [{u'id': 0, u'name': 'available'}, {u'id': 1, u'name': 'sold'}], u'id': 1}
             )
+
+@httpretty.activate
+class MultipleFileUploadTestCase(unittest.TestCase):
+    """ test case for upload multiple files """
+
+    def test_uploadImages(self):
+        """ upload multiple files """
+        httpretty.register_uri(httpretty.POST, 'http://test.com/upload', status=200)
+
+        app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
+        resp = client.request(app.op['upload_images'](images=[
+                dict(data=six.BytesIO(six.b('test image 1')), filename='_1.k'),
+                dict(data=six.BytesIO(six.b('test image 2')), filename='_2.k'),
+                dict(data=six.BytesIO(six.b('test image 3')), filename='_3.k')
+            ])
+        )
+        self.assertEqual(resp.status, 200)
+        body = httpretty.last_request().body.decode()
+        self.assertTrue(body.find('_1.k') != -1)
+        self.assertTrue(body.find('test image 1') != -1)
+        self.assertTrue(body.find('_2.k') != -1)
+        self.assertTrue(body.find('test image 2') != -1)
+        self.assertTrue(body.find('_3.k') != -1)
+        self.assertTrue(body.find('test image 3') != -1)
+
+

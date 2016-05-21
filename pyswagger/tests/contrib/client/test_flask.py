@@ -5,6 +5,7 @@ from ...utils import create_pet_db, get_test_data_folder, pet_Mary
 from flask import Flask, json, request
 import unittest
 import six
+import os
 
 
 sapp = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
@@ -59,6 +60,18 @@ def pet_image():
         received_meta = request.form['additionalMetadata']
 
         return "", 200
+
+received_files = None
+received_file_names = None
+
+@fapp.route('/upload', methods=['POST'])
+def upload_images():
+    global received_files
+    global received_file_names
+
+    images = request.files.getlist('images')
+    received_files = images
+    return "", 200
 
 #
 # test case
@@ -122,3 +135,29 @@ class FlaskTestCase(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         self.assertEqual(received_file.decode(), 'a test Content')
         self.assertEqual(received_meta, 'a test file')
+
+    def test_upload_multiple_files(self):
+        """ upload multiple files """
+        global received_files
+        global received_file_names
+
+        app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
+
+        self.client.request(
+            app.op['upload_images'](images=[
+                dict(data=six.BytesIO(six.b('test image 1')), filename='_1.k'),
+                dict(data=six.BytesIO(six.b('test image 2')), filename='_2.k'),
+                dict(data=six.BytesIO(six.b('test image 3')), filename='_3.k')
+            ])
+        )
+
+        # filename
+        self.assertEqual(received_files[0].filename, '_1.k')
+        self.assertEqual(received_files[1].filename, '_2.k')
+        self.assertEqual(received_files[2].filename, '_3.k')
+
+        # parameter name
+        self.assertEqual(received_files[0].name, 'images')
+        self.assertEqual(received_files[1].name, 'images')
+        self.assertEqual(received_files[2].name, 'images')
+

@@ -35,14 +35,22 @@ class Client(BaseClient):
         req.prepare(scheme=self.prepare_schemes(req).pop(), handle_files=False)
         req._patch(opt)
 
+
         # prepare for uploaded files
-        file_obj = {}
-        for k, v in six.iteritems(req.files):
-            f = v.data or open(v.filename, 'rb')
-            if 'Content-Type' in v.header:
-                file_obj[k] = (v.filename, f, v.header['Content-Type'])
+        file_obj = []
+        def append(name, obj):
+            f = obj.data or open(obj.filename, 'rb')
+            if 'Content-Type' in obj.header:
+                file_obj.append((name, (obj.filename, f, obj.header['Content-Type'])))
             else:
-                file_obj[k] = (v.filename, f)
+                file_obj.append((name, (obj.filename, f)))
+
+        for k, v in six.iteritems(req.files):
+            if isinstance(v, list):
+                for vv in v:
+                    append(k, vv)
+            else:
+                append(k, v)
 
         rq = Request(
             method=req.method.upper(),

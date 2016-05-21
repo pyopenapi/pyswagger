@@ -1,0 +1,46 @@
+{
+   "swagger":"2.0",
+   "host":"test.com",
+   "basePath":"",
+   "produces":[
+      "application/json"
+   ],
+   "consumes":[
+      "application/json"
+   ],
+   "schemes":[
+      "http",
+      "https"
+   ],
+   "paths":{
+      "/upload":{
+         "post":{
+            "consumes":["multipart/form-data"],
+            "operationId":"upload_images",
+            "parameters":[
+               {
+                  "name":"images",
+                  "in":"formData",
+                  "description":"for testing multiple file upload",
+                  "required":true,
+                  "type":"array",
+                  "items":{
+                     "type":"file"
+                  },
+                  "collectionFormat":"multi"
+               }
+            ],
+            "responses":{
+               "default":{
+                  "description":"default response"
+               },
+               "404":{
+                  "description":"not found"
+               }
+            }
+         }
+      }
+   },
+   "definitions":{
+   }
+}

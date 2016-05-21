@@ -268,7 +268,10 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
                 params['file'][p.name] = c
             elif i in ('query', 'formData'):
                 if isinstance(c, Array):
-                    params[i].extend([tuple([p.name, v]) for v in c.to_url()])
+                    if p.items.type == 'file':
+                        params['file'][p.name] = c
+                    else:
+                        params[i].extend([tuple([p.name, v]) for v in c.to_url()])
                 else:
                     params[i].append((p.name, str(c),))
             else:

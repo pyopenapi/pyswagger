@@ -6,6 +6,7 @@ from pyswagger.contrib.client.tornado import TornadoClient
 from ...utils import create_pet_db, get_test_data_folder, pet_Mary
 import json
 import six
+import os
 
 
 sapp = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
@@ -87,13 +88,25 @@ class ImageRequestHandler(web.RequestHandler):
         received_file = self.request.files['file'][0].body
         received_meta = self.get_argument('additionalMetadata')
 
+received_files = None
+
+class ImagesUploadRequestHandler(web.RequestHandler):
+    """ test for multiple file upload """
+
+    def post(self):
+        global received_files
+
+        received_files = self.request.files['images']
+
+
 """ global variables """
 
 pet_db = create_pet_db()
 app = web.Application([
     (r'/api/pet', PetRequestHandler, dict(db=pet_db)),
     (r'/api/pet/(\d+)', PetIdRequestHandler, dict(db=pet_db)),
-    (r'/api/pet/uploadImage', ImageRequestHandler)
+    (r'/api/pet/uploadImage', ImageRequestHandler),
+    (r'/upload', ImagesUploadRequestHandler)
 ], debug=True)
 
 
@@ -185,4 +198,25 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
         self.assertEqual(resp.status, 200)
         self.assertEqual(received_file.decode(), 'a test Content')
         self.assertEqual(received_meta, 'a test file')
+
+    @testing.gen_test
+    def test_uploadImages(self):
+        """ test for uploading multiple files """
+        global received_files
+
+        app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
+        resp = yield self.client.request(
+            app.op['upload_images'](images=[
+                dict(data=six.BytesIO(six.b('test image 1')), filename='_1.k'),
+                dict(data=six.BytesIO(six.b('test image 2')), filename='_2.k'),
+                dict(data=six.BytesIO(six.b('test image 3')), filename='_3.k'),
+            ]),
+            opt=dict(
+                url_netloc='localhost:'+str(self.get_http_port())
+            )
+        )
+
+        self.assertEqual(received_files[0], {'body': six.b('test image 1'), 'content_type': 'application/unknown', 'filename': u'_1.k'})
+        self.assertEqual(received_files[1], {'body': six.b('test image 2'), 'content_type': 'application/unknown', 'filename': u'_2.k'})
+        self.assertEqual(received_files[2], {'body': six.b('test image 3'), 'content_type': 'application/unknown', 'filename': u'_3.k'})
 
