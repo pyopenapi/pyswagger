@@ -318,7 +318,7 @@ class SwaggerResponse(object):
 
     def _convert_header(self, resp, k, v):
         if resp and resp.headers and k in resp.headers:
-            v = resp.headers[k]._prim_(v, self.__op._prim_factory)
+            v = resp.headers[k]._prim_(v, self.__op._prim_factory, ctx=dict(read=True))
 
         if k in self.__header:
             self.__header[k].append(v)
@@ -368,7 +368,7 @@ class SwaggerResponse(object):
                 _format = schema.format
                 name = schema.name
                 data = self.__op._mime_codec.unmarshal(content_type, self.raw, _type=_type, _format=_format, name=name)
-                self.__data = r.schema._prim_(data, self.__op._prim_factory)
+                self.__data = r.schema._prim_(data, self.__op._prim_factory, ctx=dict(read=True))
 
         return self
 

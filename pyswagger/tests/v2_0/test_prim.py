@@ -205,6 +205,14 @@ class SchemaTestCase(unittest.TestCase):
         self.assertTrue(isinstance(dv, primitives.UUID), 'should be an primitives.UUID, not {0}'.format(dv))
         self.assertEqual(dv.v.bytes, six.b('\x78\x56\x34\x12\x34\x12\x78\x56\x12\x34\x56\x78\x12\x34\x56\x78'))
 
+    def test_read_only(self):
+        """ make sure read-only for property works """
+        op = self.app.s('/k').post
+        self.assertRaises(Exception, op, p1=dict(protected=1))
+
+        resp = io.SwaggerResponse(op)
+        resp.apply_with(0, '{"protected":1}') # allowed
+
 
 class HeaderTestCase(unittest.TestCase):
     """ test for Header object """

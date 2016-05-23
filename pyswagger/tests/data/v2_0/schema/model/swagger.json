@@ -3,6 +3,26 @@
    "host":"http://test.com",
    "basePath":"/v1",
    "paths":{
+      "/k":{
+         "post":{
+            "parameters":[
+               {
+                  "name":"p1",
+                  "in":"body",
+                  "schema":{
+                     "$ref":"#/definitions/ReadOnly"
+                  }
+               }
+            ],
+            "responses":{
+               "default":{
+                  "schema":{
+                     "$ref":"#/definitions/ReadOnly"
+                  }
+               }
+            }
+         }
+      },
       "/t":{
          "get":{
             "parameters":[
@@ -90,6 +110,15 @@
       }
    },
    "definitions":{
+      "ReadOnly":{
+         "properties":{
+            "protected":{
+               "type":"integer",
+               "format":"int32",
+               "readOnly":true
+            }
+         }
+      },
       "Category":{
          "properties":{
             "id":{

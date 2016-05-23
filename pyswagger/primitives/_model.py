@@ -23,6 +23,9 @@ class Model(dict):
         for k, v in six.iteritems(val):
             if k in obj.properties:
                 pobj = obj.properties.get(k)
+                if pobj.readOnly == True and ctx['read'] == False:
+                    raise Exception('read-only property is set in write context.')
+
                 self[k] = ctx['factory'].produce(pobj, v)
 
             # TODO: patternProperties here

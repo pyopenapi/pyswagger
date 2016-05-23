@@ -146,7 +146,6 @@ class SwaggerPrimitive(object):
         if val == None:
             return None
 
-        ctx == None # it's the top-most call in recursive
         obj = deref(obj)
         ctx = {} if ctx == None else ctx
         if 'name' not in ctx and hasattr(obj, 'name'):
@@ -165,6 +164,9 @@ class SwaggerPrimitive(object):
         if 'factory' not in ctx:
             # primitive factory
             ctx['factory'] = self
+        if 'read' not in ctx:
+            # default is in 'read' context
+            ctx['read'] = True
 
         # cycle guard
         ctx['guard'].update(obj)

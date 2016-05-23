@@ -55,8 +55,8 @@ class Items(six.with_metaclass(FieldMeta, BaseSchema)):
         'collectionFormat': None,
     }
 
-    def _prim_(self, v, prim_factory):
-        return prim_factory.produce(self, v)
+    def _prim_(self, v, prim_factory, ctx=None):
+        return prim_factory.produce(self, v, ctx)
 
 
 class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
@@ -74,7 +74,6 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
         'title': None,
         'description': None,
         'discriminator': None,
-        # TODO: readonly not handled
         'readOnly': None,
         'xml': None,
         'externalDocs': None,
@@ -88,8 +87,8 @@ class Schema(six.with_metaclass(FieldMeta, BaseSchema)):
         'name': None,
     }
 
-    def _prim_(self, v, prim_factory):
-        return prim_factory.produce(self, v)
+    def _prim_(self, v, prim_factory, ctx=None):
+        return prim_factory.produce(self, v, ctx)
 
 
 class Swagger(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
@@ -179,9 +178,9 @@ class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
         'final': None,
     }
 
-    def _prim_(self, v, prim_factory):
+    def _prim_(self, v, prim_factory, ctx=None):
         i = getattr(self, 'in')
-        return prim_factory.produce(self.schema, v) if i == 'body' else prim_factory.produce(self, v)
+        return prim_factory.produce(self.schema, v, ctx) if i == 'body' else prim_factory.produce(self, v, ctx)
 
 
 class Header(six.with_metaclass(FieldMeta, BaseSchema)):
@@ -193,8 +192,8 @@ class Header(six.with_metaclass(FieldMeta, BaseSchema)):
         'description': None,
     }
 
-    def _prim_(self, v, prim_factory):
-        return prim_factory.produce(self, v)
+    def _prim_(self, v, prim_factory, ctx=None):
+        return prim_factory.produce(self, v, ctx)
 
 
 class Response(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
@@ -261,7 +260,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
                     # do not provide value for parameters that use didn't specify.
                     return
 
-            c = p._prim_(v, self._prim_factory)
+            c = p._prim_(v, self._prim_factory, ctx=dict(read=False))
             i = getattr(p, 'in')
 
             if p.type == 'file':
