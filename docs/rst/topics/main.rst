@@ -2,33 +2,33 @@
 Main Components
 ===============
 
-*SwaggerApp*, *SwaggerSecurity*, *Client* are components you would touch first when adapting pyswagger.
+*App*, *Security*, *Client* are components you would touch first when adapting pyswagger.
 
-SwaggerApp
+App
 ==========
 
-SwaggerApp carries Swagger API definition, other components would rely on it but not json files. You need to access Operation object via **SwaggerApp.op** by providing *nickname* or *resource name* plus *nickname*.
+App carries Swagger API definition, other components would rely on it but not json files. You need to access Operation object via **App.op** by providing *nickname* or *resource name* plus *nickname*.
 
 .. code-block:: python
 
-    app = SwaggerApp._create_('http://petstore.swagger.wordnik.com/api/api-docs')
+    app = App._create_('http://petstore.swagger.wordnik.com/api/api-docs')
     assert app.op['getPetsByStatus'] == app.op['pet', 'getPetsByStatus']
 
     # resource name is must when nickname collid
     app.op['user', 'getById']
     app.op['pet', 'getById']
 
-The Operation object is callable, and can be provided by a set of :ref:`primitives`, then return a pair of :ref:`SwaggerRequest` and :ref:`SwaggerResponse`.
+The Operation object is callable, and can be provided by a set of :ref:`primitives`, then return a pair of :ref:`Request` and :ref:`Response`.
 
-SwaggerSecurity
+Security
 ===========
 
-SwaggerSecurity is a placeholder of authorizations,
+Security is a placeholder of authorizations,
 
 .. code-block:: python
 
-    # must be initialized with SwaggerApp
-    auth = SwaggerSecurity(app)
+    # must be initialized with App
+    auth = Security(app)
 
     # insert autorization information
     app.update_with('simple_basicAuth', ('user', 'password'))
@@ -53,11 +53,11 @@ Below is a code to demostrate the relation between these components.
 
 .. code-block:: python
 
-    app = SwaggerApp._create_('http://petstore.swagger.wordnik.com/api/api-docs')
-    auth = SwaggerSecurity(app)
+    app = App._create_('http://petstore.swagger.wordnik.com/api/api-docs')
+    auth = Security(app)
     client = Client(auth)
 
-    # get SwaggerRequest and SwaggerResponse from Swagger.op
+    # get Request and Response from Swagger.op
     req, resp = app.op['getPetById'](Id=1)
 
     # call request
@@ -71,11 +71,11 @@ Reference
 =========
 
 .. module:: pyswagger.core
-.. autoclass:: SwaggerApp
+.. autoclass:: App
     :members:
     :private-members:
 
-.. autoclass:: SwaggerSecurity
+.. autoclass:: Security
     :members:
 
     .. automethod:: __init__
@@ -90,20 +90,20 @@ Reference
 .. module:: pyswagger.io
 
 
-.. _SwaggerRequest:
+.. _Request:
 
 ##############
-SwaggerRequest
+Request
 ##############
 
-.. autoclass:: SwaggerRequest
+.. autoclass:: Request
     :members:
 
-.. _SwaggerResponse:
+.. _Response:
 
 ###############
-SwaggerResponse
+Response
 ###############
 
-.. autoclass:: SwaggerResponse
+.. autoclass:: Response
     :members:

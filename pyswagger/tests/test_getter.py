@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.getter import UrlGetter
 from .utils import get_test_data_folder
 import unittest
@@ -17,7 +17,7 @@ class GetterTestCase(unittest.TestCase):
         )
         path = os.path.join(path, 'test_random.json')
         # should not raise ValueError
-        app = SwaggerApp.create(path)
+        app = App.create(path)
 
     def test_random_name_v1_2(self):
         """
@@ -28,7 +28,7 @@ class GetterTestCase(unittest.TestCase):
         )
         path = os.path.join(path, 'test_random.json')
         # should not raise ValueError
-        app = SwaggerApp.create(path)
+        app = App.create(path)
 
     def test_local_path_with_custome_getter(self):
         """ make sure path would be assigned when
@@ -42,4 +42,4 @@ class GetterTestCase(unittest.TestCase):
         path = os.path.join(path, 'test_random.json')
 
         # should not raise errors
-        app = SwaggerApp.load(path, getter=cls)
+        app = App.load(path, getter=cls)

@@ -4,7 +4,7 @@ pyswagger allows you to specify consume/produce MIME type when sending request.
 Also, customized MIME codec is supported.
 
 ```python
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.contrib.client.requests import Client
 from pyswagger.primitives import MimeCodec
 import xmltodict
@@ -33,7 +33,7 @@ def _create_mime_codec():
 
 _mime_codec = _create_mime_codec()
 
-app = SwaggerApp.load('http://petstore.swagger.io/v2/swagger.json', mime_codec=_mime_codec)
+app = App.load('http://petstore.swagger.io/v2/swagger.json', mime_codec=_mime_codec)
 app.prepare(strict=True)
 placeOrder = app.op['placeOrder']
 body = dict(complete=True, id=1, petId=1, quantity=1)

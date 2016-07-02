@@ -3,11 +3,11 @@
 pyswagger could be used as a forward converter: loading a Swagger document in older version, and dump it into a newer version.
 
 ```python
-from pyswagger import SwaggerApp
+from pyswagger import App
 import json
 import yaml
 # load a document in Swagger 1.2
-app = SwaggerApp.create('/path/to/your/resource/file/resource_list.json')
+app = App.create('/path/to/your/resource/file/resource_list.json')
 # dump root object(Swagger Object) in Swagger 2.0 into a dict
 obj = app.dump()
 

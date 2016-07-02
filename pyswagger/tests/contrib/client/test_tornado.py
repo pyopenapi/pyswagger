@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from tornado import web, testing
 from tornado.ioloop import IOLoop
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.contrib.client.tornado import TornadoClient
 from ...utils import create_pet_db, get_test_data_folder, pet_Mary
 import json
@@ -9,7 +9,7 @@ import six
 import os
 
 
-sapp = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
+sapp = App._create_(get_test_data_folder(version='1.2', which='wordnik')) 
 received_file = None
 received_meta = None
 
@@ -204,7 +204,7 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
         """ test for uploading multiple files """
         global received_files
 
-        app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
+        app = App._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
         resp = yield self.client.request(
             app.op['upload_images'](images=[
                 dict(data=six.BytesIO(six.b('test image 1')), filename='_1.k'),

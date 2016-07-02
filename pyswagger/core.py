@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from .getter import UrlGetter, LocalGetter
-from .resolve import SwaggerResolver
-from .primitives import SwaggerPrimitive, MimeCodec
+from .resolve import Resolver
+from .primitives import Primitive, MimeCodec
 from .spec.v1_2.parser import ResourceListContext
 from .spec.v2_0.parser import SwaggerContext
 from .spec.v2_0.objects import Operation
@@ -20,7 +20,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SwaggerApp(object):
+class App(object):
     """ Major component of pyswagger
 
     This object is tended to be used in read-only manner. Therefore,
@@ -39,7 +39,7 @@ class SwaggerApp(object):
         :param url str: url of swagger.json
         :param func url_load_hook: a way to redirect url to a accessible place. for self testing.
         :param sep str: separator used by pyswager.utils.ScopeDict
-        :param prim pyswagger.primitives.SwaggerPrimitive: factory for primitives in Swagger.
+        :param prim pyswagger.primitives.Primitive: factory for primitives in Swagger.
         """
 
         logger.info('init with url: {0}'.format(url))
@@ -57,15 +57,15 @@ class SwaggerApp(object):
         # - spec.BaseObj
         # - a map from json-pointer to spec.BaseObj
         self.__objs = {}
-        self.__resolver = SwaggerResolver(url_load_hook)
-        # keep a string reference to SwaggerApp when resolve
+        self.__resolver = Resolver(url_load_hook)
+        # keep a string reference to App when resolve
         self.__strong_refs = []
 
         # allow init App-wised SCOPE_SEPARATOR
         self.__sep = sep
 
-        # init a default SwaggerPrimitive as factory for primitives
-        self.__prim = prim if prim else SwaggerPrimitive()
+        # init a default Primitive as factory for primitives
+        self.__prim = prim if prim else Primitive()
 
         # MIME codec
         self.__mime_codec = mime_codec or MimeCodec()
@@ -85,7 +85,7 @@ class SwaggerApp(object):
     @property
     def raw(self):
         """ raw objects for original version of loaded resources.
-        When loaded json is the latest version we supported, this property is the same as SwaggerApp.root
+        When loaded json is the latest version we supported, this property is the same as App.root
 
         :type: ex. when loading Swagger 1.2, the type is pyswagger.spec.v1_2.objects.ResourceList
         """
@@ -144,7 +144,7 @@ class SwaggerApp(object):
     def prim_factory(self):
         """ primitive factory used by this app
 
-        :type: pyswagger.primitives.SwaggerPrimitive
+        :type: pyswagger.primitives.Primitive
         """
         return self.__prim
 
@@ -256,20 +256,20 @@ class SwaggerApp(object):
 
     @classmethod
     def load(kls, url, getter=None, parser=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None, mime_codec=None):
-        """ load json as a raw SwaggerApp
+        """ load json as a raw App
 
         :param str url: url of path of Swagger API definition
         :param getter: customized Getter
         :type getter: sub class/instance of Getter
         :param parser: the parser to parse the loaded json.
         :type parser: pyswagger.base.Context
-        :param dict app_cache: the cache shared by related SwaggerApp
+        :param dict app_cache: the cache shared by related App
         :param func url_load_hook: hook to patch the url to load json
-        :param str sep: scope-separater used in this SwaggerApp
-        :param prim pyswager.primitives.SwaggerPrimitive: factory for primitives in Swagger
+        :param str sep: scope-separater used in this App
+        :param prim pyswager.primitives.Primitive: factory for primitives in Swagger
         :param mime_codec pyswagger.primitives.MimeCodec: MIME codec
-        :return: the created SwaggerApp object
-        :rtype: SwaggerApp
+        :return: the created App object
+        :rtype: App
         :raises ValueError: if url is wrong
         :raises NotImplementedError: the swagger version is not supported.
         """
@@ -346,12 +346,12 @@ class SwaggerApp(object):
 
     @classmethod
     def create(kls, url, strict=True):
-        """ factory of SwaggerApp
+        """ factory of App
 
         :param str url: url of path of Swagger API definition
         :param bool strict: when in strict mode, exception would be raised if not valid.
-        :return: the created SwaggerApp object
-        :rtype: SwaggerApp
+        :return: the created App object
+        :rtype: App
         :raises ValueError: if url is wrong
         :raises NotImplementedError: the swagger version is not supported.
         """
@@ -361,7 +361,7 @@ class SwaggerApp(object):
         return app
 
     """ for backward compatible, for later version,
-    please call SwaggerApp.create instead.
+    please call App.create instead.
     """
     _create_ = create
 
@@ -419,9 +419,9 @@ class SwaggerApp(object):
         return weakref.proxy(obj)
 
     def s(self, p, b=_shortcut_[sc_path]):
-        """ shortcut of SwaggerApp.resolve.
+        """ shortcut of App.resolve.
         We provide a default base for '#/paths'. ex. to access '#/paths/~1user/get',
-        just call SwaggerApp.s('user/get')
+        just call App.s('user/get')
 
         :param str p: path relative to base
         :param tuple b: a tuple (expected_prefix, base) to represent a 'base'
@@ -442,14 +442,14 @@ class SwaggerApp(object):
 
 
 
-class SwaggerSecurity(object):
+class Security(object):
     """ security handler
     """
 
     def __init__(self, app):
         """ constructor
 
-        :param SwaggerApp app: SwaggerApp
+        :param App app: App
         """
         self.__app = app
 
@@ -540,10 +540,10 @@ class BaseClient(object):
     def __init__(self, security=None):
         """ constructor
 
-        :param SwaggerSecurity security: the security holder
+        :param Security security: the security holder
         """
 
-        # placeholder of SwaggerSecurity
+        # placeholder of Security
         self.__security = security
 
     def prepare_schemes(self, req):
@@ -582,4 +582,8 @@ class BaseClient(object):
             self.__security(req) 
 
         return req, resp
+
+
+SwaggerApp = App
+SwaggerSecurity = Security
 

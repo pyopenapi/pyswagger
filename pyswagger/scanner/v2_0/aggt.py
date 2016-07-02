@@ -52,7 +52,7 @@ class Aggregate(object):
     This scanner should be run after resolving '$ref'
     """
 
-    # TODO: rework SwaggerPrimitive.produce
+    # TODO: rework Primitive.produce
 
     class Disp(Dispatcher): pass
 

@@ -14,7 +14,7 @@ class FlaskTestClient(BaseClient):
         """ contructor
 
         :param client: a testing client created by flask.test_client()
-        :param auth pyswagger.SwaggerSecurity: auth info holder
+        :param auth pyswagger.Security: auth info holder
         """
         super(FlaskTestClient, self).__init__(auth)
         self.__client = client

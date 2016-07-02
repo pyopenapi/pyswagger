@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import App
 from ..utils import get_test_data_folder
 from ...utils import deref, final
 from ...spec.v2_0.parser import PathItemContext
@@ -24,7 +24,7 @@ class ExternalDocumentTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.load(
+        kls.app = App.load(
             url='file:///root/swagger.json',
             url_load_hook=_gen_hook(get_test_data_folder(version='2.0', which='ex'))
         )
@@ -104,7 +104,7 @@ class ExternalDocumentTestCase(unittest.TestCase):
         """ test case for issue#53,
         relative file, which root is a Schema Object
         """
-        app = SwaggerApp.load(
+        app = App.load(
             url='file:///relative/internal.yaml',
             url_load_hook=_gen_hook(get_test_data_folder(version='2.0', which='ex'))
         )
@@ -117,7 +117,7 @@ class ReuseTestCase(unittest.TestCase):
     """
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.load(
+        kls.app = App.load(
             url='file:///reuse/swagger.json',
             url_load_hook=_gen_hook(get_test_data_folder(version='2.0', which='ex'))
         )

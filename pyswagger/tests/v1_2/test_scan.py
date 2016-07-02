@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.scan import Scanner, Dispatcher
 from ..utils import get_test_data_folder
 from pyswagger.spec.v1_2.objects import (
@@ -69,7 +69,7 @@ class PathRecord(object):
             self.parameter.append(path)
 
 
-app = SwaggerApp.load(get_test_data_folder(version='1.2', which='wordnik')) 
+app = App.load(get_test_data_folder(version='1.2', which='wordnik')) 
 
 
 class ScannerTestCase(unittest.TestCase):
@@ -124,7 +124,7 @@ class ResolveTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='model_subtypes')) 
+        kls.app = App._create_(get_test_data_folder(version='1.2', which='model_subtypes')) 
         
     def test_ref_resolve(self):
         """ make sure pre resolve works """

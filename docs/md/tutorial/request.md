@@ -2,15 +2,15 @@
 
 Three parts are involved with making a request:
  - access the Operation object
- - provide parameters to the Operation object, it will return (SwaggerRequest, SwaggerResponse) pair
+ - provide parameters to the Operation object, it will return (Request, Response) pair
  - provide this pair to the client implementation you choose
 
 ### Access Operation
 There are many ways to access an Operation object. For example, if you want to access 'getUserByName' in petstore.
 ```python
-from pyswagger import SwaggerApp
+from pyswagger import App
 
-app = SwaggerApp.create('http://petstore.swagger.io/v2/swagger.json')
+app = App.create('http://petstore.swagger.io/v2/swagger.json')
 
 # via operationId and tag, they are optional in swagger 2.0
 op = app.op['getUserByName']         # when the operationId is unique
@@ -73,13 +73,13 @@ req_and_resp = op(
 )
 ```
 ### Pass result to Client
-The return value when calling an Operation is a pair of (SwaggerRequest, SwaggerResponse),
+The return value when calling an Operation is a pair of (Request, Response),
 just pass it to 'request' function of client. Below is a full example of 'getUserByName'
 ```python
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.contrib.client.requests import Client
 
-app = SwaggerApp.create('/path/to/your/resource/file/swagger.json')
+app = App.create('/path/to/your/resource/file/swagger.json')
 client = Client()
 
 # make the request

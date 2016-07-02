@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp, io, primitives
+from pyswagger import App, io, primitives
 from ..utils import get_test_data_folder
 import unittest
 import os
@@ -9,7 +9,7 @@ class SwaggerResponseTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.create(get_test_data_folder(
+        kls.app = App.create(get_test_data_folder(
             version='2.0',
             which=os.path.join('io', 'response')
         ))

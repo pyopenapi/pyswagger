@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import App
 from ..utils import get_test_data_folder
 import unittest
 
@@ -12,7 +12,7 @@ class PatchObjTestCase(unittest.TestCase):
     
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(
+        kls.app = App._create_(get_test_data_folder(
             version='2.0',
             which='patch'
         ))

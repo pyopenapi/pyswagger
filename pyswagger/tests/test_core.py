@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp, utils
+from pyswagger import App, utils
 from .utils import get_test_data_folder
 from pyswagger.spec.base import BaseObj
 import pyswagger
@@ -13,8 +13,8 @@ class SwaggerCoreTestCase(unittest.TestCase):
 
     def test_backward_compatible_v1_2(self):
         """ make sure alias works """
-        self.assertEqual(pyswagger.SwaggerAuth, pyswagger.SwaggerSecurity)
-        self.assertEqual(pyswagger.SwaggerApp._create_, pyswagger.SwaggerApp.create)
+        self.assertEqual(pyswagger.SwaggerAuth, pyswagger.Security)
+        self.assertEqual(pyswagger.App._create_, pyswagger.App.create)
 
     @httpretty.activate
     def test_auto_schemes(self):
@@ -35,7 +35,7 @@ class SwaggerCoreTestCase(unittest.TestCase):
             body=data
         )
 
-        app = SwaggerApp._create_('http://test.com/api-doc/swagger.json')
+        app = App._create_('http://test.com/api-doc/swagger.json')
         self.assertEqual(app.schemes, ['http'])
 
     @httpretty.activate
@@ -54,7 +54,7 @@ class SwaggerCoreTestCase(unittest.TestCase):
         )
 
         # no exception should be raised
-        app = SwaggerApp.create('http://10.0.0.10:8080/swaggerapi/api/v1beta2')
+        app = App.create('http://10.0.0.10:8080/swaggerapi/api/v1beta2')
         self.assertTrue(app.schemes, ['http'])
         self.assertTrue(isinstance(app.root, BaseObj))
 
@@ -69,7 +69,7 @@ class SwaggerCoreTestCase(unittest.TestCase):
         fu = utils.normalize_url(path) # file uri version of path
 
         # load swagger.json from a file path
-        app = SwaggerApp.create(path)
+        app = App.create(path)
         req, _ = app.s('t1').get()
         self.assertEqual(req.url, '//localhost/t1')
         self.assertEqual(req.schemes, ['file'])
@@ -78,7 +78,7 @@ class SwaggerCoreTestCase(unittest.TestCase):
 
         # load swagger.json from a file uri
         self.assertNotEqual(six.moves.urllib.parse.urlparse(fu).scheme, '')
-        app = SwaggerApp.create(fu)
+        app = App.create(fu)
         req, _ = app.s('t1').get()
         self.assertEqual(req.url, '//localhost/t1')
         self.assertEqual(req.schemes, ['file'])
@@ -91,7 +91,7 @@ class SwaggerCoreTestCase(unittest.TestCase):
             return fu
 
         url = 'test.com/api/v1'
-        app = SwaggerApp.load('https://'+url, url_load_hook=_hook)
+        app = App.load('https://'+url, url_load_hook=_hook)
         app.prepare()
         # try to make a SwaggerRequest and verify its url
         req, _ = app.s('t1').get()

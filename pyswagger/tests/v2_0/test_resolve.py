@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp, utils
+from pyswagger import App, utils
 from pyswagger.spec.v2_0 import objects
 from ..utils import get_test_data_folder
 from ...utils import final
@@ -11,7 +11,7 @@ class ResolvePathItemTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(
+        kls.app = App._create_(get_test_data_folder(
             version='2.0',
             which=os.path.join('resolve', 'path_item')
         ))
@@ -40,7 +40,7 @@ class ResolveTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(
+        kls.app = App._create_(get_test_data_folder(
             version='2.0',
             which=os.path.join('resolve', 'other')
         ))
@@ -74,7 +74,7 @@ class DerefTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(
+        kls.app = App._create_(get_test_data_folder(
             version='2.0',
             which=os.path.join('resolve', 'deref')
         ))

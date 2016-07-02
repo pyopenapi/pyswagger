@@ -3,11 +3,11 @@
 As a backend developer, you will need to test your API before shipping. We provide a simple way to patch the url before client actually making a request. (note: this sample requires [requests](https://github.com/kennethreitz/requests) installed on your environment.)
 
 ```python
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.contrib.client.request import Client
 
-# create a SwaggerApp with a local resource file
-app = SwaggerApp.create('/path/to/your/resource/file/swagger.json')
+# create a App with a local resource file
+app = App.create('/path/to/your/resource/file/swagger.json')
 # init the client
 client = Client()
 

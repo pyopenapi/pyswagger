@@ -32,9 +32,9 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - **NEW** convert Swagger Document from older version to newer one. (ex. convert from 1.2 to 2.0)
 - support Swagger **1.2**, **2.0** on python **2.6**, **2.7**, **3.3**, **3.4**
 - support YAML via [Pretty-YAML](https://github.com/mk-fg/pretty-yaml)
-- support $ref to **External Document**, multiple swagger.json will be organized into a group of SwaggerApp. And external document with self-describing resource is also supported (refer to [issue](https://github.com/swagger-api/swagger-spec/issues/219)).
+- support $ref to **External Document**, multiple swagger.json will be organized into a group of App. And external document with self-describing resource is also supported (refer to [issue](https://github.com/swagger-api/swagger-spec/issues/219)).
 - type safe, input/output are converted to python types according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in Swagger. You don't need to touch any json schema when using pyswagger. Limitations like **minimum/maximum** or **enum** are also checked. **Model inheritance** also supported.
-- provide function **SwaggerApp.validate** to check validity of the loaded API definition according to spec.
+- provide function **App.validate** to check validity of the loaded API definition according to spec.
 - builtin client implementation based on various http clients in python. For usage of these clients, please refer to `pyswagger.tests.contrib.client` for details
   - [requests](https://github.com/kennethreitz/requests)
   - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)
@@ -69,14 +69,14 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 Before running this script, please make sure [requests](https://github.com/kennethreitz/requests) is installed on your environment.
 
 ```python
-from pyswagger import SwaggerApp, SwaggerSecurity
+from pyswagger import App, Security
 from pyswagger.contrib.client.requests import Client
 from pyswagger.utils import jp_compose
 
-# load Swagger resource file into SwaggerApp object
-app = SwaggerApp._create_('http://petstore.swagger.io/v2/swagger.json')
+# load Swagger resource file into App object
+app = App._create_('http://petstore.swagger.io/v2/swagger.json')
 
-auth = SwaggerSecurity(app)
+auth = Security(app)
 auth.update_with('api_key', '12312312312312312313q') # api key
 auth.update_with('petstore_auth', '12334546556521123fsfss') # oauth2
 
@@ -88,7 +88,7 @@ pet_Tom=dict(id=1, name='Tom', photoUrls=['http://test'])
 # a request to create a new pet
 client.request(app.op['addPet'](body=pet_Tom))
 
-# - access an Operation object via SwaggerApp.op when operationId is defined
+# - access an Operation object via App.op when operationId is defined
 # - a request to get the pet back
 pet = client.request(app.op['getPetById'](petId=1)).data
 assert pet.id == 1
@@ -129,9 +129,9 @@ pip install flask
 ##Reference
 All exported API are described in following sections. ![A diagram about relations between components](https://docs.google.com/drawings/d/1DZiJgl4i9L038UJJp3kpwkWRvcNQktf5h-e4m96_C-k/pub?w=849&h=530)
 
-- [SwaggerApp](docs/md/ref/app.md)
+- [App](docs/md/ref/app.md)
 - [SwaggerClient](docs/md/ref/client.md)
-- [SwaggerSecurity](docs/md/ref/security.md)
+- [Security](docs/md/ref/security.md)
 
 ---------
 

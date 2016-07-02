@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import App
 from ..utils import get_test_data_folder
 from ...utils import _diff_
 from ...spec.v2_0.parser import SwaggerContext
@@ -13,7 +13,7 @@ class ConverterTestCase(unittest.TestCase):
     def test_v2_0(self):
         """ convert from 2.0 to 2.0 """
         path = get_test_data_folder(version='2.0', which='wordnik')
-        app = SwaggerApp.create(path)
+        app = App.create(path)
 
         # load swagger.json into dict
         origin = None
@@ -47,7 +47,7 @@ class Converter_v1_2_TestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.load(get_test_data_folder(
+        kls.app = App.load(get_test_data_folder(
             version='1.2', which='wordnik'), sep=':'
         )
         kls.app.prepare()
@@ -360,7 +360,7 @@ class Converter_v1_2_TestCase_Others(unittest.TestCase):
     def test_token_endpoint(self):
         """
         """
-        app = SwaggerApp.create(get_test_data_folder(
+        app = App.create(get_test_data_folder(
             version='1.2', which='simple_auth')
         )
 
@@ -381,7 +381,7 @@ class Converter_v1_2_TestCase_Others(unittest.TestCase):
     def test_authorization(self):
         """
         """
-        app = SwaggerApp.create(get_test_data_folder(
+        app = App.create(get_test_data_folder(
             version='1.2', which='simple_auth')
         )
             
@@ -417,7 +417,7 @@ class Converter_v1_2_TestCase_Others(unittest.TestCase):
     def test_model_inheritance(self):
         """
         """
-        app = SwaggerApp.load(get_test_data_folder(
+        app = App.load(get_test_data_folder(
             version='1.2', which='model_subtypes'
             ), sep=':')
         app.prepare()

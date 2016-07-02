@@ -301,7 +301,7 @@ class BaseObj(object):
             childs = [(n, ct, cctx) for n, (ct, cctx) in six.iteritems(ctx.__swagger_child__) if n == name]
             if len(childs) == 0:
                 # we don't need to make a copy,
-                # since everything under SwaggerApp should be
+                # since everything under App should be
                 # readonly.
                 if isinstance(v, list):
                     try:

@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp, errs
+from pyswagger import App, errs
 from ..utils import get_test_data_folder
 from ...spec.v2_0 import objects
 import unittest
@@ -26,7 +26,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(folder)
+        kls.app = App._create_(folder)
 
     def test_resource_list(self):
         """ ResourceList -> Swagger
@@ -137,7 +137,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
 
         # non-body can't have $ref
         try:
-            SwaggerApp._create_(get_test_data_folder(
+            App._create_(get_test_data_folder(
                 version='1.2',
                 which='upgrade_parameter'
             ))
@@ -181,7 +181,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         """ make sure to raise exception for invalid item
         """
         try:
-            SwaggerApp._create_(get_test_data_folder(
+            App._create_(get_test_data_folder(
                 version='1.2',
                 which=os.path.join('upgrade_items', 'with_ref')
             ))
@@ -191,7 +191,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
             self.fail('SchemaError not raised')
 
         try:
-            SwaggerApp._create_(get_test_data_folder(
+            App._create_(get_test_data_folder(
                 version='1.2',
                 which=os.path.join('upgrade_items', 'invalid_primitive')
             ))
@@ -223,7 +223,7 @@ class ModelSubtypesTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='model_subtypes'))
+        kls.app = App._create_(get_test_data_folder(version='1.2', which='model_subtypes'))
 
     def test_path_item(self):
         paths = self.app.resolve('#/paths')

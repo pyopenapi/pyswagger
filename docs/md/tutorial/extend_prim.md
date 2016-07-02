@@ -6,8 +6,8 @@ way for users to provide primitives creater.
 
 Here is a simple example for primitive creater:
 ```python
-from pyswagger import SwaggerApp
-from pyswagger.primitives import SwaggerPrimitive
+from pyswagger import App
+from pyswagger.primitives import Primitive
 
 # define your primitive handler
 def encode_int(obj, val, ctx):
@@ -26,13 +26,13 @@ def encode_int(obj, val, ctx):
     return int(val) - 1
 
 # create a cusomized primitive factory
-factory = SwaggerPrimitive()
+factory = Primitive()
 # type == 'integer'
 # format == 'encoded'
 factory.register('integer', 'encoded', encode_int)
 
-# init SwaggerApp with customized primitive factory
-app = SwaggerApp.load(url, prim=factory)
+# init App with customized primitive factory
+app = App.load(url, prim=factory)
 ```
 
 There are cases the a primitive-creation needs multipl pass, you will need

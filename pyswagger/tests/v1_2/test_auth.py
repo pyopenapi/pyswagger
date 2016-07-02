@@ -1,16 +1,16 @@
-from pyswagger import SwaggerApp, SwaggerSecurity
+from pyswagger import App, Security
 from ..utils import get_test_data_folder
 import unittest
 
 
-app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='simple_auth')) 
+app = App._create_(get_test_data_folder(version='1.2', which='simple_auth')) 
 
 
 class BasicAuthAndApiKeyTestCase(unittest.TestCase):
     """ test cases for authorzation related """
 
     def setUp(self):
-        self.s = SwaggerSecurity(app)
+        self.s = Security(app)
         self.s.update_with('simple_key', '123456')
         self.s.update_with('simple_basic', ('mission', '123123'))
         self.s.update_with('simple_basic2', ('qoo', '456456'))
@@ -54,7 +54,7 @@ class NoAuthProvidedTestCase(unittest.TestCase):
     """ nothing is altered when nothing is provided """
 
     def setUp(self):
-        self.s = SwaggerSecurity(app)
+        self.s = Security(app)
  
     def test_deleteUser(self):
         """ basic auth """

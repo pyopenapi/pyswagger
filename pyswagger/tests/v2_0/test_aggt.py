@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.errs import CycleDetectionError
 from ..utils import get_test_data_folder
 import unittest
@@ -10,7 +10,7 @@ class AggregateTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(
+        kls.app = App._create_(get_test_data_folder(
             version='2.0',
             which='aggt'
         ))
@@ -40,7 +40,7 @@ class AggregateTestCase(unittest.TestCase):
     def test_cycle_detection(self):
         """ cyclic reference should be detected
         """
-        self.assertRaises(CycleDetectionError, SwaggerApp._create_, get_test_data_folder(
+        self.assertRaises(CycleDetectionError, App._create_, get_test_data_folder(
             version='2.0',
             which=os.path.join('aggt', 'circular')
         ))

@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import App
 from ..utils import get_test_data_folder
 from pyswagger.spec.v1_2.objects import (
     Info,
@@ -21,7 +21,7 @@ import unittest
 import six
 
 
-app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
+app = App._create_(get_test_data_folder(version='1.2', which='wordnik')) 
 
 class PropertyTestCase(unittest.TestCase):
     """ make sure properties' existence & type """

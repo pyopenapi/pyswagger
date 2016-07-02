@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp, utils, primitives, errs
+from pyswagger import App, utils, primitives, errs
 from ..utils import get_test_data_folder
 from ...scanner import CycleDetector 
 from ...scan import Scanner
@@ -11,7 +11,7 @@ class CircularRefTestCase(unittest.TestCase):
     """ test for circular reference guard """
 
     def test_path_item_prepare_with_cycle(self):
-        app = SwaggerApp.load(get_test_data_folder(
+        app = App.load(get_test_data_folder(
             version='2.0',
             which=os.path.join('circular', 'path_item')
         ))
@@ -34,7 +34,7 @@ class CircularRefTestCase(unittest.TestCase):
                 '',
                 s))
 
-        app = SwaggerApp.create(folder)
+        app = App.create(folder)
         s = Scanner(app)
         c = CycleDetector()
         s.scan(root=app.raw, route=[c])
@@ -62,7 +62,7 @@ class CircularRefTestCase(unittest.TestCase):
                 s))
 
 
-        app = SwaggerApp.load(folder)
+        app = App.load(folder)
         app.prepare(strict=False)
 
         s = Scanner(app)
@@ -79,7 +79,7 @@ class CircularRefTestCase(unittest.TestCase):
         ]))
 
     def test_deref(self):
-        app = SwaggerApp.create(get_test_data_folder(
+        app = App.create(get_test_data_folder(
             version='2.0',
             which=os.path.join('circular', 'schema'),
             ),
@@ -90,7 +90,7 @@ class CircularRefTestCase(unittest.TestCase):
         self.assertRaises(errs.CycleDetectionError, utils.deref, s)
 
     def test_primfactory(self):
-        app = SwaggerApp.create(get_test_data_folder(
+        app = App.create(get_test_data_folder(
             version='2.0',
             which=os.path.join('circular', 'schema'),
             ),

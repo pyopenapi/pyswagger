@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SwaggerResolver(object):
+class Resolver(object):
     """ JSON Reference Resolver:
     resolving a JSON reference to a raw object (dict),
     then return and cache it.
@@ -32,7 +32,7 @@ class SwaggerResolver(object):
         url, jp = jr_split(jref)
 
         # apply hook when use this url to load
-        # note that we didn't cache SwaggerApp with this local_url
+        # note that we didn't cache App with this local_url
         local_url = self.__url_load_hook(url) if self.__url_load_hook else url
 
         logger.info('{0} patch to {1}'.format(url, local_url))
@@ -70,3 +70,6 @@ class SwaggerResolver(object):
             raise Exception('Unable to resolve: {0}'.format(jref))
 
         return obj
+
+
+SwaggerResolver = Resolver

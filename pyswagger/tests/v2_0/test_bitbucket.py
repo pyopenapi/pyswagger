@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp
+from pyswagger import App
 from ..utils import get_test_data_folder
 import unittest
 
@@ -8,7 +8,7 @@ class BitBucketTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.load(get_test_data_folder(
+        kls.app = App.load(get_test_data_folder(
             version='2.0',
             which='bitbucket'
         ))

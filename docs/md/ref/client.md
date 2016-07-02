@@ -1,9 +1,9 @@
-You also need **SwaggerClient(security=None)** to access API, this layer wraps the difference between those http libraries in python. where **security**(optional) is `SwaggerSecurity`, which helps to handle authorizations of each request.
+You also need **SwaggerClient(security=None)** to access API, this layer wraps the difference between those http libraries in python. where **security**(optional) is `Security`, which helps to handle authorizations of each request.
 
 ```python
 client.request(app.op['addPet'](body=dict(id=1, name='Tom')))
 ```
-To make a request, you need to create a pair of request/response from **SwaggerApp.op** by providing essential parameters. Then passing the tuple of (request, response) to **SwaggerClient.request(req_and_resp, opt={})** likes the code segment above. Below is a reference mapping between python objects and Swagger primitives. Check this mapping when you need to construct a parameter set:
+To make a request, you need to create a pair of request/response from **App.op** by providing essential parameters. Then passing the tuple of (request, response) to **SwaggerClient.request(req_and_resp, opt={})** likes the code segment above. Below is a reference mapping between python objects and Swagger primitives. Check this mapping when you need to construct a parameter set:
 - **dict** corresponds to _Model_
 - **list** corresponds to _Array_
 - **datetime.datetime**, timestamp(float or int), or ISO8601-string for _date-time_ and _date_
@@ -25,7 +25,7 @@ YouFile = {
 ```
 - other primitives are similar to python's primitives
 
-The return value is a **SwaggerResponse** object, with these attributes:
+The return value is a **Response** object, with these attributes:
 - status
 - data, corresponds to Operation object's return value, or `ResponseMessage` object's _responseModel_ (in Swagger 1.2, `Schema` object of `Response` object in Swagger 2.0) when its status matched.
 - header, organized in ```{key: [value1, value2...]}```

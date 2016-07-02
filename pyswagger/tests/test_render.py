@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.primitives import Renderer, File
 from .utils import get_test_data_folder
 from ..utils import from_iso8601
@@ -19,7 +19,7 @@ class StringTestCase(unittest.TestCase):
     """ render 'string' types """
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.create(get_test_data_folder(
+        kls.app = App.create(get_test_data_folder(
             version='2.0',
             which=path.join('render', 'string')
         ))
@@ -106,7 +106,7 @@ class OtherTestCase(unittest.TestCase):
     """ render 'integer/float/bool' types """
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.create(get_test_data_folder(
+        kls.app = App.create(get_test_data_folder(
             version='2.0',
             which=path.join('render', 'other')
         ))
@@ -230,7 +230,7 @@ class ArrayTestCase(unittest.TestCase):
     """ render 'array' types """
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.create(get_test_data_folder(
+        kls.app = App.create(get_test_data_folder(
             version='2.0',
             which=path.join('render', 'array')
         ))
@@ -279,7 +279,7 @@ class ObjectTestCase(unittest.TestCase):
     """ render 'object' (Model) types """
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.create(get_test_data_folder(
+        kls.app = App.create(get_test_data_folder(
             version='2.0',
             which=path.join('render', 'object')
         ))
@@ -374,7 +374,7 @@ class ParameterTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.create(get_test_data_folder(
+        kls.app = App.create(get_test_data_folder(
             version='2.0',
             which=path.join('render', 'parameter')
         ))
@@ -456,7 +456,7 @@ class OperationTestCase(unittest.TestCase):
     """ test case for rendering an Operation """
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp.create(get_test_data_folder(
+        kls.app = App.create(get_test_data_folder(
             version='2.0',
             which=path.join('render', 'operation')
         ))

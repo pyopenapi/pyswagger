@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.contrib.client.requests import Client
 from ...utils import get_test_data_folder
 from ....primitives import Model, Array
@@ -10,7 +10,7 @@ import six
 import os
 
 
-app = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
+app = App._create_(get_test_data_folder(version='1.2', which='wordnik')) 
 client = Client()
 
 
@@ -200,7 +200,7 @@ class MultipleFileUploadTestCase(unittest.TestCase):
         """ upload multiple files """
         httpretty.register_uri(httpretty.POST, 'http://test.com/upload', status=200)
 
-        app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
+        app = App._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
         resp = client.request(app.op['upload_images'](images=[
                 dict(data=six.BytesIO(six.b('test image 1')), filename='_1.k'),
                 dict(data=six.BytesIO(six.b('test image 2')), filename='_2.k'),

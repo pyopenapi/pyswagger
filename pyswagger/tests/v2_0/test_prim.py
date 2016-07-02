@@ -1,9 +1,9 @@
-from pyswagger import SwaggerApp, primitives, errs, io
+from pyswagger import App, primitives, errs, io
 from ..utils import get_test_data_folder
 from pyswagger.spec.v2_0 import objects, parser
 from pyswagger.spec import base
 from pyswagger.utils import jp_compose
-from pyswagger.primitives import SwaggerPrimitive
+from pyswagger.primitives import Primitive
 import os
 import unittest
 import datetime
@@ -15,7 +15,7 @@ class SchemaTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'model')))
+        kls.app = App._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'model')))
 
     def test_model_tag(self):
         """ test basic model """
@@ -219,7 +219,7 @@ class HeaderTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'model')))
+        kls.app = App._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'model')))
 
     def test_simple_array(self):
         """ header in array """
@@ -291,7 +291,7 @@ class AdditionalPropertiesTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'additionalProperties')))
+        kls.app = App._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'additionalProperties')))
 
     def test_merge(self):
         """ verify merge along with additionalProperties """
@@ -409,7 +409,7 @@ class ParameterTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'model')))
+        kls.app = App._create_(get_test_data_folder(version='2.0', which=os.path.join('schema', 'model')))
 
     def test_unknown(self):
         p = self.app.resolve('#/paths/~1t/put')
@@ -421,7 +421,7 @@ class PrimitiveExtensionTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        factory = SwaggerPrimitive()
+        factory = Primitive()
         def decode_int(obj, val, ctx):
             # minus 1
             return int(val) - 1
@@ -438,7 +438,7 @@ class PrimitiveExtensionTestCase(unittest.TestCase):
         factory.register('string', 'special_encoded', decode_str)
         factory.register('string', None, str_no_validate, _2nd_pass=None)
 
-        kls.app = SwaggerApp.load(get_test_data_folder(
+        kls.app = App.load(get_test_data_folder(
             version='2.0',
             which=os.path.join('schema', 'extension'),
         ), prim=factory)
@@ -463,7 +463,7 @@ class PrimitiveExtensionTestCase(unittest.TestCase):
         # should not raise
         self.assertEqual(v.job, "man")
 
-        app = SwaggerApp.create(get_test_data_folder(
+        app = App.create(get_test_data_folder(
             version='2.0',
             which=os.path.join('schema', 'extension')
         ))

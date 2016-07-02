@@ -30,14 +30,14 @@ Getting Started
 
     .. code-block:: python
 
-        from pyswagger import SwaggerApp, SwaggerSecurity
+        from pyswagger import App, Security
         from pyswagger.contrib.client.requests import Client
 
-        # load Swagger resource file into SwaggerApp object
-        app = SwaggerApp._create_('http://petstore.swagger.wordnik.com/api/api-docs')
+        # load Swagger resource file into App object
+        app = App._create_('http://petstore.swagger.wordnik.com/api/api-docs')
 
-        # init SwaggerSecurity for authorization
-        auth = SwaggerSecurity(app)
+        # init Security for authorization
+        auth = Security(app)
         auth.update_with('simple_basic_auth', ('user', 'password')) # basic auth
         auth.update_with('simple_api_key', '12312312312312312313q') # api key
         auth.update_with('simple_oauth2', '12334546556521123fsfss') # oauth2

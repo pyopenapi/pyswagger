@@ -18,7 +18,7 @@ import functools
 # TODO: enum is suitable for all types, not only string
 
 
-class SwaggerPrimitive(object):
+class Primitive(object):
     """ primitive factory
     """
     def __init__(self):
@@ -236,4 +236,7 @@ class SwaggerPrimitive(object):
         :return: True if this object is a primitive.
         """
         return _type in self._map.keys()
+
+
+SwaggerPrimitive = Primitive
 

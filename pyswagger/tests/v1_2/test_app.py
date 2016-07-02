@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp, errs, utils
+from pyswagger import App, errs, utils
 from ..utils import get_test_data_folder
 from pyswagger.spec.v2_0.objects import (
     Schema,
@@ -56,7 +56,7 @@ class HTTPGetterTestCase(unittest.TestCase):
             body=store
             )
 
-        local_app = SwaggerApp._create_('http://petstore.swagger.wordnik.com/api/api-docs')
+        local_app = App._create_('http://petstore.swagger.wordnik.com/api/api-docs')
 
         self.assertEqual(sorted(local_app.raw._field_names_), sorted(['info', 'authorizations', 'apiVersion', 'swaggerVersion', 'apis']))
 
@@ -88,7 +88,7 @@ class ValidationTestCase(unittest.TestCase):
     """ test case for validation """
 
     def setUp(self):
-        self.app = SwaggerApp.load(get_test_data_folder(version='1.2', which='err'))
+        self.app = App.load(get_test_data_folder(version='1.2', which='err'))
 
     def test_errs(self):
         """
@@ -117,8 +117,8 @@ class ValidationTestCase(unittest.TestCase):
         self.assertRaises(errs.ValidationError, self.app.validate)
 
 
-class SwaggerAppTestCase(unittest.TestCase):
-    """ test case for SwaggerApp """
+class AppTestCase(unittest.TestCase):
+    """ test case for App """
 
     def setUp(self):
         folder = get_test_data_folder(
@@ -130,7 +130,7 @@ class SwaggerAppTestCase(unittest.TestCase):
             p = six.moves.urllib.parse.urlparse(url)
             return utils.normalize_url(os.path.join(folder, p.path[1:]))
 
-        self.app = SwaggerApp.load('http://petstore.io/wordnik', url_load_hook=_hook)
+        self.app = App.load('http://petstore.io/wordnik', url_load_hook=_hook)
         self.app.prepare()
 
     def test_url(self):
@@ -172,7 +172,7 @@ class SwaggerAppTestCase(unittest.TestCase):
         self.assertTrue(self.app.op['getUserByName'] is self.app.op['user!##!getUserByName'])
 
     def test_shortcut(self):
-        """ a short cut to Resource, Operation, Model from SwaggerApp """
+        """ a short cut to Resource, Operation, Model from App """
         # Resource
         # TODO: resource is now replaced by tags
         #self.assertTrue(isinstance(app.rs['pet'], Resource))

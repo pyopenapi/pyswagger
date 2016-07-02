@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.contrib.client.flask import FlaskTestClient
 from ...utils import create_pet_db, get_test_data_folder, pet_Mary
 from flask import Flask, json, request
@@ -8,7 +8,7 @@ import six
 import os
 
 
-sapp = SwaggerApp._create_(get_test_data_folder(version='1.2', which='wordnik')) 
+sapp = App._create_(get_test_data_folder(version='1.2', which='wordnik')) 
 pet_db = create_pet_db()
 received_file = None
 received_meta = None
@@ -141,7 +141,7 @@ class FlaskTestCase(unittest.TestCase):
         global received_files
         global received_file_names
 
-        app = SwaggerApp._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
+        app = App._create_(get_test_data_folder(version='2.0', which=os.path.join('io', 'files')))
 
         self.client.request(
             app.op['upload_images'](images=[

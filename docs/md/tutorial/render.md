@@ -3,12 +3,12 @@
 pyswagger could be used to generate random inputs to test your own APIs. Below is an example to demonstrate such use-case. (note: this sample requires [request](https://github.com/kennethreitz/requests) ready on your environment)
 
 ```python
-from pyswagger import SwaggerApp
+from pyswagger import App
 from pyswagger.primitives import Renderer
 from pyswagger.contrib.client.requests import Client
 
-# create a SwaggerApp with a local resource file
-app = SwaggerApp.create('/path/to/your/resource/file/swagger.json')
+# create a App with a local resource file
+app = App.create('/path/to/your/resource/file/swagger.json')
 # init client
 client = Client()
 # init renderer
@@ -19,7 +19,7 @@ input_ = renderer.render_all(
     app.s('user').post # the Operation
 )
 # this generated input could be passed to Operation.__call__,
-# to get a pair of (SwaggerRequest, SwaggerResponse), or just
+# to get a pair of (Request, Response), or just
 # pass them to client
 resp = client.request(app.s('user').post(**input_))
 ```

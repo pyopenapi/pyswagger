@@ -1,4 +1,4 @@
-from pyswagger import SwaggerApp, utils, errs
+from pyswagger import App, utils, errs
 from ..utils import get_test_data_folder
 import unittest
 import os
@@ -11,7 +11,7 @@ class OperationAccessTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(kls):
-        kls.app = SwaggerApp._create_(get_test_data_folder(version='2.0', which='wordnik'))
+        kls.app = App._create_(get_test_data_folder(version='2.0', which='wordnik'))
 
     def test_resolve(self):
         """
@@ -36,9 +36,9 @@ class OperationAccessTestCase(unittest.TestCase):
         """
         """
         _check(self, self.app.s('/pet').post)
-        _check(self, self.app.s('/pet', b=SwaggerApp._shortcut_[SwaggerApp.sc_path]).post)
+        _check(self, self.app.s('/pet', b=App._shortcut_[App.sc_path]).post)
         _check(self, self.app.s('pet').post)
-        _check(self, self.app.s('pet', b=SwaggerApp._shortcut_[SwaggerApp.sc_path]).post)
+        _check(self, self.app.s('pet', b=App._shortcut_[App.sc_path]).post)
 
     def test_special_char(self):
         """ when the path has '{' and '}' """
@@ -50,6 +50,6 @@ class OperationAccessTestCase(unittest.TestCase):
     def test_empty_operation_id(self):
         """ when operationId is empty, should not raise SchemaError """
         try:
-            app = SwaggerApp.create(get_test_data_folder(version="2.0", which=os.path.join("schema", "emptyOp")))
+            app = App.create(get_test_data_folder(version="2.0", which=os.path.join("schema", "emptyOp")))
         except errs.SchemaError:
             self.fail("SchemaError is raised when 'operationId' is empty and 'tags' is not")
