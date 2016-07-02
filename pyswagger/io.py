@@ -12,10 +12,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SwaggerRequest(object):
+class Request(object):
     """ Request layer
     """
-    # TODO: make a new class for 'prepared' SwaggerRequest
+    # TODO: make a new class for 'prepared' Request
 
     # option: url_netloc, replace netloc part in url, useful
     # when testing a set of Swagger APIs locally.
@@ -145,9 +145,9 @@ class SwaggerRequest(object):
         """ private function to patch this request. This function
         could be called before/after preparation.
 
-        :param dict opt: options, used options would be popped. Refer to SwaggerRequest.opt_* for details.
+        :param dict opt: options, used options would be popped. Refer to Request.opt_* for details.
         """
-        opt_netloc = opt.pop(SwaggerRequest.opt_url_netloc, None)
+        opt_netloc = opt.pop(Request.opt_url_netloc, None)
         if opt_netloc:
             scheme, netloc, path, params, query, fragment = six.moves.urllib.parse.urlparse(self.__url)
             self.__url = six.moves.urllib.parse.urlunparse(
@@ -162,7 +162,7 @@ class SwaggerRequest(object):
         :param str scheme: scheme used in this request
         :param bool handle_files: False to skip multipart/form-data encoding
         :param str encoding: encoding for body content.
-        :rtype: SwaggerRequest
+        :rtype: Request
         """
 
         # combine path parameters into path
@@ -297,7 +297,7 @@ class SwaggerRequest(object):
         return self.__op.security
 
 
-class SwaggerResponse(object):
+class Response(object):
     """ Response layer
     """
 
@@ -332,7 +332,7 @@ class SwaggerResponse(object):
         :param str raw: body content
         :param dict header: header section
         :return: return self for chaining
-        :rtype: SwaggerResponse
+        :rtype: Response
         """
 
         if status != None:
@@ -412,3 +412,6 @@ class SwaggerResponse(object):
         """
         return self.__header
 
+
+SwaggerRequest = Request
+SwaggerResponse = Response

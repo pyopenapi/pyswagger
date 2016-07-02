@@ -210,7 +210,7 @@ class SchemaTestCase(unittest.TestCase):
         op = self.app.s('/k').post
         self.assertRaises(Exception, op, p1=dict(protected=1))
 
-        resp = io.SwaggerResponse(op)
+        resp = io.Response(op)
         resp.apply_with(0, '{"protected":1}') # allowed
 
 
@@ -262,7 +262,7 @@ class HeaderTestCase(unittest.TestCase):
 
     def test_header_in_response(self):
         """ header in response """
-        resp = io.SwaggerResponse(self.app.s('/t').get)
+        resp = io.Response(self.app.s('/t').get)
 
         resp.apply_with(status=200, raw=None, header=dict(
             test='1|2,3|4,5|6 7|8,9|10 11|12,13|14'

@@ -487,9 +487,9 @@ class Security(object):
     def __call__(self, req):
         """ apply security info for a request.
 
-        :param SwaggerRequest req: the request to be authorized.
+        :param Request req: the request to be authorized.
         :return: the updated request
-        :rtype: SwaggerRequest
+        :rtype: Request
         """
         if not req._security:
             return req
@@ -549,7 +549,7 @@ class BaseClient(object):
     def prepare_schemes(self, req):
         """ make sure this client support schemes required by current request
 
-        :param pyswagger.io.SwaggerRequest req: current request object
+        :param pyswagger.io.Request req: current request object
         """
 
         # fix test bug when in python3 scheme, more details in commint msg
@@ -563,10 +563,10 @@ class BaseClient(object):
         """ preprocess before performing a request, usually some patching.
         authorization also applied here.
 
-        :param req_and_resp: tuple of SwaggerRequest and SwaggerResponse
-        :type req_and_resp: (SwaggerRequest, SwaggerResponse)
+        :param req_and_resp: tuple of Request and Response
+        :type req_and_resp: (Request, Response)
         :return: patched request and response
-        :rtype: SwaggerRequest, SwaggerResponse
+        :rtype: Request, Response
         """
         req, resp = req_and_resp
 

@@ -1,7 +1,8 @@
 from __future__ import absolute_import
 from ..base import BaseObj, FieldMeta
 from ...utils import final
-from ...io import SwaggerRequest, SwaggerResponse
+from ...io import Request
+from ...io import Response as _Response
 from ...primitives import Array
 import six
 import copy
@@ -287,7 +288,7 @@ class Operation(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
             raise ValueError('Unknown parameters: {0}'.format(unknown))
 
         return \
-        SwaggerRequest(op=self, params=params), SwaggerResponse(self)
+        Request(op=self, params=params), _Response(self)
 
 
 class PathItem(six.with_metaclass(FieldMeta, BaseObj_v2_0)):

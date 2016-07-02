@@ -93,7 +93,7 @@ class SwaggerCoreTestCase(unittest.TestCase):
         url = 'test.com/api/v1'
         app = App.load('https://'+url, url_load_hook=_hook)
         app.prepare()
-        # try to make a SwaggerRequest and verify its url
+        # try to make a Request and verify its url
         req, _ = app.s('t1').get()
         self.assertEqual(req.url, '//test.com/t1')
         self.assertEqual(req.schemes, ['https'])

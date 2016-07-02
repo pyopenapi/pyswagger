@@ -61,7 +61,7 @@ class FlaskTestClient(BaseClient):
             data=data
             )
 
-        # convert to SwaggerResponse
+        # convert to Response
         resp.apply_with(
             status=r.status_code,
             header=r.headers.items(),

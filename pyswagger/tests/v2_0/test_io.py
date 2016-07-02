@@ -4,8 +4,8 @@ import unittest
 import os
 
 
-class SwaggerResponseTestCase(unittest.TestCase):
-    """ test SwaggerResponse """
+class ResponseTestCase(unittest.TestCase):
+    """ test Response """
 
     @classmethod
     def setUpClass(kls):
@@ -18,11 +18,11 @@ class SwaggerResponseTestCase(unittest.TestCase):
         """ make sure schema works as expected """
 
         # make sure exception raised
-        resp = io.SwaggerResponse(self.app.s('/resp').get)
+        resp = io.Response(self.app.s('/resp').get)
         self.assertRaises(Exception, resp.apply_with, None, 'some string')
 
         # test for 'default'
-        resp = io.SwaggerResponse(self.app.s('/resp').get)
+        resp = io.Response(self.app.s('/resp').get)
         resp.apply_with(0, 'test string', {'content-type': 'text/plain'})
         self.assertEqual(resp.status, 0)
         self.assertEqual(resp.raw, 'test string')
@@ -30,7 +30,7 @@ class SwaggerResponseTestCase(unittest.TestCase):
 
         # test for specific status code
         r = '{"id": 0, "message": "test string 2"}'
-        resp = io.SwaggerResponse(self.app.s('/resp').get)
+        resp = io.Response(self.app.s('/resp').get)
         resp.apply_with(404, r)
         self.assertEqual(resp.status, 404)
         self.assertEqual(resp.raw, r)
@@ -38,9 +38,9 @@ class SwaggerResponseTestCase(unittest.TestCase):
 
     def test_error_only_status(self):
         """ it's legal for a Swagger without any successful status Response object.
-        in this case, users need to access response via SwaggerResponse.raw
+        in this case, users need to access response via Response.raw
         """
-        resp = io.SwaggerResponse(self.app.s('/resp').post)
+        resp = io.Response(self.app.s('/resp').post)
 
         # make sure we are ok when no matching status and without a 'default'
         resp.apply_with(200, 'some data')
@@ -63,7 +63,7 @@ class SwaggerResponseTestCase(unittest.TestCase):
         """ an option skip passing body byte stream to swagger-primitive-factory
         """
         r = '{"id": 0, "message": "test string 2"}'
-        resp = io.SwaggerResponse(self.app.s('/resp').get)
+        resp = io.Response(self.app.s('/resp').get)
         resp.raw_body_only = True 
         resp.apply_with(404, r)
         self.assertEqual(resp.status, 404)

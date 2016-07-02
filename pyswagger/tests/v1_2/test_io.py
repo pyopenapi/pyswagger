@@ -1,7 +1,7 @@
 from pyswagger import App, errs
 from ..utils import get_test_data_folder
 from pyswagger.primitives import Model, Array
-from pyswagger.io import SwaggerRequest
+from pyswagger.io import Request
 import unittest
 import json
 
@@ -9,8 +9,8 @@ import json
 app = App._create_(get_test_data_folder(version='1.2', which='wordnik')) 
 
 
-class SwaggerRequest_Pet_TestCase(unittest.TestCase):
-    """ test SwaggerRequest from Operation's __call__ """
+class Request_Pet_TestCase(unittest.TestCase):
+    """ test Request from Operation's __call__ """
 
     def test_updatePet(self):
         """ Pet.updatePet """
@@ -162,7 +162,7 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         req, _ = app.op['getPetById'](petId=100)
         req.prepare()
 
-        req._patch({SwaggerRequest.opt_url_netloc: 'localhost:9001'})
+        req._patch({Request.opt_url_netloc: 'localhost:9001'})
         self.assertEqual(req.url, 'http://localhost:9001/api/pet/100')
         self.assertEqual(req.path, '/api/pet/100')
 
@@ -171,8 +171,8 @@ class SwaggerRequest_Pet_TestCase(unittest.TestCase):
         # TODO: implement File upload
 
 
-class SwaggerResponse_TestCase(unittest.TestCase):
-    """ test SwaggerResponse from Pet's Operation's __call__ """
+class Response_TestCase(unittest.TestCase):
+    """ test Response from Pet's Operation's __call__ """
 
     def test_updatePet(self):
         """ Pet.updatePet """
