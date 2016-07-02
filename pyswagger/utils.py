@@ -167,7 +167,7 @@ def from_iso8601(s):
     # prepare tz info
     tz = None
     if tz_s:
-        if not (hour and minute):
+        if hour is None and minute is None:
             raise ValueError('missing h:m when tzinfo is provided: [{0}]'.format(s))
 
         negtive = hh = mm = 0

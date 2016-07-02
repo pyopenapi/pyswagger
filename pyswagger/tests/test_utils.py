@@ -15,6 +15,9 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.from_iso8601('2007-04-05T14:30Z'), datetime(2007, 4, 5, 14, 30, tzinfo=utils.FixedTZ(0, 0)))
         self.assertEqual(utils.from_iso8601('2007-04-05T12:30-02:00'), datetime(2007, 4, 5, 14, 30, tzinfo=utils.FixedTZ(0, 0)))
         self.assertEqual(utils.from_iso8601('2007-04-05T12:30:00-02:00'), datetime(2007, 4, 5, 14, 30, tzinfo=utils.FixedTZ(0, 0)))
+        self.assertEqual(utils.from_iso8601('2007-04-05T00:00:00'), datetime(2007, 4, 5, 0, 0, 0))
+        self.assertEqual(utils.from_iso8601('2007-04-05T00:00:00Z'), datetime(2007, 4, 5, 0, 0, 0, tzinfo=utils.FixedTZ(0, 0)))
+
 
     def test_json_pointer(self):
         """ json pointer io function """
