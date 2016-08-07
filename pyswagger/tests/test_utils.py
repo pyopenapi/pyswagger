@@ -17,7 +17,13 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.from_iso8601('2007-04-05T12:30:00-02:00'), datetime(2007, 4, 5, 14, 30, tzinfo=utils.FixedTZ(0, 0)))
         self.assertEqual(utils.from_iso8601('2007-04-05T00:00:00'), datetime(2007, 4, 5, 0, 0, 0))
         self.assertEqual(utils.from_iso8601('2007-04-05T00:00:00Z'), datetime(2007, 4, 5, 0, 0, 0, tzinfo=utils.FixedTZ(0, 0)))
-
+        # microsecond
+        self.assertEqual(utils.from_iso8601('2007-04-05T14:30:24.1'), datetime(2007, 4, 5, 14, 30, 24, 100000))
+        self.assertEqual(utils.from_iso8601('2007-04-05T14:30:24.11'), datetime(2007, 4, 5, 14, 30, 24, 110000))
+        self.assertEqual(utils.from_iso8601('2007-04-05T14:30:24.111'), datetime(2007, 4, 5, 14, 30, 24, 111000))
+        self.assertEqual(utils.from_iso8601('2007-04-05T14:30:24.1111'), datetime(2007, 4, 5, 14, 30, 24, 111100))
+        self.assertEqual(utils.from_iso8601('2007-04-05T14:30:24.11111'), datetime(2007, 4, 5, 14, 30, 24, 111110))
+        self.assertEqual(utils.from_iso8601('2007-04-05T14:30:24.111111'), datetime(2007, 4, 5, 14, 30, 24, 111111))
 
     def test_json_pointer(self):
         """ json pointer io function """

@@ -119,7 +119,7 @@ class FixedTZ(datetime.tzinfo):
 _iso8601_fmt = re.compile(''.join([
     '(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})', # YYYY-MM-DD
     'T', # T
-    '(?P<hour>\d{2}):(?P<minute>\d{2})(:(?P<second>\d{1,2}))?', # hh:mm:ss
+    '(?P<hour>\d{2}):(?P<minute>\d{2})(:(?P<second>\d{1,2})(\.(?P<microsecond>\d{1,6}))?)?', # hh:mm:ss.ms
     '(?P<tz>Z|[+-]\d{2}:\d{2})?' # Z or +/-hh:mm
 ]))
 _iso8601_fmt_date = re.compile('(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})') # YYYY-MM-DD
@@ -155,6 +155,10 @@ def from_iso8601(s):
     hour = _default_none('hour')
     minute = _default_none('minute')
     second = _default_none('second')
+    microsecond = g.get('microsecond', None)
+    if microsecond is not None:
+        # append zero when not matching 6 digits
+        microsecond = int(microsecond + '0' * (6 - len(microsecond)))
     tz_s = g.get('tz')
 
     if not (year and month and day):
@@ -186,6 +190,7 @@ def from_iso8601(s):
         hour=hour or 0,
         minute=minute or 0,
         second=second or 0,
+        microsecond=microsecond or 0,
         tzinfo=tz
     )
 
