@@ -14,7 +14,7 @@ App carries Swagger API definition, other components would rely on it but not js
     app = App._create_('http://petstore.swagger.wordnik.com/api/api-docs')
     assert app.op['getPetsByStatus'] == app.op['pet', 'getPetsByStatus']
 
-    # resource name is must when nickname collid
+    # resource name is required when nicknames collid
     app.op['user', 'getById']
     app.op['pet', 'getById']
 
