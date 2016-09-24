@@ -16,8 +16,11 @@ class Resolver(object):
     then return and cache it.
     """
 
-    def __init__(self, url_load_hook):
+    def __init__(self, url_load_hook=None, default_getter=None):
         """
+        args:
+         - url_load_hook: a way to redirect url to a accessible place, for self testing
+         - default_getter: the default getter used when none is provided in 'resolve' method
         """
         # a map from url to loaded json/yaml
         self.__cache = {}
@@ -25,6 +28,9 @@ class Resolver(object):
         # things to make unittest easier,
         # all urls to load json would go through this hook
         self.__url_load_hook = url_load_hook
+
+        # default getter for all resolving
+        self.__default_getter = default_getter
 
     def resolve(self, jref, getter=None):
         """
@@ -42,7 +48,7 @@ class Resolver(object):
         if not obj:
             # load that object
             if not getter:
-                getter = UrlGetter
+                getter = self.__default_getter or UrlGetter
                 p = six.moves.urllib.parse.urlparse(local_url)
                 if p.scheme == 'file' and p.path:
                     getter = LocalGetter(os.path.join(p.netloc, p.path))

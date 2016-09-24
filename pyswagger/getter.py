@@ -30,19 +30,22 @@ class Getter(six.Iterator):
         obj = self.load(self.urls.pop(0))
 
         # make sure data is string type
-        if isinstance(obj, six.binary_type):
+        if isinstance(obj, dict):
+            pass
+        elif isinstance(obj, six.binary_type):
             obj = obj.decode('utf-8')
         elif not isinstance(obj, six.string_types):
             raise ValueError('Unknown types: [{0}]'.format(str(type(obj))))
 
         # a very simple logic to distinguish json and yaml
-        try:
-            if obj.startswith('{'):
-                obj = json.loads(obj)
-            else:
-                obj = yaml.load(obj)
-        except ValueError:
-            raise Exception('Unknown format startswith {0} ...'.format(obj[:10]))
+        if isinstance(obj, six.string_types):
+            try:
+                if obj.startswith('{'):
+                    obj = json.loads(obj)
+                else:
+                    obj = yaml.load(obj)
+            except ValueError:
+                raise Exception('Unknown format startswith {0} ...'.format(obj[:10]))
 
         return obj
 
@@ -127,7 +130,6 @@ class UrlGetter(Getter):
         self.urls = [path]
 
     def load(self, path):
-
         logger.info('to load: [{0}]'.format(path))
 
         ret = f = None
@@ -139,4 +141,22 @@ class UrlGetter(Getter):
                 f.close()
 
         return ret
+
+
+class DictGetter(Getter):
+    """ a getter accept a dict as parameter without loading from file / url
+
+    args:
+     - urls: the urls to be loaded in upcoming resolving (the order should be matched to get result correct)
+     - path2dict: a mapping from 'path' to 'dict', which is the mocking of 'downloaded data'
+    """
+    def __init__(self, urls, path2dict):
+        super(DictGetter, self).__init__(urls[0])
+        self.urls = urls
+        self._path2dict = path2dict or {}
+
+    def load(self, path):
+        logger.info('to load: [{0}]'.format(path))
+
+        return self._path2dict.get(path, {})
 

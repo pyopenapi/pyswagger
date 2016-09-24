@@ -33,13 +33,14 @@ class App(object):
         sc_path: ('/', '#/paths')
     }
 
-    def __init__(self, url=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None, mime_codec=None):
+    def __init__(self, url=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None, mime_codec=None, resolver=None):
         """ constructor
 
         :param url str: url of swagger.json
         :param func url_load_hook: a way to redirect url to a accessible place. for self testing.
         :param sep str: separator used by pyswager.utils.ScopeDict
         :param prim pyswagger.primitives.Primitive: factory for primitives in Swagger.
+        :param resolver: pyswagger.resolve.Resolver: customized resolver used as default when none is provided when resolving
         """
 
         logger.info('init with url: {0}'.format(url))
@@ -57,9 +58,12 @@ class App(object):
         # - spec.BaseObj
         # - a map from json-pointer to spec.BaseObj
         self.__objs = {}
-        self.__resolver = Resolver(url_load_hook)
-        # keep a string reference to App when resolve
-        self.__strong_refs = []
+
+        if url_load_hook and resolver:
+            raise ValueError('when use customized Resolver, please pass url_load_hook to that one')
+
+        # the start-point when you want to traverse the code to laod new object
+        self.__resolver = resolver or Resolver(url_load_hook)
 
         # allow init App-wised SCOPE_SEPARATOR
         self.__sep = sep
@@ -255,7 +259,7 @@ class App(object):
         return v.errs
 
     @classmethod
-    def load(kls, url, getter=None, parser=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None, mime_codec=None):
+    def load(kls, url, getter=None, parser=None, url_load_hook=None, sep=consts.private.SCOPE_SEPARATOR, prim=None, mime_codec=None, resolver=None):
         """ load json as a raw App
 
         :param str url: url of path of Swagger API definition
@@ -268,6 +272,7 @@ class App(object):
         :param str sep: scope-separater used in this App
         :param prim pyswager.primitives.Primitive: factory for primitives in Swagger
         :param mime_codec pyswagger.primitives.MimeCodec: MIME codec
+        :param resolver: pyswagger.resolve.Resolver: customized resolver used as default when none is provided when resolving
         :return: the created App object
         :rtype: App
         :raises ValueError: if url is wrong
@@ -277,7 +282,7 @@ class App(object):
         logger.info('load with [{0}]'.format(url))
 
         url = utils.normalize_url(url)
-        app = kls(url, url_load_hook=url_load_hook, sep=sep, prim=prim, mime_codec=mime_codec)
+        app = kls(url, url_load_hook=url_load_hook, sep=sep, prim=prim, mime_codec=mime_codec, resolver=resolver)
         app.__raw, app.__version = app.load_obj(url, getter=getter, parser=parser)
         if app.__version not in ['1.2', '2.0']:
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
@@ -383,33 +388,34 @@ class App(object):
 
         obj = None
         url, jp = utils.jr_split(jref)
-        if url:
-            # check cacahed object against json reference by
-            # comparing url first, and find those object prefixed with
-            # the JSON pointer.
-            o = self.__objs.get(url, None)
-            if o:
-                if isinstance(o, BaseObj):
-                    obj = o.resolve(utils.jp_split(jp)[1:])
-                elif isinstance(o, dict):
-                    for k, v in six.iteritems(o):
-                        if jp.startswith(k):
-                            obj = v.resolve(utils.jp_split(jp[len(k):])[1:])
-                            break
-                else:
-                    raise Exception('Unknown Cached Object: {0}'.format(str(type(o))))
 
-            # this object is not loaded yet, load it
-            if obj == None:
+        # check cacahed object against json reference by
+        # comparing url first, and find those object prefixed with
+        # the JSON pointer.
+        o = self.__objs.get(url, None)
+        if o:
+            if isinstance(o, BaseObj):
+                obj = o.resolve(utils.jp_split(jp)[1:])
+            elif isinstance(o, dict):
+                for k, v in six.iteritems(o):
+                    if jp.startswith(k):
+                        obj = v.resolve(utils.jp_split(jp[len(k):])[1:])
+                        break
+            else:
+                raise Exception('Unknown Cached Object: {0}'.format(str(type(o))))
+
+        # this object is not found in cache
+        if obj == None:
+            if url:
                 obj, _ = self.load_obj(jref, parser=parser)
                 if obj:
                     obj = self.prepare_obj(obj, jref)
-        else:
-            # a local reference, 'jref' is just a json-pointer
-            if not jp.startswith('#'):
-                raise ValueError('Invalid Path, root element should be \'#\', but [{0}]'.format(jref))
+            else:
+                # a local reference, 'jref' is just a json-pointer
+                if not jp.startswith('#'):
+                    raise ValueError('Invalid Path, root element should be \'#\', but [{0}]'.format(jref))
 
-            obj = self.root.resolve(utils.jp_split(jp)[1:]) # heading element is #, mapping to self.root
+                obj = self.root.resolve(utils.jp_split(jp)[1:]) # heading element is #, mapping to self.root
 
         if obj == None:
             raise ValueError('Unable to resolve path, [{0}]'.format(jref))
