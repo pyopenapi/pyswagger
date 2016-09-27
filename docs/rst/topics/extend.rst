@@ -4,7 +4,7 @@
 Extend pyswagger
 ================
 
-This seciotn describes things about extending pyswagger.
+This section describes things about extending pyswagger.
 
 .. _extend_client:
 
