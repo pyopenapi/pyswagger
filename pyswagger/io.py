@@ -211,7 +211,7 @@ class Request(object):
 
     @property
     def url(self):
-        """ url of this request
+        """ url of this request, only valid after 'prepare'
 
         :type: str 
         """
@@ -219,7 +219,7 @@ class Request(object):
 
     @property
     def path(self):
-        """ path of this request
+        """ path of this request, only valid after 'prepare'
 
         :type: str
         """
@@ -251,7 +251,7 @@ class Request(object):
 
     @property
     def header(self):
-        """ header of this request
+        """ header of this request, only valid after 'prepare'
 
         :type: dict
         """
@@ -259,7 +259,7 @@ class Request(object):
 
     @property
     def data(self):
-        """ data carried by this request
+        """ data carried by this request, only valid after 'prepare'
 
         :type: byte
         """

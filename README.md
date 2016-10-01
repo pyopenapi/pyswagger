@@ -61,6 +61,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - [Exntending Primitive Factory for user-defined primitives](docs/md/tutorial/extend_prim.md)
 - [Rendering Random Requests for BlackBox Testing](docs/md/tutorial/render.md)
 - [Operation MIME Support](docs/md/tutorial/mime.md)
+- [Test with Invalid Input](docs/md/tutorial/invalid.md)
 
 ---------
 
