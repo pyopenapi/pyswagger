@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+
 from pyswagger import App, io, primitives
 from ..utils import get_test_data_folder
 import unittest
 import os
+import six
 
 
 class ResponseTestCase(unittest.TestCase):
@@ -69,4 +72,10 @@ class ResponseTestCase(unittest.TestCase):
         self.assertEqual(resp.status, 404)
         self.assertEqual(resp.raw, r)
         self.assertFalse(isinstance(resp.data, primitives.Model))
+
+    def test_raw_in_utf8(self):
+        """ utf-8 encoding should support by default
+        """
+        resp = io.Response(self.app.s('/resp2').get)
+        resp.apply_with(status=200, raw=six.BytesIO(six.u('{"message":"測試資料A"}').encode('utf8')).getvalue())
 
