@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from .consts import private
+from .utils import patch_path
 import json
 import yaml
 import six
@@ -95,26 +96,12 @@ class LocalGetter(Getter):
                     raise ValueError('Unable to locate resource file: [{0}]'.format(path))
 
     def load(self, path):
-        ret = None
-
         logger.info('to load: [{0}]'.format(path))
 
-        # try to get extension from Getter.base_path
-        _, ext = os.path.splitext(self.base_path)
-        # try to get extension from path
-        _, ext = os.path.splitext(path) if ext == '' else (None, ext)
-        # .json is default extension to try
-        ext = '.json' if ext == '' else ext
-        # make sure we get .json or .yaml files
-        if not path.endswith(ext):
-            path = path + ext
-
-        # trim the leading slash, which is invalid on Windows
-        if os.name == 'nt' and path.startswith('/'):
-            path = path[1:]
-
+        path = patch_path(self.base_path, path)
         logger.info('final path to load: [{0}]'.format(path))
 
+        ret = None
         with open(path, 'r') as f:
             ret = f.read()
         return ret

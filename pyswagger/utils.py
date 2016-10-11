@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from .consts import private 
+from .consts import private
 from .errs import CycleDetectionError
 import six
 import imp
@@ -517,3 +517,27 @@ def get_or_none(obj, *a):
         if not ret:
             break
     return ret
+
+def patch_path(base_path, path):
+    # try to get extension from base_path
+    _, ext = os.path.splitext(base_path)
+    if ext not in private.VALID_FILE_EXT:
+        ext = ''
+
+    # try to get extension from path
+    _, ext = os.path.splitext(path) if ext == '' else (None, ext)
+    if ext not in private.VALID_FILE_EXT:
+        ext = ''
+
+    # .json is default extension to try
+    ext = '.json' if ext == '' else ext
+    # make sure we get .json or .yaml files
+    if not path.endswith(ext):
+        path = path + ext
+
+    # trim the leading slash, which is invalid on Windows
+    if os.name == 'nt' and path.startswith('/'):
+        path = path[1:]
+
+    return path
+

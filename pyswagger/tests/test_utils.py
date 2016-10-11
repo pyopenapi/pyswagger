@@ -231,6 +231,14 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.url_join('https://localhost/test', 'swagger.json'), 'https://localhost/test/swagger.json')
         self.assertEqual(utils.url_join('https://localhost/test/', 'swagger.json'), 'https://localhost/test/swagger.json')
 
+    def test_patch_path(self):
+        """ make sure patch_path works
+        """
+        self.assertEqual(utils.patch_path(
+            '/Users/sudeep.agarwal/src/squiddy/api/v0.1',
+            '/Users/sudeep.agarwal/src/squiddy/api/v0.1/swagger.yaml', 
+        ), '/Users/sudeep.agarwal/src/squiddy/api/v0.1/swagger.yaml')
+
 
 class WalkTestCase(unittest.TestCase):
     """ test for walk """
@@ -367,5 +375,4 @@ class WalkTestCase(unittest.TestCase):
             [2, 3, 5, 4, 2],
             [2, 3 ,4, 2]
             ]))
-
 
