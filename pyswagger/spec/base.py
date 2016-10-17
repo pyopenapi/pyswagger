@@ -410,6 +410,8 @@ class BaseObj(object):
                 return obj.dump()
             elif isinstance(obj, (six.string_types, six.integer_types)):
                 return obj
+            elif isinstance(obj, float):
+                return '{:f}'.format(obj)
             else:
                 raise ValueError('Unknown object to dump: {0}'.format(obj.__class__.__name__))
 
