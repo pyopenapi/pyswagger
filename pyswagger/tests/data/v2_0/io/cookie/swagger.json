@@ -1,0 +1,37 @@
+{
+    "swagger":"2.0",
+    "host":"test.com",
+    "basePath":"",
+    "produces":[
+        "application/json"
+    ],
+    "consumes":[
+        "application/json"
+    ],
+    "schemes":[
+        "http",
+        "https"
+    ],
+    "paths":{
+        "/api/get_cookie":{
+            "get":{
+                "operationId":"get_cookie",
+                "responses":{
+                    "default":{
+                        "description":"default response"
+                    }
+                }
+            }
+        },
+        "/api/keep_cookie":{
+            "get":{
+                "operationId":"keep_cookie",
+                "responses":{
+                    "default":{
+                        "description":"default response"
+                    }
+                }
+            }
+        }
+    }
+}
