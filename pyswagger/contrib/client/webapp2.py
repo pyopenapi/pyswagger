@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from ...core import BaseClient
 import webapp2
 import six
+import sys
 
 
 class Webapp2TestClient(BaseClient):
@@ -18,6 +19,13 @@ class Webapp2TestClient(BaseClient):
         :param keep_cookie bool: keep cookie as session or not
         """
         super(Webapp2TestClient, self).__init__(auth)
+
+        #
+        # if webapp2 finally support python 3, please submit an issue to remove this check
+        #
+        if sys.version_info[0] > 2:
+            raise Exception('webapp2 only support python 2.x')
+
         self.__app = app
         self.__keep_cookie = keep_cookie
         self.__cookie = None

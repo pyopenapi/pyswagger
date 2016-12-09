@@ -30,7 +30,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 
 ##Features
 - **NEW** convert Swagger Document from older version to newer one. (ex. convert from 1.2 to 2.0)
-- support Swagger **1.2**, **2.0** on python **2.6**, **2.7**, **3.3**, **3.4**
+- support Swagger **1.2**, **2.0** on python ~~2.6~~, **2.7**, **3.3**, **3.5**
 - support YAML via [Pretty-YAML](https://github.com/mk-fg/pretty-yaml)
 - support $ref to **External Document**, multiple swagger.json will be organized into a group of App. And external document with self-describing resource is also supported (refer to [issue](https://github.com/swagger-api/swagger-spec/issues/219)).
 - type safe, input/output are converted to python types according to [Data Type](https://github.com/wordnik/swagger-spec/blob/master/versions/1.2.md#43-data-types) described in Swagger. You don't need to touch any json schema when using pyswagger. Limitations like **minimum/maximum** or **enum** are also checked. **Model inheritance** also supported.

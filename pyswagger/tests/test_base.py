@@ -8,7 +8,7 @@ import copy
 class GrandChildObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
     __swagger_fields__ = {
         'name': ''
-    } 
+    }
 
 class GrandChildContext(base.Context):
     __swagger_ref_object__ = GrandChildObj
@@ -24,7 +24,7 @@ class ChildContext(base.Context):
         'g': (None, GrandChildContext)
     }
 
-class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
+class TObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
     __swagger_fields__ = {
         'a': [],
         'b': {},
@@ -33,8 +33,8 @@ class TestObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
         'f': None
     }
 
-class TestContext(base.Context):
-    __swagger_ref_object__ = TestObj
+class TContext(base.Context):
+    __swagger_ref_object__ = TObj
     __swagger_child__ = {
         'a': (base.ContainerType.list_, ChildContext),
         'b': (base.ContainerType.dict_, ChildContext),
@@ -49,7 +49,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
         """ test _children_ """
         tmp = {'t': {}}
         obj = {'a': [{}, {}, {}], 'b': {'/a': {}, '~b': {}, 'cc': {}}}
-        with TestContext(tmp, 't') as ctx:
+        with TContext(tmp, 't') as ctx:
             ctx.parse(obj)
         c = tmp['t']._children_.keys()
 
@@ -59,7 +59,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
         """ test _parent_ """
         tmp = {'t': {}}
         obj = {'a': [{}], 'b': {'bb': {}}, 'c': {'cc': [{}]}, 'd': {}}
-        with TestContext(tmp, 't') as ctx:
+        with TContext(tmp, 't') as ctx:
             ctx.parse(obj)
 
         def _check(o):
@@ -77,7 +77,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
         class TestRenameObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
             __swagger_fields__ = {'a': None}
             __swagger_rename__ = {'a': 'b'}
- 
+
         class TestRenameContext(base.Context):
             __swagger_ref_object__ = TestRenameObj
 
@@ -94,8 +94,8 @@ class SwaggerBaseTestCase(unittest.TestCase):
     def test_field_default_value(self):
         """ field default value, make sure we won't reference to a global declared list_
         """
-        o1 = TestObj(base.NullContext())
-        o2 = TestObj(base.NullContext())
+        o1 = TObj(base.NullContext())
+        o2 = TObj(base.NullContext())
         self.assertTrue(id(o1.a) != id(o2.a))
 
     def test_merge(self):
@@ -112,9 +112,9 @@ class SwaggerBaseTestCase(unittest.TestCase):
 
         class MergeContext(base.Context):
             __swagger_child__ = {
-                'ma': (None, TestContext),
-                'mb': (None, TestContext),
-                'mc': (base.ContainerType.dict_, TestContext)
+                'ma': (None, TContext),
+                'mb': (None, TContext),
+                'mc': (base.ContainerType.dict_, TContext)
             }
             __swagger_ref_object__ = MergeObj
 
@@ -173,7 +173,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
             self.assertEqual(id(o_to.mc['/a'].c['cc'][0]._parent_), id(o_to.mc['/a']))
 
         self.assertEqual(o2.ma, None)
-        self.assertTrue(isinstance(o2.mb, TestObj))
+        self.assertTrue(isinstance(o2.mb, TObj))
         self.assertTrue(len(o2.mb.a), 3)
         self.assertEqual(len(o2.mc), 0)
 
@@ -198,13 +198,13 @@ class SwaggerBaseTestCase(unittest.TestCase):
         """ test 'exclude' in merge """
         tmp = {'t': {}}
         obj = {'a': [{}, {}, {}], 'b': {'/a': {}, '~b': {}, 'cc': {}}}
-        with TestContext(tmp, 't') as ctx:
+        with TContext(tmp, 't') as ctx:
             ctx.parse(obj)
         o = tmp['t']
 
-        o1, o2 = TestObj(base.NullContext()), TestObj(base.NullContext())
-        o1.merge(o, TestContext)
-        o2.merge(o, TestContext, exclude=['b'])
+        o1, o2 = TObj(base.NullContext()), TObj(base.NullContext())
+        o1.merge(o, TContext)
+        o2.merge(o, TContext, exclude=['b'])
         self.assertEqual(len(o1.a), 3)
         self.assertEqual(len(o2.a), 3)
         self.assertEqual(len(o1.b), 3)
@@ -214,9 +214,9 @@ class SwaggerBaseTestCase(unittest.TestCase):
         """ test resolve function """
         tmp = {'t': {}}
         obj = {'a': [{}, {}, {}], 'b': {'/a': {}, '~b': {}, 'cc': {}}}
-        with TestContext(tmp, 't') as ctx:
+        with TContext(tmp, 't') as ctx:
             ctx.parse(obj)
- 
+
         o = tmp['t']
         self.assertEqual(id(o.resolve('a')), id(o.a))
         self.assertEqual(id(o.resolve(['a'])), id(o.resolve('a')))
@@ -232,13 +232,13 @@ class SwaggerBaseTestCase(unittest.TestCase):
                 return False
 
         class TestOkContext(base.Context):
-            __swagger_ref_object__ = TestObj
+            __swagger_ref_object__ = TObj
             __swagger_child__ = {
                 'a': (None, ChildContext)
             }
 
         class TestNotOkContext(base.Context):
-            __swagger_ref_object__ = TestObj
+            __swagger_ref_object__ = TObj
             __swagger_child__ = {
                 'a': (None, ChildNotOkContext)
             }
@@ -263,7 +263,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
     def test_produce(self):
         """ test produce function """
         class TestBoolContext(base.Context):
-            __swagger_ref_object__ = TestObj
+            __swagger_ref_object__ = TObj
             __swagger_child__ = {
                 'a': (None, ChildContext),
             }
@@ -295,7 +295,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
             },
             'd': {}
         }
-        with TestContext(tmp, 't') as ctx:
+        with TContext(tmp, 't') as ctx:
             ctx.parse(obj)
         obj1 = tmp['t']
 
@@ -307,7 +307,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
         objt['a'][0]['g']['name'] = 'Tom1'
 
         tmp = {'t': {}}
-        with TestContext(tmp, 't') as ctx:
+        with TContext(tmp, 't') as ctx:
             ctx.parse(objt)
         obj2 = tmp['t']
         self.assertEqual((False, 'a/0/g/name'), obj1.compare(obj2))
@@ -317,7 +317,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
         objt['a'][0], objt['a'][1] = objt['a'][1], objt['a'][0]
 
         tmp = {'t': {}}
-        with TestContext(tmp, 't') as ctx:
+        with TContext(tmp, 't') as ctx:
             ctx.parse(objt)
         obj3 = tmp['t']
         self.assertEqual((False, 'a/0/g/name'), obj1.compare(obj3))
@@ -327,7 +327,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
         objt['b']['bbb']['g']['name'] = 'Leo'
 
         tmp = {'t': {}}
-        with TestContext(tmp, 't') as ctx:
+        with TContext(tmp, 't') as ctx:
             ctx.parse(objt)
         obj4 = tmp['t']
         self.assertEqual((False, 'b/bbb/g/name'), obj1.compare(obj4))
@@ -337,7 +337,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
         objt['c']['cc'][0]['g']['name'] = 'Celios'
 
         tmp = {'t': {}}
-        with TestContext(tmp, 't') as ctx:
+        with TContext(tmp, 't') as ctx:
             ctx.parse(objt)
         obj5 = tmp['t']
         self.assertEqual((False, 'c/cc/0/g/name'), obj1.compare(obj5))
@@ -347,7 +347,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
         objt['b']['bbbb'] = {'g': {'name': 'Leo'}}
 
         tmp = {'t': {}}
-        with TestContext(tmp, 't') as ctx:
+        with TContext(tmp, 't') as ctx:
             ctx.parse(objt)
         obj6 = tmp['t']
         self.assertEqual((False, 'b/bbbb'), obj1.compare(obj6))

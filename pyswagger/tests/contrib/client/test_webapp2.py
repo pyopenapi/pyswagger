@@ -7,6 +7,7 @@ import unittest
 import webapp2
 import json
 import six
+import sys
 import os
 
 
@@ -83,21 +84,21 @@ cookie_cache = None
 
 
 class CookieHandler(webapp2.RequestHandler):
-    def dispatch(self):                                                                                                                                      
-        # Get a session store for this request.                                  
-        self.session_store = sessions.get_store(request=self.request)            
-                                                                                 
-        try:                                                                     
-            # Dispatch the request.                                              
-            webapp2.RequestHandler.dispatch(self)                                
-        finally:                                                                 
-            # Save all sessions.                                                 
-            self.session_store.save_sessions(self.response) 
+    def dispatch(self):
+        # Get a session store for this request.
+        self.session_store = sessions.get_store(request=self.request)
 
-    @webapp2.cached_property                                                     
-    def session(self):                                                           
-        # Returns a session using the default cookie key.                        
-        return self.session_store.get_session()                                  
+        try:
+            # Dispatch the request.
+            webapp2.RequestHandler.dispatch(self)
+        finally:
+            # Save all sessions.
+            self.session_store.save_sessions(self.response)
+
+    @webapp2.cached_property
+    def session(self):
+        # Returns a session using the default cookie key.
+        return self.session_store.get_session()
 
     def getCookie(self):
         self.session['test_pyswagger'] = 'test 123'
@@ -114,15 +115,16 @@ cookie_app = webapp2.WSGIApplication([
     webapp2.Route(r'/api/get_cookie', handler=CookieHandler, handler_method='getCookie', methods=['GET']),
     webapp2.Route(r'/api/keep_cookie', handler=CookieHandler, handler_method='keepCookie', methods=['GET']),
 ], config={
-    'webapp2_extras.sessions': {                                                 
-        'secret_key': 'key123',                                  
-        'cookie_args': {                                                         
-            'max_age': 31557600, # one year                                      
+    'webapp2_extras.sessions': {
+        'secret_key': 'key123',
+        'cookie_args': {
+            'max_age': 31557600, # one year
             'secure': False
-        }                                                                        
+        }
     }
 })
 
+@unittest.skipIf(sys.version_info[0] > 2, 'webapp2 only supports python 2.x')
 class Webapp2TestCase(unittest.TestCase):
 
     @classmethod
@@ -138,7 +140,7 @@ class Webapp2TestCase(unittest.TestCase):
         resp = Webapp2TestClient(wapp).request(
             self.app.op['updatePet'](body=dict(id=1, name='Tom1'))
         )
-        self.assertEqual(resp.status, 200) 
+        self.assertEqual(resp.status, 200)
         self.assertEqual(pet_db.read_(1)['name'], 'Tom1')
 
     def test_addPet(self):
