@@ -54,7 +54,7 @@ class FlaskTestClient(BaseClient):
             data = req.data if req._p['body'] else req._p['formData']
 
         r = self.__client.open(
-            path=req.path,
+            path=req.url,
             query_string=req.query,
             method=req.method.upper(),
             headers=req.header.items(),

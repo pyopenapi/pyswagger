@@ -41,7 +41,7 @@ class Webapp2TestClient(BaseClient):
 
         # initiate an request every time
         _req = webapp2.Request.blank(
-            req.path,
+            req.url,
             headers=req.header.items(),
             POST=req.data,
             **self.__kw
