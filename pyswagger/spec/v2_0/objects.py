@@ -53,7 +53,7 @@ class Items(six.with_metaclass(FieldMeta, BaseSchema)):
     """
 
     __swagger_fields__ = {
-        'collectionFormat': None,
+        'collectionFormat': 'csv',
     }
 
     def _prim_(self, v, prim_factory, ctx=None):
@@ -166,7 +166,7 @@ class Parameter(six.with_metaclass(FieldMeta, BaseSchema)):
         'schema': None,
 
         # other parameter
-        'collectionFormat': None,
+        'collectionFormat': 'csv',
 
         # for converter only
         'description': None,
@@ -189,7 +189,7 @@ class Header(six.with_metaclass(FieldMeta, BaseSchema)):
     """
 
     __swagger_fields__ = {
-        'collectionFormat': None,
+        'collectionFormat': 'csv',
         'description': None,
     }
 

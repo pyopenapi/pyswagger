@@ -423,6 +423,13 @@ class ParameterTestCase(unittest.TestCase):
         p = self.app.resolve('#/paths/~1t/put')
         self.assertRaises(ValueError, p, p1='tom', p2='mary', p3='qoo', p4='unknown')
 
+    def test_collection_format_default(self):
+        """ when not defining 'collectFormat', its default should be 'csv'
+
+        refer to issue: https://github.com/mission-liao/pyswagger/issues/101
+        """
+        self.app.resolve('#/paths/~1a/get')(p1=['test1', 'test2']) # should not raise exception
+
 
 class PrimitiveExtensionTestCase(unittest.TestCase):
     """ test for extending primitives """
