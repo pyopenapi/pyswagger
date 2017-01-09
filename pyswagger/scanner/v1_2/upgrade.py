@@ -177,7 +177,7 @@ class Upgrade(object):
         path = obj._parent_.basePath + obj.path
         if path not in self.__swagger.paths:
             self.__swagger.paths[path] = objects.PathItem(NullContext())
- 
+
         method = obj.method.lower()
         self.__swagger.paths[path].update_field(method, o)
 
@@ -247,7 +247,7 @@ class Upgrade(object):
                 o.update_field('uniqueItems', obj.uniqueItems)
                 o.update_field('items', convert_items(obj.items, app))
 
-        path = obj._parent_._parent_.basePath + obj._parent_.path 
+        path = obj._parent_._parent_.basePath + obj._parent_.path
         method = obj._parent_.method.lower()
         op = getattr(self.__swagger.paths[path], method)
         op.parameters.append(o)
@@ -292,7 +292,7 @@ class Upgrade(object):
         if not self.__swagger:
             return None
 
-        common_path = os.path.commonprefix(self.__swagger.paths.keys())
+        common_path = os.path.commonprefix(list(self.__swagger.paths))
         # remove tailing slash,
         # because all paths in Paths Object would prefixed with slah.
         common_path = common_path[:-1] if common_path[-1] == '/' else common_path

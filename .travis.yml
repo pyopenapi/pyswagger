@@ -6,6 +6,7 @@ python:
     - "2.7"
     - "3.3"
     - "3.5"
+    - "3.6"
 install:
     - pip install -r requirements-dev.txt
     - pip install coveralls
