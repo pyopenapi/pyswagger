@@ -1,0 +1,29 @@
+{
+    "swagger":"2.0",
+    "host":"test.com",
+    "basePath":"/v1",
+    "paths":{
+        "/t":{
+            "get":{
+                "schemes":["https", "http"],
+                "responses":{
+                    "default":{
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                }
+            },
+            "post":{
+                "schemes":["https"],
+                "responses":{
+                    "default":{
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -25,6 +25,12 @@ YouFile = {
 ```
 - other primitives are similar to python's primitives
 
+To select a scheme(ex. 'http' or 'https') when making a request, just use **Request.scheme** property
+```python
+req, resp = operation(parameter1='test1')
+req.scheem = 'http'
+```
+
 The return value is a **Response** object, with these attributes:
 - status
 - data, corresponds to Operation object's return value, or `ResponseMessage` object's _responseModel_ (in Swagger 1.2, `Schema` object of `Response` object in Swagger 2.0) when its status matched.

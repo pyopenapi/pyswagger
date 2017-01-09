@@ -32,7 +32,7 @@ class Client(BaseClient):
         req, resp = super(Client, self).request(req_and_resp, opt)
 
         # apply request-related options before preparation.
-        req.prepare(scheme=self.prepare_schemes(req).pop(), handle_files=False)
+        req.prepare(scheme=self.prepare_schemes(req), handle_files=False)
         req._patch(opt)
 
 

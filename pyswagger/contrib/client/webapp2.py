@@ -36,7 +36,7 @@ class Webapp2TestClient(BaseClient):
         """
         req, resp = super(Webapp2TestClient, self).request(req_and_resp, opt)
 
-        req.prepare(scheme=self.prepare_schemes(req).pop(), handle_files=True)
+        req.prepare(scheme=self.prepare_schemes(req), handle_files=True)
         req._patch(opt)
 
         # initiate an request every time

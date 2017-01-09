@@ -36,6 +36,7 @@ class Request(object):
 
         self.__consume = None
         self.__produce = None
+        self.__scheme = None
 
     def consume(self, consume):
         self.__consume = consume
@@ -165,6 +166,17 @@ class Request(object):
         :rtype: Request
         """
 
+        if isinstance(scheme, list):
+            if self.__scheme is None:
+                scheme = scheme.pop()
+            else:
+                if self.__scheme in scheme:
+                    scheme = self.__scheme
+                else:
+                    raise Exception('preferred scheme:{} is not supported by the client or spec:{}'.format(self.__scheme, scheme))
+        elif not isinstance(scheme, six.string_types):
+            raise ValueError('"scheme" should be a list or string')
+
         # combine path parameters into path
         # TODO: 'dot' is allowed in swagger, but it won't work in python-format
         self.__path = self.__path.format(**self.__p['path'])
@@ -208,12 +220,21 @@ class Request(object):
 
         return self
 
+    @property
+    def scheme(self):
+        """ preferred scheme used in this request
+        """
+        return self.__scheme
+
+    @scheme.setter
+    def scheme(self, scheme):
+        self.__scheme = scheme
 
     @property
     def url(self):
         """ url of this request, only valid after 'prepare'
 
-        :type: str 
+        :type: str
         """
         return self.__url
 
@@ -236,7 +257,7 @@ class Request(object):
     @property
     def query(self):
         """ query part of this request
-        
+
         :type: dict
         """
         return self.__p['query']
@@ -291,7 +312,7 @@ class Request(object):
     @property
     def _security(self):
         """ list of authorizations required
-        
+
         :type: dict of list of Authorizations object.
         """
         return self.__op.security
@@ -310,7 +331,7 @@ class Response(object):
         self.__raw = self.__data = None
 
         # init properties
-        self.__status = None 
+        self.__status = None
         self.__header = {}
 
         # options
@@ -407,7 +428,7 @@ class Response(object):
     @property
     def header(self):
         """ header of Response
-        
+
         :type: dict of list, ex. {'Content-Type': [xxx, xxx]}
         """
         return self.__header

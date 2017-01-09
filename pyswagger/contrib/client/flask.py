@@ -25,7 +25,7 @@ class FlaskTestClient(BaseClient):
         req, resp = super(FlaskTestClient, self).request(req_and_resp, opt)
 
         # apply request-related options before preparation.
-        req.prepare(scheme=self.prepare_schemes(req).pop(), handle_files=False)
+        req.prepare(scheme=self.prepare_schemes(req), handle_files=False)
         req._patch(opt)
 
         # prepare data, flask's data is composed of form and file

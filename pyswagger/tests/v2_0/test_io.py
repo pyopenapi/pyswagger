@@ -7,6 +7,40 @@ import os
 import six
 
 
+class RequestTestCase(unittest.TestCase):
+    """ test Request """
+
+    @classmethod
+    def setUpClass(kls):
+        kls.app = App.create(get_test_data_folder(
+            version='2.0',
+            which=os.path.join('io', 'request')
+        ))
+
+    def test_scheme(self):
+        """ make sure Request.scheme works """
+
+        # when didn't assign preference, use the first one in schemes
+        req, _ = self.app.s('/t').get()
+        req.prepare(scheme=['https', 'http'])
+        self.assertTrue(req.url.startswith('http://'))
+
+        # when assigned with preference, use the preference
+        req, _ = self.app.s('/t').get()
+        req.scheme = 'https'
+        req.prepare(scheme=['http', 'https'])
+        self.assertTrue(req.url.startswith('https://'))
+
+        # when assinged with preference, and not available in input, raise Exception
+        req, _ = self.app.s('/t').get()
+        req.scheme = 'wss'
+        self.assertRaises(Exception, req.prepare, scheme=['http'])
+
+        # failed with scheme is not a list or string
+        req, _ = self.app.s('/t').get()
+        self.assertRaises(ValueError, req.prepare, scheme=1)
+
+
 class ResponseTestCase(unittest.TestCase):
     """ test Response """
 
@@ -67,7 +101,7 @@ class ResponseTestCase(unittest.TestCase):
         """
         r = '{"id": 0, "message": "test string 2"}'
         resp = io.Response(self.app.s('/resp').get)
-        resp.raw_body_only = True 
+        resp.raw_body_only = True
         resp.apply_with(404, r)
         self.assertEqual(resp.status, 404)
         self.assertEqual(resp.raw, r)
