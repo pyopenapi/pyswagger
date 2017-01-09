@@ -37,7 +37,7 @@ class ConverterTestCase(unittest.TestCase):
 
 class Converter_v1_2_TestCase(unittest.TestCase):
     """ test for convert from 1.2
-    
+
         Not converted:
         - Response Message Object
         - Token Request Endpoint Object
@@ -102,7 +102,7 @@ class Converter_v1_2_TestCase(unittest.TestCase):
         ), [])
 
         # test scope in Operation Object
-        expect = [dict(oauth2=['write:pets'])] 
+        expect = [dict(oauth2=['write:pets'])]
         self.assertEqual(_diff_(
             expect,
             self.app.s('/api/store/order/{orderId}').delete.security
@@ -121,7 +121,7 @@ class Converter_v1_2_TestCase(unittest.TestCase):
             include=['authorizationUrl']), [])
 
     def test_implicit(self):
-        """ 
+        """
         """
         expect = {
             'type':'oauth2',
@@ -137,7 +137,7 @@ class Converter_v1_2_TestCase(unittest.TestCase):
     def test_authorizations(self):
         """
         """
-        expect = [dict(oauth2=['write:pets'])] 
+        expect = [dict(oauth2=['write:pets'])]
         self.assertEqual(_diff_(
             expect,
             self.app.s('/api/store/order').post.security
@@ -179,7 +179,6 @@ class Converter_v1_2_TestCase(unittest.TestCase):
 
         # allowMultiple, defaultValue, enum
         expect = {
-            'collectionFormat':'csv',
             'default':['available'],
             'items':{
                 'type':'string',
@@ -369,7 +368,7 @@ class Converter_v1_2_TestCase_Others(unittest.TestCase):
             'type':'oauth2',
             'flow':'access_code',
             'scopes': {
-                'test:anything':'for testing purpose'        
+                'test:anything':'for testing purpose'
             }
         }
 
@@ -384,7 +383,7 @@ class Converter_v1_2_TestCase_Others(unittest.TestCase):
         app = App.create(get_test_data_folder(
             version='1.2', which='simple_auth')
         )
-            
+
         expect = {
             'type':'apiKey',
             'in':'query',
@@ -425,7 +424,7 @@ class Converter_v1_2_TestCase_Others(unittest.TestCase):
         expect = {
             'allOf': [{'$ref': u'#/definitions/user:User'}]
         }
-        
+
         self.assertEqual(_diff_(
             expect,
             app.resolve('#/definitions/user:UserWithInfo').dump(),
