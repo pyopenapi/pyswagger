@@ -179,7 +179,7 @@ class SchemaTestCase(unittest.TestCase):
         """ test a model containing boolean """
         d = self.app.resolve("#/definitions/model_bool")
 
-        dv = d._prim_(dict(bool_val=True), self.app.prim_factory) 
+        dv = d._prim_(dict(bool_val=True), self.app.prim_factory)
         # try to access it
         self.assertEqual(dv.bool_val, True)
 
@@ -212,6 +212,14 @@ class SchemaTestCase(unittest.TestCase):
 
         resp = io.Response(op)
         resp.apply_with(0, '{"protected":1}') # allowed
+
+    def test_float_dump(self):
+        """ failed to dump an object with float property
+
+        refer to issue: https://github.com/mission-liao/pyswagger/issues/92
+        """
+        app = App.create(get_test_data_folder(version='2.0', which=os.path.join('schema', 'floatDump')))
+        app.dump() # should not raise exception
 
 
 class HeaderTestCase(unittest.TestCase):
@@ -413,7 +421,7 @@ class ParameterTestCase(unittest.TestCase):
 
     def test_unknown(self):
         p = self.app.resolve('#/paths/~1t/put')
-        self.assertRaises(ValueError, p, p1='tom', p2='mary', p3='qoo', p4='unknown') 
+        self.assertRaises(ValueError, p, p1='tom', p2='mary', p3='qoo', p4='unknown')
 
 
 class PrimitiveExtensionTestCase(unittest.TestCase):

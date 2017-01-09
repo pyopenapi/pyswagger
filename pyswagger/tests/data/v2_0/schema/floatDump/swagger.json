@@ -1,0 +1,24 @@
+{
+   "swagger":"2.0",
+   "host":"http://test.com",
+   "basePath":"/v1",
+   "definitions":{
+      "Location":{
+         "title":"Location",
+         "type":"object",
+         "properties":{
+            "lon":{
+              "type":"number",
+              "example":86.12,
+              "description":"Longitude"
+            },
+            "lat":{
+              "type":"number",
+              "example":56.123,
+              "description":"Latitude"
+            }
+         },
+         "required":["lon", "lat"]
+      }
+   }
+}
