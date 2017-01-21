@@ -49,13 +49,14 @@ class ResolveTestCase(unittest.TestCase):
         """ make sure $ref to Schema works """
         p = self.app.s('/a').get
 
-        self.assertEqual(id(p.parameters[1].schema.ref_obj), id(self.app.resolve('#/definitions/d1')))
+        self.assertEqual(id(p.parameters[2].schema.ref_obj), id(self.app.resolve('#/definitions/d1')))
 
     def test_parameter(self):
         """ make sure $ref to Parameter works """
         p = self.app.s('/a').get
 
         self.assertEqual(final(p.parameters[0]).name, 'p1_d')
+        self.assertEqual(final(p.parameters[1]).name, 'p2_d')
 
     def test_response(self):
         """ make sure $ref to Response works """

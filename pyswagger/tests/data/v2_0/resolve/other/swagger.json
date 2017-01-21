@@ -10,6 +10,9 @@
                   "$ref":"#/parameters/p1"
                },
                {
+                  "$ref":"#/parameters/p2"
+               },
+               {
                   "name":"p2",
                   "in":"body",
                   "schema":{
@@ -33,6 +36,11 @@
    "parameters":{
       "p1":{
          "name":"p1_d",
+         "in":"query",
+         "type":"string"
+      },
+      "p2":{
+         "name":"p2_d",
          "in":"query",
          "type":"string"
       }
