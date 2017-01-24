@@ -25,7 +25,15 @@
                   "$ref":"#/responses/r1"
                }
             }
-         }
+         },
+         "parameters": [
+            {
+               "$ref": "#/parameters/p3"
+            },
+            {
+               "$ref": "#/parameters/p4"
+            }
+         ]
       }
    },
    "definitions":{
@@ -43,6 +51,16 @@
          "name":"p2_d",
          "in":"query",
          "type":"string"
+      },
+      "p3": {
+         "name": "p3_d",
+         "in": "query",
+         "type": "string"
+      },
+      "p4": {
+         "name": "p4_d",
+         "in": "query",
+         "type": "string"
       }
    },
    "responses":{
