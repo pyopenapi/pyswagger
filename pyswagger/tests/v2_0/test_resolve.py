@@ -55,8 +55,12 @@ class ResolveTestCase(unittest.TestCase):
         """ make sure $ref to Parameter works """
         p = self.app.s('/a').get
 
+        self.assertEqual(len(p.parameters), 5)
         self.assertEqual(final(p.parameters[0]).name, 'p1_d')
         self.assertEqual(final(p.parameters[1]).name, 'p2_d')
+        self.assertEqual(final(p.parameters[2]).name, 'p2')
+        self.assertEqual(final(p.parameters[3]).name, 'p3_d')
+        self.assertEqual(final(p.parameters[4]).name, 'p4_d')
 
     def test_response(self):
         """ make sure $ref to Response works """
