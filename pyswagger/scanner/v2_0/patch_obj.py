@@ -2,13 +2,13 @@ from __future__ import absolute_import
 from ...scan import Dispatcher
 from ...spec.v2_0.objects import PathItem, Operation, Schema, Swagger
 from ...spec.v2_0.parser import PathItemContext
-from ...utils import jp_split, scope_split
+from ...utils import jp_split, scope_split, final
 import six
 import copy
 
 
 class PatchObject(object):
-    """ 
+    """
     - produces/consumes in Operation object should override those in Swagger object.
     - parameters in Operation object should override those in PathItem object.
     - fulfill Operation.method, which is a pyswagger-only field.
@@ -27,15 +27,16 @@ class PatchObject(object):
 
         # combine parameters from PathItem
         if obj._parent_:
-            for p in obj._parent_.parameters:
-                if obj.parameters:
+            if obj.parameters:
+                for p in obj._parent_.parameters:
+                    p_final = final(p)
                     for pp in obj.parameters:
-                        if p.name == pp.name:
+                        if p_final.name == final(pp).name:
                             break
                     else:
                         obj.parameters.append(p)
-                else:
-                    obj.update_field('parameters', copy.copy(obj._parent_.parameters))
+            else:
+                obj.update_field('parameters', copy.copy(obj._parent_.parameters))
 
         # schemes
         obj.update_field('cached_schemes', app.schemes if len(obj.schemes) == 0 else obj.schemes)
@@ -79,7 +80,7 @@ class PatchObject(object):
                 # url
                 o.update_field('url', url)
                 # http method
-                o.update_field('method', n) 
+                o.update_field('method', n)
 
     @Disp.register([Schema])
     def _schema(self, path, obj, app):
