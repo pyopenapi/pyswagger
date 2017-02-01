@@ -304,6 +304,8 @@ class App(object):
 
         result = self._validate()
         if strict and len(result):
+            for r in result:
+                logger.error(r)
             raise errs.ValidationError('this Swagger App contains error: {0}.'.format(len(result)))
 
         return result
@@ -329,7 +331,7 @@ class App(object):
         s.scan(root=self.__root, route=[PatchObject()])
         s.scan(root=self.__root, route=[Aggregate()])
 
-        # reducer for Operation 
+        # reducer for Operation
         tr = TypeReduce(self.__sep)
         cy = CycleDetector()
         s.scan(root=self.__root, route=[tr, cy])
@@ -459,7 +461,7 @@ class Security(object):
         """
         self.__app = app
 
-        # placeholder of Security Info 
+        # placeholder of Security Info
         self.__info = {}
 
     def update_with(self, name, security_info):
@@ -585,7 +587,7 @@ class BaseClient(object):
 
         # apply authorizations
         if self.__security:
-            self.__security(req) 
+            self.__security(req)
 
         return req, resp
 
