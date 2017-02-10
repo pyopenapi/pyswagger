@@ -8,7 +8,7 @@ import six
 import os
 
 
-sapp = App._create_(get_test_data_folder(version='1.2', which='wordnik')) 
+sapp = App._create_(get_test_data_folder(version='1.2', which='wordnik'))
 pet_db = create_pet_db()
 received_file = None
 received_meta = None
@@ -33,7 +33,7 @@ def pet():
             return "", 404
         else:
             return "", 200
- 
+
 @fapp.route('/api/pet/<int:pet_id>', methods=['DELETE', 'GET'])
 def pet_id(pet_id):
     if request.method == 'DELETE':
@@ -90,6 +90,17 @@ class FlaskTestCase(unittest.TestCase):
             sapp.op['updatePet'](body=dict(id=1, name='Tom1'))
         )
 
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(pet_db.read_(1)['name'], 'Tom1')
+
+    def test_reuse_req_and_resp(self):
+        """ make sure reusing (req, resp) should be fine """
+        global pet_db
+        cache = sapp.op['updatePet'](body=dict(id=1, name='Tom1'))
+        resp = self.client.request(cache)
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(pet_db.read_(1)['name'], 'Tom1')
+        resp = self.client.request(cache)
         self.assertEqual(resp.status, 200)
         self.assertEqual(pet_db.read_(1)['name'], 'Tom1')
 

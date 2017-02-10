@@ -38,6 +38,12 @@ class Request(object):
         self.__produce = None
         self.__scheme = None
 
+    def reset(self):
+        self.__url = self.__op.url
+        self.__path = self.__op.path
+        self.__header = {}
+        self.__data = None
+
     def consume(self, consume):
         self.__consume = consume
         return self
@@ -336,6 +342,11 @@ class Response(object):
 
         # options
         self.__raw_body_only = False
+
+    def reset(self):
+        self.__status = None
+        self.__header = {}
+        self.__raw = self.__data = None
 
     def _convert_header(self, resp, k, v):
         if resp and resp.headers and k in resp.headers:

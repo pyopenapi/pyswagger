@@ -40,6 +40,18 @@ class RequestTestCase(unittest.TestCase):
         req, _ = self.app.s('/t').get()
         self.assertRaises(ValueError, req.prepare, scheme=1)
 
+    def test_reset(self):
+        """ make sure reseted request could be prepared again """
+        req, _ = self.app.s('/t/{test_id}').get(test_id=1)
+        req.prepare()
+        req.prepare()
+        self.assertTrue(req.url.startswith('http:http:'))
+        req.reset()
+        req.prepare()
+        req.reset()
+        req.prepare()
+        self.assertFalse(req.url.startswith('http:http:'))
+
 
 class ResponseTestCase(unittest.TestCase):
     """ test Response """

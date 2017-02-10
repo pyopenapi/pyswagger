@@ -9,7 +9,7 @@ import six
 import os
 
 
-sapp = App._create_(get_test_data_folder(version='1.2', which='wordnik')) 
+sapp = App._create_(get_test_data_folder(version='1.2', which='wordnik'))
 received_file = None
 received_meta = None
 
@@ -141,6 +141,26 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
                 url_netloc='localhost:'+str(self.get_http_port())
             ))
 
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(pet_db.read_(1)['name'], 'Tom1')
+
+    @testing.gen_test
+    def test_reuse_req_and_resp(self):
+        """ make sure reusing (req, resp) is fine """
+        global pet_db
+        cache = sapp.op['updatePet'](body=dict(id=1, name='Tom1'))
+        resp = yield self.client.request(
+            cache,
+            opt=dict(
+                url_netloc='localhost:'+str(self.get_http_port())
+            ))
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(pet_db.read_(1)['name'], 'Tom1')
+        resp = yield self.client.request(
+            cache,
+            opt=dict(
+                url_netloc='localhost:'+str(self.get_http_port())
+            ))
         self.assertEqual(resp.status, 200)
         self.assertEqual(pet_db.read_(1)['name'], 'Tom1')
 

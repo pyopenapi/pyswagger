@@ -10,7 +10,7 @@ import six
 import os
 
 
-app = App._create_(get_test_data_folder(version='1.2', which='wordnik')) 
+app = App._create_(get_test_data_folder(version='1.2', which='wordnik'))
 client = Client()
 
 
@@ -42,6 +42,20 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         self.assertEqual(resp.data, None)
         self.assertEqual(resp.header['content-type'][0], 'text/plain; charset=utf-8')
+
+    def test_reuse_req_and_resp(self):
+        """ make sure reusing (req, resp) is fine """
+        httpretty.register_uri(
+            httpretty.PUT,
+            'http://petstore.swagger.wordnik.com/api/pet',
+            status=200
+        )
+
+        cache = app.op['updatePet'](body=pet_QQQ)
+        resp = client.request(cache)
+        self.assertEqual(resp.status, 200)
+        resp = client.request(cache)
+        self.assertEqual(resp.status, 200)
 
     def test_findPetsByStatus(self):
         """ Pet.findPetsByStatus """
@@ -129,7 +143,7 @@ class RequestsClient_Pet_TestCase(unittest.TestCase):
         """ Pet.deletePet """
         httpretty.register_uri(httpretty.DELETE, 'http://petstore.swagger.wordnik.com/api/pet/22',
             status=200)
- 
+
         resp = client.request(app.op['deletePet'](petId=22))
 
         self.assertEqual(resp.status, 200)

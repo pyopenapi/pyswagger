@@ -143,6 +143,18 @@ class Webapp2TestCase(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         self.assertEqual(pet_db.read_(1)['name'], 'Tom1')
 
+    def test_reuse_req_and_resp(self):
+        """ make sure reusing (req, resp) is fine """
+        global pet_db
+
+        cache = self.app.op['updatePet'](body=dict(id=1, name='Tom1'))
+        resp = Webapp2TestClient(wapp).request(cache)
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(pet_db.read_(1)['name'], 'Tom1')
+        resp = Webapp2TestClient(wapp).request(cache)
+        self.assertEqual(resp.status, 200)
+        self.assertEqual(pet_db.read_(1)['name'], 'Tom1')
+
     def test_addPet(self):
         global pet_db
 

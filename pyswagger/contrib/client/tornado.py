@@ -22,7 +22,13 @@ class TornadoClient(BaseClient):
     def request(self, req_and_resp, opt={}):
         """
         """
-        req, resp = super(TornadoClient, self).request(req_and_resp, opt)
+
+        # make sure all prepared state are clean before processing
+        req, resp = req_and_resp
+        req.reset()
+        resp.reset()
+
+        req, resp = super(TornadoClient, self).request((req, resp), opt)
 
         req.prepare(scheme=self.prepare_schemes(req), handle_files=True)
         req._patch(opt)

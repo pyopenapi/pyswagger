@@ -29,7 +29,12 @@ class Client(BaseClient):
         if opt is None:
             opt = {}
 
-        req, resp = super(Client, self).request(req_and_resp, opt)
+        # make sure all prepared state are clean before processing
+        req, resp = req_and_resp
+        req.reset()
+        resp.reset()
+
+        req, resp = super(Client, self).request((req, resp), opt)
 
         # apply request-related options before preparation.
         req.prepare(scheme=self.prepare_schemes(req), handle_files=False)

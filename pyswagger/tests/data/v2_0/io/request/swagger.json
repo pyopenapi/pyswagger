@@ -24,6 +24,25 @@
                     }
                 }
             }
+        },
+        "/t/{test_id}":{
+            "get":{
+                "parameters":[
+                    {
+                        "name":"test_id",
+                        "in":"path",
+                        "required":true,
+                        "type":"string"
+                    }
+                ],
+                "responses":{
+                    "default":{
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                }
+            }
         }
     }
 }
