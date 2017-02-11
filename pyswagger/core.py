@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-from .getter import UrlGetter, LocalGetter
 from .resolve import Resolver
 from .primitives import Primitive, MimeCodec
 from .spec.v1_2.parser import ResourceListContext

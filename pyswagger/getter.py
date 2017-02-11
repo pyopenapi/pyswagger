@@ -107,27 +107,44 @@ class LocalGetter(Getter):
         return ret
 
 
-class UrlGetter(Getter):
-    """ default getter implementation for remote resource file
+class SimpleGetter(Getter):
+    """ the simple getter that don't have to concern file loading of LocalGetter
     """
+
+    __simple_getter_callback__ = lambda url: {}
+    """ the callback to load the resource, accept an URL and return a string buffer
+    """
+
     def __init__(self, path):
-        super(UrlGetter, self).__init__(path)
-        if self.base_path.endswith('/'):
-            self.base_path = self.base_path[:-1]
-        self.urls = [path]
+        if isinstance(path, six.string_types):
+            super(SimpleGetter, self).__init__(path)
+            if self.base_path.endswith('/'):
+                self.base_path = self.base_path[:-1]
+            self.urls = [path]
+        else:
+            raise Exception('Unsupported type for "path": {} in SimpleGetter'.format(str(type(path))))
 
     def load(self, path):
         logger.info('to load: [{0}]'.format(path))
 
-        ret = f = None
-        try:
-            f = six.moves.urllib.request.urlopen(path)
-            ret = f.read()
-        finally:
-            if f:
-                f.close()
+        return self.__simple_getter_callback__.__func__(path)
 
-        return ret
+
+def _url_load(path):
+    ret = f = None
+    try:
+        f = six.moves.urllib.request.urlopen(path)
+        ret = f.read()
+    finally:
+        if f:
+            f.close()
+
+    return ret
+
+class UrlGetter(SimpleGetter):
+    """ default getter implementation for remote resource file
+    """
+    __simple_getter_callback__ = _url_load
 
 
 class DictGetter(Getter):

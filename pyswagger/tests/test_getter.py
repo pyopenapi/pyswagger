@@ -1,11 +1,21 @@
 from pyswagger import App
-from pyswagger.getter import UrlGetter, DictGetter
+from pyswagger.getter import UrlGetter, DictGetter, SimpleGetter
 from pyswagger.resolve import Resolver
 from pyswagger.utils import _diff_
 from .utils import get_test_data_folder
 import unittest
 import os
 import json
+
+
+class _MyCustomException(Exception):
+    pass
+
+def _my_custom_load(path):
+    raise _MyCustomException('a testing exception')
+
+class _MyCustomGetter(SimpleGetter):
+    __simple_getter_callback__ = _my_custom_load
 
 
 class GetterTestCase(unittest.TestCase):
@@ -182,4 +192,15 @@ class GetterTestCase(unittest.TestCase):
         # make sure it produce the same App in default way
         self.assertEqual(sorted(_diff_(app.dump(), origin_app.dump(), exclude=['$ref'])), [])
 
+    def test_simple_getter_callback(self):
+        """ make sure __simple_getter_callback__ is called """
+
+        path = get_test_data_folder(
+            version='2.0',
+            which='random_file_name'
+        )
+        path = os.path.join(path, 'test_random.json')
+
+        # should raise some specific error
+        self.assertRaises(_MyCustomException, App.load, path, getter=_MyCustomGetter)
 
