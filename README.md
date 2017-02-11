@@ -39,6 +39,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
   - [requests](https://github.com/kennethreitz/requests)
   - [tornado.httpclient.AsyncHTTPClient](http://tornado.readthedocs.org/en/latest/httpclient.html)
   - [flask.testing.FlaskClient](http://flask.pocoo.org/docs/0.10/api/#flask.testing.FlaskClient)
+  - [webapp2](http://webapp2.readthedocs.io/en/latest/guide/testing.html)
 - not implemented parts, fire me a bug if you need it
   - [ ] Swagger 2.0
     - [ ] Schema.pattern
@@ -62,6 +63,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - [Rendering Random Requests for BlackBox Testing](docs/md/tutorial/render.md)
 - [Operation MIME Support](docs/md/tutorial/mime.md)
 - [Test with Invalid Input](docs/md/tutorial/invalid.md)
+- [Load Spec from a Restricted Service](docs/md/tutorial/restricted_service.md)
 
 ---------
 
