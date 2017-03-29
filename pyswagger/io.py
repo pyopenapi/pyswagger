@@ -73,6 +73,7 @@ class Request(object):
         # according to spec, payload should be one and only,
         # so we just return the first value in dict.
         for parameter in self.__op.parameters:
+            parameter = final(parameter)
             if getattr(parameter, 'in') == 'body':
                 schema = deref(parameter.schema)
                 _type = schema.type
