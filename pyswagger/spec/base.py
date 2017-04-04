@@ -20,6 +20,9 @@ class ContainerType:
     # dict of list container, like: {'xx': [], 'xx': [], ...}
     dict_of_list_ = 3
 
+    # dict of dict container, like: {'xx': {'xx': {}}}
+    dict_of_dict_ = 4
+
 def container_apply(ct, v, f, fd=None, fdl=None):
     """
     """
@@ -45,6 +48,12 @@ def container_apply(ct, v, f, fd=None, fdl=None):
             ret[k] = []
             for vvv in vv:
                 ret[k].append(fd(ct, vvv, k) if fd else f(ct, vvv))
+    elif ct == ContainerType.dict_of_dict_:
+        ret = {}
+        for k, vv in six.iteritems(v):
+            ret[k] = {}
+            for kk, vvv in six.iteritems(vv):
+                ret[k][kk] = fd(ct, vvv, k, kk) if fd else f(ct, vvv)
     else:
         raise ValueError('Unknown ContainerType: {0}'.format(ct))
 
@@ -65,12 +74,12 @@ class Context(object):
     # this parsing context.
     __swagger_ref_obj__ = None
 
-    def __init__(self, parent_obj, backref):
+    def __init__(self, parent_obj, *backref):
         """
         constructor
 
         :param dict parent_obj: parent object placeholder
-        :param str backref: the key to parent object placeholder
+        :param str(s) backref: the indices to parent object placeholder
         """
 
         # object placeholder of parent object
@@ -110,10 +119,30 @@ class Context(object):
         obj = self.produce()
         self.__reset_obj()
 
-        if isinstance(self._parent_obj[self._backref], list):
-            self._parent_obj[self._backref].append(obj)
+        target = self._parent_obj
+        for k in self._backref[:-1]:
+            target = target.setdefault(k, {})
+        last_key = self._backref[-1]
+
+        if isinstance(target.get(last_key), list):
+            target[last_key].append(obj)
         else:
-            self._parent_obj[self._backref] = obj
+            target[last_key] = obj
+
+    def _parse_apply(self, x, kk, ct, v):
+        if kk not in self._obj:
+            self._obj[kk] = {} if ct == None else []
+        with x(self._obj, kk) as ctx:
+            ctx.parse(obj=v)
+
+    def _parse_apply_dict(self, x, kk, ct, v, *k):
+        if k[0] not in self._obj[kk]:
+            self._obj[kk][k[0]] = {} if ct in [ContainerType.dict_, ContainerType.dict_of_dict_] else []
+        with x(self._obj[kk], *k) as ctx:
+            ctx.parse(obj=v)
+
+    def _parse_apply_dict_before_list(self, kk, ct, v, k):
+        self._obj[kk][k] = []
 
     def parse(self, obj=None):
         """ major part do parsing.
@@ -126,21 +155,6 @@ class Context(object):
 
         if not isinstance(obj, dict):
             raise ValueError('invalid obj passed: ' + str(type(obj)))
-
-        def _apply(x, kk, ct, v):
-            if key not in self._obj:
-                self._obj[kk] = {} if ct == None else []
-            with x(self._obj, kk) as ctx:
-                ctx.parse(obj=v)
-
-        def _apply_dict(x, kk, ct, v, k):
-            if k not in self._obj[kk]:
-                self._obj[kk][k] = {} if ct == ContainerType.dict_ else []
-            with x(self._obj[kk], k) as ctx:
-                ctx.parse(obj=v)
-
-        def _apply_dict_before_list(kk, ct, v, k):
-            self._obj[kk][k] = []
 
         if hasattr(self, '__swagger_child__'):
             # to nested objects
@@ -158,9 +172,9 @@ class Context(object):
                     continue
 
                 container_apply(ct, items,
-                    functools.partial(_apply, ctx_kls, key),
-                    functools.partial(_apply_dict, ctx_kls, key),
-                    functools.partial(_apply_dict_before_list, key)
+                    functools.partial(self._parse_apply, ctx_kls, key),
+                    fd=functools.partial(self._parse_apply_dict, ctx_kls, key),
+                    fdl=functools.partial(self._parse_apply_dict_before_list, key)
                 )
 
         # update _obj with obj
@@ -214,26 +228,28 @@ class BaseObj(object):
 
         self._assign_parent(ctx)
 
+    def _assign_parent_assign(self, cls, _, obj):
+        if obj == None:
+            return
+
+        if cls.is_produced(obj):
+            if isinstance(obj, BaseObj):
+                obj._parent__ = self
+        else:
+            raise ValueError('Object is not instance of {0} but {1}'.format(cls.__swagger_ref_object__.__name__, obj.__class__.__name__))
+
     def _assign_parent(self, ctx):
         """ parent assignment, internal usage only
         """
-        def _assign(cls, _, obj):
-            if obj == None:
-                return
-
-            if cls.is_produced(obj):
-                if isinstance(obj, BaseObj):
-                    obj._parent__ = self
-            else:
-                raise ValueError('Object is not instance of {0} but {1}'.format(cls.__swagger_ref_object__.__name__, obj.__class__.__name__))
-
         # set self as childrent's parent
         for name, (ct, ctx) in six.iteritems(ctx.__swagger_child__):
             obj = getattr(self, name)
             if obj == None:
                 continue
 
-            container_apply(ct, obj, functools.partial(_assign, ctx))
+            container_apply(ct, obj,
+                functools.partial(self._assign_parent_assign, ctx),
+            )
 
     def get_private_name(self, f):
         """ get private protected name of an attribute
@@ -242,7 +258,7 @@ class BaseObj(object):
         """
         f = self.__swagger_rename__[f] if f in self.__swagger_rename__.keys() else f
         return '_' + self.__class__.__name__ + '__' + f
- 
+
     def update_field(self, f, obj):
         """ update a field
 
@@ -323,7 +339,7 @@ class BaseObj(object):
             ct, cctx = childs[0][1], childs[0][2]
             self.update_field(name,
                 container_apply(
-                    ct, v, 
+                    ct, v,
                     functools.partial(_produce_new_obj, cctx)
             ))
 
@@ -445,7 +461,7 @@ class BaseObj(object):
         for n in six.iterkeys(self.__swagger_fields__):
             new_n = self.__swagger_rename__.get(n, None)
             ret.append(new_n) if new_n else ret.append(n)
-        
+
         return ret
 
     @property
