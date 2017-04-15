@@ -43,6 +43,32 @@
                     }
                 }
             }
+        },
+        "/user/login/{user_id}/{password}":{
+            "get":{
+                "operationId":"user.login",
+                "parameters":[
+                    {
+                        "name":"user_id",
+                        "in":"path",
+                        "required":true,
+                        "type":"string"
+                    },
+                    {
+                        "name":"password",
+                        "in":"path",
+                        "required":true,
+                        "type":"string"
+                    }
+                ],
+                "responses":{
+                    "default":{
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                }
+            }
         }
     }
 }

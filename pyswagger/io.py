@@ -186,10 +186,14 @@ class Request(object):
 
         # combine path parameters into path
         # TODO: 'dot' is allowed in swagger, but it won't work in python-format
-        self.__path = self.__path.format(**self.__p['path'])
+        path_params = {}
+        for k, v in six.iteritems(self.__p['path']):
+            path_params[k] = six.moves.urllib.parse.quote_plus(v)
+
+        self.__path = self.__path.format(**path_params)
 
         # combine path parameters into url
-        self.__url = ''.join([scheme, ':', self.__url.format(**self.__p['path'])])
+        self.__url = ''.join([scheme, ':', self.__url.format(**path_params)])
 
         # header parameters
         self.__header.update(self.__p['header'])
@@ -348,6 +352,8 @@ class Response(object):
         self.__status = None
         self.__header = {}
         self.__raw = self.__data = None
+        self.__path = self.__op.path
+        self.__url = self.__op.url
 
     def _convert_header(self, resp, k, v):
         if resp and resp.headers and k in resp.headers:
