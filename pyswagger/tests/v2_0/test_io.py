@@ -5,6 +5,7 @@ from ..utils import get_test_data_folder
 import unittest
 import os
 import six
+import json
 
 
 class RequestTestCase(unittest.TestCase):
@@ -64,7 +65,7 @@ class RequestTestCase(unittest.TestCase):
         """
         req, _ = self.app.op['missing.parameter'](body=dict(f1='say', f2='hello'))
         req.prepare()
-        self.assertEqual(req.data, '{"f1": "say", "f2": "hello"}')
+        self.assertEqual(json.loads(req.data), {'f1': "say", 'f2': "hello"})
 
 
 class ResponseTestCase(unittest.TestCase):
