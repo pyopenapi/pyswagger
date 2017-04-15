@@ -59,6 +59,13 @@ class RequestTestCase(unittest.TestCase):
         req.prepare()
         self.assertEqual(req.url, 'http://test.com/v1/user/login/asd%3Fasd/asd%2Fasd')
 
+    def test_missing_reference_parameter(self):
+        """ body parameter isn't loaded when using parameter ref
+        """
+        req, _ = self.app.op['missing.parameter'](body=dict(f1='say', f2='hello'))
+        req.prepare()
+        self.assertEqual(req.data, '{"f1": "say", "f2": "hello"}')
+
 
 class ResponseTestCase(unittest.TestCase):
     """ test Response """

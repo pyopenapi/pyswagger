@@ -2,6 +2,23 @@
     "swagger":"2.0",
     "host":"test.com",
     "basePath":"/v1",
+    "parameters":{
+        "parameter1":{
+            "name":"body",
+            "in":"body",
+            "required":true,
+            "schema":{
+                "properties":{
+                    "f1":{
+                        "type":"string"
+                    },
+                    "f2":{
+                        "type":"string"
+                    }
+                }
+            }
+        }
+    },
     "paths":{
         "/t":{
             "get":{
@@ -59,6 +76,23 @@
                         "in":"path",
                         "required":true,
                         "type":"string"
+                    }
+                ],
+                "responses":{
+                    "default":{
+                        "schema":{
+                            "type":"string"
+                        }
+                    }
+                }
+            }
+        },
+        "/ref/parameter":{
+            "get":{
+                "operationId":"missing.parameter",
+                "parameters":[
+                    {
+                        "$ref":"#/parameters/parameter1"
                     }
                 ],
                 "responses":{
