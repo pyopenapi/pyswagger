@@ -26,6 +26,6 @@ class Byte(object):
         """ according to https://github.com/wordnik/swagger-spec/issues/50,
         we should exchange 'byte' type via base64 encoding.
         """
-        return base64.urlsafe_b64encode(self.v)
+        return base64.urlsafe_b64encode(self.v).decode('utf-8')
 
 

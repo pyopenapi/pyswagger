@@ -147,7 +147,7 @@ class SchemaTestCase(unittest.TestCase):
 
         bv = b._prim_("BBBBB", self.app.prim_factory)
         self.assertEqual(str(bv), "BBBBB", self.app.prim_factory)
-        self.assertEqual(bv.to_json(), six.b("QkJCQkI="))
+        self.assertEqual(bv.to_json(), "QkJCQkI=")
 
     def test_date(self):
         """ test date """
