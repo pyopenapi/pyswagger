@@ -1,6 +1,6 @@
-##Changes
+## Changes
 
-###0.8.17
+### 0.8.17
 
 - (not support anymore) implicit dereferencing, which is conflict with 'relative file reference'
   ```json
