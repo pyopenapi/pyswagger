@@ -101,7 +101,7 @@ class StringTestCase(unittest.TestCase):
             self.assertTrue(isinstance(e, six.string_types), 'should be string, not {0}'.format(e))
             self.assertTrue(validate_email(e), 'should be a email, not {0}'.format(e))
 
-       
+
 class OtherTestCase(unittest.TestCase):
     """ render 'integer/float/bool' types """
     @classmethod
@@ -159,7 +159,7 @@ class OtherTestCase(unittest.TestCase):
                 obj,
                 opt=opt
             )
- 
+
     def test_enum_integer(self):
         obj = self.app.resolve('#/definitions/enum.integer')
         for _ in six.moves.xrange(50):
@@ -169,7 +169,7 @@ class OtherTestCase(unittest.TestCase):
             )
             self.assertTrue(isinstance(e, six.integer_types), 'should be a integer, not {0}'.format(e))
             self.assertTrue(e in obj.enum, 'should be one of {0}, not {1}'.format(obj.enum, e))
- 
+
     def test_enum_boolean(self):
         obj = self.app.resolve('#/definitions/enum.boolean')
         for _ in six.moves.xrange(50):
@@ -498,7 +498,7 @@ class OperationTestCase(unittest.TestCase):
         self.assertEqual(found_header, True)
 
         # path
-        self.assertTrue(validate_email(req.path[len('/api.1/'):]), 'should contain a valid email, not {0}'.format(req.path))
+        self.assertTrue(validate_email(six.moves.urllib.parse.unquote_plus(req.path[len('/api.1/'):])), 'should contain a valid email, not {0}'.format(req.path))
 
     def test_body(self):
         """ test body parameter """

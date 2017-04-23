@@ -2,7 +2,7 @@ pyswagger
 =========
 
 [![Build Status](https://travis-ci.org/mission-liao/pyswagger.svg?branch=master)](https://travis-ci.org/mission-liao/pyswagger)
-[![Coverage Status](https://coveralls.io/repos/mission-liao/pyswagger/badge.png?branch=master&style=flat)](https://coveralls.io/r/mission-liao/pyswagger?branch=master)
+[![Coverage Status](https://coveralls.io/repos/mission-liao/pyswagger/badge.svg?branch=master&style=flat)](https://coveralls.io/r/mission-liao/pyswagger?branch=master)
 
 A python client for [Swagger](https://helloreverb.com/developers/swagger) enabled REST API. It wouldn't be easier to
 try Swagger REST API by [Swagger-UI](https://github.com/wordnik/swagger-ui). However, when it's time to **unittest**
@@ -28,7 +28,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 
 ---------
 
-##Features
+## Features
 - **NEW** convert Swagger Document from older version to newer one. (ex. convert from 1.2 to 2.0)
 - support Swagger **1.2**, **2.0** on python ~~2.6~~, **2.7**, **3.3**, **3.5**, **3.6**
 - support YAML via [Pretty-YAML](https://github.com/mk-fg/pretty-yaml)
@@ -52,7 +52,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 
 ---------
 
-##Tutorial
+## Tutorial
 
 - [Initialization](docs/md/tutorial/init.md)
 - [Making a Request](docs/md/tutorial/request.md)
@@ -67,7 +67,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 
 ---------
 
-##Quick Start
+## Quick Start
 
 Before running this script, please make sure [requests](https://github.com/kennethreitz/requests) is installed on your environment.
 
@@ -105,7 +105,7 @@ assert pet.id == 1
 
 ---------
 
-##Installation
+## Installation
 We support pip installtion.
 ```bash
 pip install pyswagger
@@ -129,7 +129,7 @@ pip install flask
 
 ---------
 
-##Reference
+## Reference
 All exported API are described in following sections. ![A diagram about relations between components](https://docs.google.com/drawings/d/1DZiJgl4i9L038UJJp3kpwkWRvcNQktf5h-e4m96_C-k/pub?w=849&h=530)
 
 - [App](docs/md/ref/app.md)
@@ -138,7 +138,7 @@ All exported API are described in following sections. ![A diagram about relation
 
 ---------
 
-##Contributors
+## Contributors
 - [Marcin Goliński](https://github.com/mjgolinski)
 - [Andrey Mikhailov](https://github.com/zlovred)
 - [Telepenin Nikolay](https://github.com/prefer)
@@ -146,7 +146,7 @@ All exported API are described in following sections. ![A diagram about relation
 
 ---------
 
-##Contribution Guildeline
+## Contribution Guildeline
 report an issue:
 - issues can be reported [here](https://github.com/mission-liao/pyswagger/issues)
 - include swagger.json if possible
@@ -186,7 +186,7 @@ python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc pyswagger/tests
 
 ---------
 
-##FAQ
+## FAQ
 - Format of byte?
   - The way to encode/decode byte is [base64](https://github.com/wordnik/swagger-spec/issues/50).
 - Format of datetime on the wire?

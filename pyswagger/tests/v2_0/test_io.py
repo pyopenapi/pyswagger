@@ -5,6 +5,7 @@ from ..utils import get_test_data_folder
 import unittest
 import os
 import six
+import json
 
 
 class RequestTestCase(unittest.TestCase):
@@ -51,6 +52,20 @@ class RequestTestCase(unittest.TestCase):
         req.reset()
         req.prepare()
         self.assertFalse(req.url.startswith('http:http:'))
+
+    def test_special_characters_in_path(self):
+        """ special characters in path parameters
+        """
+        req, _ = self.app.op['user.login'](user_id='asd?asd', password='asd/asd')
+        req.prepare()
+        self.assertEqual(req.url, 'http://test.com/v1/user/login/asd%3Fasd/asd%2Fasd')
+
+    def test_missing_reference_parameter(self):
+        """ body parameter isn't loaded when using parameter ref
+        """
+        req, _ = self.app.op['missing.parameter'](body=dict(f1='say', f2='hello'))
+        req.prepare()
+        self.assertEqual(json.loads(req.data), {'f1': "say", 'f2': "hello"})
 
 
 class ResponseTestCase(unittest.TestCase):
@@ -124,4 +139,5 @@ class ResponseTestCase(unittest.TestCase):
         """
         resp = io.Response(self.app.s('/resp2').get)
         resp.apply_with(status=200, raw=six.BytesIO(six.u('{"message":"測試資料A"}').encode('utf8')).getvalue())
+
 
