@@ -18,13 +18,20 @@ class TypeReduce(object):
     @Disp.register([Operation])
     def _op(self, path, obj, _):
         scope = obj.tags[0] if obj.tags and len(obj.tags) > 0 else None
-        name = obj.operationId if obj.operationId else None
 
-        # in swagger 2.0, both 'operationId' and 'tags' are optional.
-        # When 'operationId' is empty, it causes 'scope_compose' return something
-        # duplicated with other Operations with the same tag.
-        if not name:
-            return
+        # In Swagger 2.0 'operationId' is optional.
+        # We need a name for 'scope_compose' so generate one if needed
+        if obj.operationId:
+            name = obj.operationId
+        else:
+            name_parts = [obj.method.upper()]
+
+            if obj.base_path:
+                name_parts.append(obj.base_path)
+
+            name_parts.append(obj.path)
+
+            name = ''.join(name_parts)
 
         new_scope = scope_compose(scope, name, sep=self.__sep)
         if new_scope:
