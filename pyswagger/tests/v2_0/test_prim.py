@@ -205,6 +205,9 @@ class SchemaTestCase(unittest.TestCase):
         self.assertTrue(isinstance(dv, primitives.UUID), 'should be an primitives.UUID, not {0}'.format(dv))
         self.assertEqual(dv.v.bytes, six.b('\x78\x56\x34\x12\x34\x12\x78\x56\x12\x34\x56\x78\x12\x34\x56\x78'))
 
+        # unsupported type - e.g. int
+        self.assertRaises(ValueError, d._prim_, 123, self.app.prim_factory)
+
     def test_read_only(self):
         """ make sure read-only for property works """
         op = self.app.s('/k').post

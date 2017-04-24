@@ -30,4 +30,4 @@ class UUID(object):
             # TODO: how to support bytes_le?
             self.v = uuid.UUID(bytes=val)
         else:
-            raise ValueError('Unrecognized type for UUID: ' + str(type(v)))
+            raise ValueError('Unrecognized type for UUID: ' + str(type(val)))
