@@ -348,6 +348,36 @@
       "uuid":{
           "type":"string",
           "format":"uuid"
+      },
+      "unique_array":{
+          "type":"array",
+          "uniqueItems":true,
+          "items":{
+              "type":"array",
+              "items":{
+                  "type":"string"
+              }
+          }
+      },
+      "unique_object":{
+          "type":"array",
+          "uniqueItems":true,
+          "items":{
+              "type":"object",
+              "properties":{
+                  "prop_1":{
+                      "type":"string"
+                  },
+                  "prop_2":{
+                      "type":"object",
+                      "properties":{
+                          "prop_2_1":{
+                              "type":"string"
+                          }
+                      }
+                  }
+              }
+          }
       }
    }
 }

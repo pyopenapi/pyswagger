@@ -31,7 +31,18 @@ class Array(list):
             else:
                 raise SchemaError("Unsupported collection format '{0}' when converting array: {1}".format(self.__collection_format, val))
 
-        val = set(val) if obj.uniqueItems else val
+        # remove duplication when uniqueItems == True
+        if obj.uniqueItems:
+            if isinstance(val, (list, dict)):
+                seen = []
+                for e in val:
+                    if e in seen:
+                        continue
+                    seen.append(e)
+                val = seen
+            else:
+                # assume the type is hashable
+                val = set(val)
 
         if obj.items and len(val):
             self.extend(map(functools.partial(ctx['factory'].produce, obj.items), val))

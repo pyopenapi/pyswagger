@@ -224,6 +224,46 @@ class SchemaTestCase(unittest.TestCase):
         app = App.create(get_test_data_folder(version='2.0', which=os.path.join('schema', 'floatDump')))
         app.dump() # should not raise exception
 
+    def test_unique_item_on_array(self):
+        """ uniqueItem == True on array of array
+        """
+
+        # no duplication, should work
+        d = self.app.resolve('#/definitions/unique_array')
+        arr_1 = [
+            ['a', 'b', 'c'],
+            ['d', 'e', 'f']
+        ]
+        o = d._prim_(arr_1, self.app.prim_factory)
+        self.assertEqual(len(arr_1), len(o))
+
+        # duplicated, should remove duplication
+        arr_2 = [
+            ['a', 'b', 'c'],
+            ['d', 'e', 'f'],
+            ['a', 'b', 'c'],
+        ]
+        o = d._prim_(arr_2, self.app.prim_factory)
+        self.assertEqual(len(o), 2)
+
+    def test_unique_item_on_object(self):
+        """ uniqueItem == True on array of object
+        """
+        d = self.app.resolve('#/definitions/unique_object')
+        obj_1 = {'prop_1': '1-1', 'prop_2': {'prop_2_1': '1-2-1'}}
+        obj_1_2 = {'prop_1': '1-1', 'prop_2': {'prop_2_1': '1-2-1-2'}}
+        obj_2 = {'prop_1': '2-1', 'prop_2': {'prop_2_1': '2-2-1'}}
+
+        # no duplucation, should work
+        arr_1 = [obj_1, obj_1_2, obj_2]
+        o = d._prim_(arr_1, self.app.prim_factory)
+        self.assertEqual(len(arr_1), len(o))
+
+        # duplicated, remove duplication
+        arr_2 = [obj_1, obj_1_2, obj_2, obj_1, obj_1_2, obj_2]
+        o = d._prim_(arr_2, self.app.prim_factory)
+        self.assertEqual(len(o), 3)
+
 
 class HeaderTestCase(unittest.TestCase):
     """ test for Header object """
