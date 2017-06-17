@@ -17,7 +17,7 @@ class Array(list):
     def apply_with(self, obj, val, ctx):
         """
         """
-        self.__collection_format = getattr(obj, 'collectionFormat', None)
+        self.__collection_format = getattr(obj, 'collectionFormat', 'csv')
 
         if isinstance(val, six.string_types):
             if self.__collection_format == 'csv':
