@@ -43,7 +43,7 @@ class ItemsContext(Context):
 
     __swagger_ref_object__ = Items
 
-# self-reference 
+# self-reference
 setattr(ItemsContext, '__swagger_child__', {
     'items': (None, ItemsContext),
 })
@@ -54,10 +54,6 @@ class SchemaContext(Context):
     """
 
     __swagger_ref_object__ = Schema
-    __swagger_child__ = {
-        'xml': (None, XMLObjectContext),
-        'externalDocs': (None, ExternalDocumentationContext),
-    }
 
 
 class AdditionalPropertiesContext(Context):
@@ -103,7 +99,7 @@ class AdditionalPropertiesContext(Context):
             self._obj = tmp['t']
 
 
-# self-reference 
+# self-reference
 setattr(SchemaContext, '__swagger_child__', {
     # items here should refer to an Schema Object.
     # refer to https://github.com/swagger-api/swagger-spec/issues/165
@@ -113,6 +109,8 @@ setattr(SchemaContext, '__swagger_child__', {
     # solution for properties with 2 possible types
     'additionalProperties': (None, AdditionalPropertiesContext),
     'allOf': (ContainerType.list_, SchemaContext),
+    'xml': (None, XMLObjectContext),
+    'externalDocs': (None, ExternalDocumentationContext),
 })
 
 

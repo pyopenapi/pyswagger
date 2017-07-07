@@ -12,7 +12,7 @@ class BaseObj_v2_0(BaseObj):
     __swagger_version__ = '2.0'
 
 
-class XMLObject(BaseObj_v2_0):
+class XMLObject(six.with_metaclass(FieldMeta, BaseObj_v2_0)):
     """ XML Object
     """
     __swagger_fields__ = {
