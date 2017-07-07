@@ -30,6 +30,7 @@ class TObj(six.with_metaclass(base.FieldMeta, base.BaseObj)):
         'b': {},
         'c': {},
         'd': None,
+        'e': {},
         'f': None
     }
 
@@ -40,6 +41,7 @@ class TContext(base.Context):
         'b': (base.ContainerType.dict_, ChildContext),
         'c': (base.ContainerType.dict_of_list_, ChildContext),
         'd': (None, ChildContext),
+        'e': (base.ContainerType.dict_of_dict_, ChildContext),
     }
 
 class SwaggerBaseTestCase(unittest.TestCase):
@@ -48,17 +50,27 @@ class SwaggerBaseTestCase(unittest.TestCase):
     def test_baseobj_children(self):
         """ test _children_ """
         tmp = {'t': {}}
-        obj = {'a': [{}, {}, {}], 'b': {'/a': {}, '~b': {}, 'cc': {}}}
+        obj = {
+            'a': [{}, {}, {}],
+            'b': {'/a': {}, '~b': {}, 'cc': {}},
+            'e': {'ea': {'ea1':{}}, 'eb':{'eb2':{}}, 'ec':{'ec3':{}}}
+        }
         with TContext(tmp, 't') as ctx:
             ctx.parse(obj)
         c = tmp['t']._children_.keys()
 
-        self.assertEqual(sorted(c), sorted(['a/0', 'a/1', 'a/2', 'b/cc', 'b/~0b', 'b/~1a']))
+        self.assertEqual(sorted(c), sorted(['a/0', 'a/1', 'a/2', 'b/cc', 'b/~0b', 'b/~1a', 'e/ea/ea1', 'e/eb/eb2', 'e/ec/ec3']))
 
     def test_baseobj_parent(self):
         """ test _parent_ """
         tmp = {'t': {}}
-        obj = {'a': [{}], 'b': {'bb': {}}, 'c': {'cc': [{}]}, 'd': {}}
+        obj = {
+            'a': [{}],
+            'b': {'bb': {}},
+            'c': {'cc': [{}]},
+            'd': {},
+            'e': {'ea': {'ea1':{}, 'ea2':{}}, 'eb': {'eb1':{}, 'eb2':{}}, 'ec':{'ec1':{}, 'ec2':{}}}
+        }
         with TContext(tmp, 't') as ctx:
             ctx.parse(obj)
 
@@ -70,6 +82,12 @@ class SwaggerBaseTestCase(unittest.TestCase):
         _check(tmp['t'].b['bb'])
         _check(tmp['t'].c['cc'][0])
         _check(tmp['t'].d)
+        _check(tmp['t'].e['ea']['ea1'])
+        _check(tmp['t'].e['ea']['ea2'])
+        _check(tmp['t'].e['eb']['eb1'])
+        _check(tmp['t'].e['eb']['eb2'])
+        _check(tmp['t'].e['ec']['ec1'])
+        _check(tmp['t'].e['ec']['ec2'])
 
     def test_field_rename(self):
         """ renamed field name """
@@ -107,6 +125,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
                 'mb': None,
                 'mc': {},
                 'md': {},
+                'me': {},
                 'mf': [],
             }
 
@@ -114,7 +133,8 @@ class SwaggerBaseTestCase(unittest.TestCase):
             __swagger_child__ = {
                 'ma': (None, TContext),
                 'mb': (None, TContext),
-                'mc': (base.ContainerType.dict_, TContext)
+                'mc': (base.ContainerType.dict_, TContext),
+                'me': (base.ContainerType.dict_of_dict_, TContext),
             }
             __swagger_ref_object__ = MergeObj
 
@@ -130,6 +150,7 @@ class SwaggerBaseTestCase(unittest.TestCase):
             'mb':{'a':[{}, {}]},
             'mc':{'/a': {'a': [{}], 'b': {'bb': {}}, 'c': {'cc': [{}]}, 'd': {}}},
             'md':{'1': 1},
+            'me':{'a':{'a1':{}, 'a2':{}}, 'b':{'b1':{'d':{}}}},
             'mf':[1, 2]
         }
         o3 = MergeObj(base.NullContext())
@@ -159,6 +180,16 @@ class SwaggerBaseTestCase(unittest.TestCase):
             self.assertNotEqual(id(o_to.mc['/a'].d), id(o1.mc['/a'].d))
             self.assertEqual(o_to.md, {'1': 1, '2': 2})
             self.assertEqual(sorted(o_to.mf), sorted([1, 2, 3]))
+            self.assertEqual(o_to.me['a'].keys(), ['a1', 'a2'])
+            self.assertEqual(o_to.me['b'].keys(), ['b1'])
+            self.assertTrue(isinstance(o_to.me['a']['a1'], TObj))
+            self.assertTrue(isinstance(o_to.me['a']['a2'], TObj))
+            self.assertTrue(isinstance(o_to.me['b']['b1'], TObj))
+            self.assertTrue(isinstance(o_to.me['b']['b1'].d, ChildObj))
+            self.assertNotEqual(id(o_to.me['a']['a1']), id(o_from.me['a']['a1']))
+            self.assertNotEqual(id(o_to.me['a']['a2']), id(o_from.me['a']['a2']))
+            self.assertNotEqual(id(o_to.me['b']['b1']), id(o_from.me['b']['b1']))
+            self.assertNotEqual(id(o_to.me['b']['b1'].d), id(o_from.me['b']['b1'].d))
 
         def _chk_parent(o_from, o_to):
             for v in o_to.ma.a:
@@ -171,6 +202,10 @@ class SwaggerBaseTestCase(unittest.TestCase):
             self.assertEqual(id(o_to.mc['/a'].a[0]._parent_), id(o_to.mc['/a']))
             self.assertEqual(id(o_to.mc['/a'].b['bb']._parent_), id(o_to.mc['/a']))
             self.assertEqual(id(o_to.mc['/a'].c['cc'][0]._parent_), id(o_to.mc['/a']))
+            self.assertEqual(id(o_to.me['a']['a1']._parent_), id(o_to))
+            self.assertEqual(id(o_to.me['a']['a2']._parent_), id(o_to))
+            self.assertEqual(id(o_to.me['b']['b1']._parent_), id(o_to))
+            self.assertEqual(id(o_to.me['b']['b1'].d._parent_), id(o_to.me['b']['b1']))
 
         self.assertEqual(o2.ma, None)
         self.assertTrue(isinstance(o2.mb, TObj))
