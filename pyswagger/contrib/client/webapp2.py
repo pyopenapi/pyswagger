@@ -45,9 +45,15 @@ class Webapp2TestClient(BaseClient):
         req.prepare(scheme=self.prepare_schemes(req), handle_files=True)
         req._patch(opt)
 
+        url = req.url
+        if req.query:
+            if url[-1] not in ('?', '&'):
+                url += '&' if ('?' in url) else '?'
+            url += six.moves.urllib.parse.urlencode(req.query)
+
         # initiate an request every time
         _req = webapp2.Request.blank(
-            req.url,
+            url,
             headers=req.header.items(),
             POST=req.data,
             **self.__kw
