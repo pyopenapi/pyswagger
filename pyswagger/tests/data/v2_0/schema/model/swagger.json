@@ -296,6 +296,22 @@
             }
          ]
       },
+      "number_int32":{
+         "type":"integer",
+         "format":"int32",
+         "maximum":200,
+         "exclusiveMaximum":true,
+         "minimum":100,
+         "exclusiveMinimum":false
+      },
+      "number_int64":{
+         "type":"integer",
+         "format":"int64",
+         "maximum":200,
+         "exclusiveMaximum":true,
+         "minimum":100,
+         "exclusiveMinimum":false
+      },
       "num_multipleOf":{
          "type":"number",
          "format":"float",

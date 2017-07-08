@@ -114,6 +114,14 @@ class SchemaTestCase(unittest.TestCase):
         self.assertRaises(errs.ValidationError, i._prim_, 200, self.app.prim_factory)
         self.assertRaises(errs.ValidationError, i._prim_, 99, self.app.prim_factory)
 
+        num_i32 = self.app.resolve('#/definitions/num_i32')
+        self.assertRaises(errs.ValidationError, num_i32._prim_, 200, self.app.prim_factory)
+        self.assertRaises(errs.ValidationError, num_i32._prim_, 99, self.app.prim_factory)
+
+        num_i64 = self.app.resolve('#/definitions/num_i64')
+        self.assertRaises(errs.ValidationError, num_i64._prim_, 200, self.app.prim_factory)
+        self.assertRaises(errs.ValidationError, num_i64._prim_, 99, self.app.prim_factory)
+
     def test_array_of_int(self):
         """ test array of integer """
         i = self.app.resolve('#/definitions/array_int')

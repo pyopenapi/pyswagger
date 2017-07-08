@@ -32,10 +32,14 @@ class Primitive(object):
                 'int64': (create_int, validate_int),
             },
 
-            # float
             'number':{
+                # float
                 'float': (create_float, validate_float),
                 'double': (create_float, validate_float),
+
+                # integer
+                'int32': (create_int, validate_int),
+                'int64': (create_int, validate_int),
             },
 
             # str
