@@ -66,6 +66,17 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertRaises(ValueError, d.__getitem__, ('f', 'g'))
         self.assertRaises(TypeError, lambda x: d.sep)
 
+        obj = {
+            'tag1!##!get': 1,
+            'tag2!##!something-get': 2,
+        }
+        d = utils.ScopeDict(obj)
+        d.sep = '!##!'
+        self.assertEqual(d['tag1', 'get'], 1)
+        self.assertEqual(d['tag2', 'something-get'], 2)
+        self.assertEqual(d['get'], 1)
+        self.assertEqual(d['something-get'], 2)
+
     def test_dict_to_tuple(self):
         """ get_dict_as_tuple """
         self.assertEqual(
@@ -236,7 +247,7 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         """
         self.assertEqual(utils.patch_path(
             '/Users/sudeep.agarwal/src/squiddy/api/v0.1',
-            '/Users/sudeep.agarwal/src/squiddy/api/v0.1/swagger.yaml', 
+            '/Users/sudeep.agarwal/src/squiddy/api/v0.1/swagger.yaml',
         ), '/Users/sudeep.agarwal/src/squiddy/api/v0.1/swagger.yaml')
 
 

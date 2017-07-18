@@ -31,7 +31,7 @@ def scope_compose(scope, name, sep=private.SCOPE_SEPARATOR):
 
 def scope_split(scope, sep=private.SCOPE_SEPARATOR):
     """ split a scope into names
-    
+
     :param str scope: scope to be splitted
     :return: list of str for scope names
     """
@@ -78,6 +78,15 @@ class ScopeDict(dict):
             if len(ret) == 1:
                 return super(ScopeDict, self).__getitem__(ret[0])
             elif len(ret) > 1:
+                # special case for the last token:
+                #  - a!##!get
+                #  - b!##!something-get
+                #  and access with 'get'
+                last_k = k.rsplit(self.__sep, 1)[-1]
+                matched = [r for r in ret if r.rsplit(self.__sep, 1)[-1] == last_k]
+                if len(matched) == 1:
+                    return super(ScopeDict, self).__getitem__(matched[0])
+
                 raise ValueError('Multiple occurrence of key: {0}'.format(k))
 
             raise e
@@ -199,7 +208,7 @@ def import_string(name):
     """
     mod = fp = None
 
-    # code below, please refer to 
+    # code below, please refer to
     #   https://docs.python.org/2/library/imp.html
     # for details
     try:
@@ -211,7 +220,7 @@ def import_string(name):
         fp, pathname, desc = imp.find_module(name)
         mod = imp.load_module(name, fp, pathname, desc)
     except ImportError:
-        mod = None 
+        mod = None
     finally:
         # Since we may exit via an exception, close fp explicitly.
         if fp:
