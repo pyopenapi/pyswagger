@@ -296,6 +296,13 @@
             }
          ]
       },
+      "default_int":{
+         "type":"integer",
+         "maximum":200,
+         "exclusiveMaximum":true,
+         "minimum":100,
+         "exclusiveMinimum":false
+      },
       "number_int32":{
          "type":"integer",
          "format":"int32",
@@ -320,6 +327,10 @@
                "multipleOf":5
             }
          ]
+      },
+      "default_number":{
+         "type":"number",
+         "multipleOf":5
       },
       "byte":{
          "type":"string",

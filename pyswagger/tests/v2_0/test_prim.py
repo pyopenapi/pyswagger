@@ -110,7 +110,6 @@ class SchemaTestCase(unittest.TestCase):
         schema is separated into parts
         """
         i = self.app.resolve("#/definitions/int")
-
         self.assertRaises(errs.ValidationError, i._prim_, 200, self.app.prim_factory)
         self.assertRaises(errs.ValidationError, i._prim_, 99, self.app.prim_factory)
 
@@ -121,6 +120,10 @@ class SchemaTestCase(unittest.TestCase):
         num_i64 = self.app.resolve('#/definitions/number_int64')
         self.assertRaises(errs.ValidationError, num_i64._prim_, 200, self.app.prim_factory)
         self.assertRaises(errs.ValidationError, num_i64._prim_, 99, self.app.prim_factory)
+
+        default_int = self.app.resolve('#/definitions/default_int')
+        self.assertRaises(errs.ValidationError, default_int._prim_, 200, self.app.prim_factory)
+        self.assertRaises(errs.ValidationError, default_int._prim_, 99, self.app.prim_factory)
 
     def test_array_of_int(self):
         """ test array of integer """
@@ -141,6 +144,9 @@ class SchemaTestCase(unittest.TestCase):
 
         self.assertRaises(errs.ValidationError, i._prim_, 4, self.app.prim_factory)
         i._prim_(5, self.app.prim_factory) # should raise nothing
+
+        default_number = self.app.resolve('#/definitions/default_number')
+        default_number._prim_(5, self.app.prim_factory) # should raise nothing
 
     def test_str_enum(self):
         """ test str enum """

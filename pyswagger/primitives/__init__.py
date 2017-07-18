@@ -30,6 +30,8 @@ class Primitive(object):
             'integer': {
                 'int32': (create_int, validate_int),
                 'int64': (create_int, validate_int),
+
+                None: (create_int, validate_int),
             },
 
             'number':{
@@ -40,6 +42,8 @@ class Primitive(object):
                 # integer
                 'int32': (create_int, validate_int),
                 'int64': (create_int, validate_int),
+
+                None: (create_float, validate_float),
             },
 
             # str
