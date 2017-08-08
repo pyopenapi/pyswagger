@@ -31,7 +31,7 @@ class Webapp2TestClient(BaseClient):
         self.__cookie = None
         self.__kw = kw
 
-    def request(self, req_and_resp, opt={}):
+    def request(self, req_and_resp, opt=None, headers=None):
         """
         """
 
@@ -40,10 +40,13 @@ class Webapp2TestClient(BaseClient):
         req.reset()
         resp.reset()
 
+        opt = opt or {}
         req, resp = super(Webapp2TestClient, self).request((req, resp), opt)
 
         req.prepare(scheme=self.prepare_schemes(req), handle_files=True)
         req._patch(opt)
+
+        composed_headers = self.compose_headers(req, headers, opt)
 
         url = req.url
         if req.query:
@@ -54,7 +57,7 @@ class Webapp2TestClient(BaseClient):
         # initiate an request every time
         _req = webapp2.Request.blank(
             url,
-            headers=req.header.items(),
+            headers=composed_headers,
             POST=req.data,
             **self.__kw
         )

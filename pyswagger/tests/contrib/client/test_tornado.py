@@ -12,6 +12,7 @@ import os
 sapp = App._create_(get_test_data_folder(version='1.2', which='wordnik'))
 received_file = None
 received_meta = None
+received_headers = None
 
 """ refer to pyswagger.tests.data.v1_2.wordnik for details """
 
@@ -40,6 +41,9 @@ class RESTHandler(web.RequestHandler):
 class PetRequestHandler(RESTHandler):
     """ refer to /pet """
     def put(self):
+        global received_headers
+        received_headers = self.request.headers
+
         pet = self.json_args
         if not isinstance(pet['id'], int):
             self.set_status(400)
@@ -239,4 +243,36 @@ class TornadoTestCase(testing.AsyncHTTPTestCase):
         self.assertEqual(received_files[0], {'body': six.b('test image 1'), 'content_type': 'application/unknown', 'filename': u'_1.k'})
         self.assertEqual(received_files[1], {'body': six.b('test image 2'), 'content_type': 'application/unknown', 'filename': u'_2.k'})
         self.assertEqual(received_files[2], {'body': six.b('test image 3'), 'content_type': 'application/unknown', 'filename': u'_3.k'})
+
+    @testing.gen_test
+    def test_custom_headers(self):
+        """ test customized headers """
+        global received_headers
+
+        yield self.client.request(
+            sapp.op['updatePet'](
+                body=dict(id=1, name='Tom1')),
+                opt=dict(
+                    url_netloc='localhost:'+str(self.get_http_port())
+                ),
+                headers={'X-TEST-HEADER': 'aaa'}
+            )
+
+        self.assertEqual(received_headers['X-TEST-HEADER'], 'aaa')
+
+    @testing.gen_test
+    def test_custom_headers_multiple_values_to_one_key(self):
+        """ test customized headers with multiple values to one key """
+        global received_headers
+
+        yield self.client.request(
+            sapp.op['updatePet'](
+                body=dict(id=1, name='Tom1')),
+                opt=dict(
+                    url_netloc='localhost:'+str(self.get_http_port()),
+                ),
+                headers=[('X-TEST-HEADER', 'aaa'), ('X-TEST-HEADER', 'bbb')]
+            )
+
+        self.assertEqual(received_headers.get_list('X-TEST-HEADER'), ['aaa', 'bbb'])
 

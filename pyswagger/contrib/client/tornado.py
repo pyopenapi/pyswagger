@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from ...core import BaseClient
 from tornado.httpclient import AsyncHTTPClient, HTTPRequest
-from tornado.httputil import url_concat
+from tornado.httputil import url_concat, HTTPHeaders
 from tornado import gen
 
 
@@ -19,7 +19,7 @@ class TornadoClient(BaseClient):
         self.__client = AsyncHTTPClient()
 
     @gen.coroutine
-    def request(self, req_and_resp, opt={}):
+    def request(self, req_and_resp, opt=None, headers=None):
         """
         """
 
@@ -28,17 +28,23 @@ class TornadoClient(BaseClient):
         req.reset()
         resp.reset()
 
+        opt = opt or {}
         req, resp = super(TornadoClient, self).request((req, resp), opt)
 
         req.prepare(scheme=self.prepare_schemes(req), handle_files=True)
         req._patch(opt)
+
+        composed_headers = self.compose_headers(req, headers, opt)
+        tornado_headers = HTTPHeaders()
+        for h in composed_headers:
+            tornado_headers.add(*h)
 
         url = url_concat(req.url, req.query)
 
         rq = HTTPRequest(
             url=url,
             method=req.method.upper(),
-            headers=req.header,
+            headers=tornado_headers,
             body=req.data
             )
         rs = yield self.__client.fetch(rq)
