@@ -64,6 +64,7 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - [Operation MIME Support](docs/md/tutorial/mime.md)
 - [Test with Invalid Input](docs/md/tutorial/invalid.md)
 - [Load Spec from a Restricted Service](docs/md/tutorial/restricted_service.md)
+- [Customized Headers](docs/md/tutorial/customized_headers.md)
 
 ---------
 

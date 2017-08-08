@@ -10,6 +10,7 @@ from .scanner import TypeReduce, CycleDetector
 from .scanner.v1_2 import Upgrade
 from .scanner.v2_0 import AssignParent, Merge, Resolve, PatchObject, YamlFixer, Aggregate, NormalizeRef
 from pyswagger import utils, errs, consts
+import copy
 import base64
 import six
 import weakref
@@ -541,6 +542,8 @@ class BaseClient(object):
                 return resp
     """
 
+    join_headers = 'join_headers'
+
     # supported schemes, ex. ['http', 'https', 'ws', 'ftp']
     __schemes__ = set()
 
@@ -566,12 +569,55 @@ class BaseClient(object):
             raise ValueError('No schemes available: {0}'.format(req.schemes))
         return ret
 
-    def request(self, req_and_resp, opt):
+    def compose_headers(self, req, headers=None, opt=None, as_dict=False):
+        """ a utility to compose headers from pyswagger.io.Request and customized headers
+
+        :return: list of tuple (key, value) when as_dict is False, else dict
+        """
+        if headers is None:
+            return list(req.header.items()) if not as_dict else req.header
+
+        opt = opt or {}
+        join_headers = opt.pop(BaseClient.join_headers, None)
+        if as_dict and not join_headers:
+            # pick the most efficient way for special case
+            headers = dict(headers) if isinstance(headers, list) else headers
+            headers.update(req.header)
+            return headers
+
+        # include Request.headers
+        aggregated_headers = list(req.header.items())
+
+        # include customized headers
+        if isinstance(headers, list):
+            aggregated_headers.extend(headers)
+        elif isinstance(headers, dict):
+            aggregated_headers.extend(headers.items())
+        else:
+            raise Exception('unknown type as header: {}'.format(str(type(headers))))
+
+        if join_headers:
+            joined = {}
+            for h in aggregated_headers:
+                key = h[0]
+                if key in joined:
+                    joined[key] = ','.join([joined[key], h[1]])
+                else:
+                    joined[key] = h[1]
+            aggregated_headers = list(joined.items())
+
+        return dict(aggregated_headers) if as_dict else aggregated_headers
+
+    def request(self, req_and_resp, opt=None, headers=None):
         """ preprocess before performing a request, usually some patching.
         authorization also applied here.
 
         :param req_and_resp: tuple of Request and Response
         :type req_and_resp: (Request, Response)
+        :param opt: customized options
+        :type opt: dict
+        :param headers: customized headers
+        :type headers: dict of 'string', or list of tuple: (string, string) for multiple values for one key
         :return: patched request and response
         :rtype: Request, Response
         """
