@@ -23,23 +23,23 @@ class Client(BaseClient):
         self.__s = Session()
         self.__send_opt = send_opt
 
-    def request(self, req_and_resp, opt=None):
+    def request(self, req_and_resp, opt=None, headers=None):
         """
         """
-        if opt is None:
-            opt = {}
 
         # make sure all prepared state are clean before processing
         req, resp = req_and_resp
         req.reset()
         resp.reset()
 
+        opt = opt or {}
         req, resp = super(Client, self).request((req, resp), opt)
 
         # apply request-related options before preparation.
         req.prepare(scheme=self.prepare_schemes(req), handle_files=False)
         req._patch(opt)
 
+        composed_headers = self.compose_headers(req, headers, opt, as_dict=True)
 
         # prepare for uploaded files
         file_obj = []
@@ -62,7 +62,7 @@ class Client(BaseClient):
             url=req.url,
             params=req.query,
             data=req.data,
-            headers=req.header,
+            headers=composed_headers,
             files=file_obj
         )
         rq = self.__s.prepare_request(rq)

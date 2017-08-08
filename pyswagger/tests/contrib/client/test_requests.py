@@ -230,4 +230,37 @@ class MultipleFileUploadTestCase(unittest.TestCase):
         self.assertTrue(body.find('_3.k') != -1)
         self.assertTrue(body.find('test image 3') != -1)
 
+@httpretty.activate
+class HeaderTestCase(unittest.TestCase):
+    """ test case for passing headers """
+
+    def test_custom_headers(self):
+        """ test customized headers """
+        httpretty.register_uri(
+            httpretty.PUT,
+            'http://petstore.swagger.wordnik.com/api/pet',
+            status=200
+        )
+
+        headers = {'X-TEST-HEADER': 'aaa'}
+        resp = client.request(
+            app.op['updatePet'](body=pet_QQQ),
+            headers=headers
+        )
+
+        self.assertEqual(httpretty.last_request().headers['X-TEST-HEADER'], 'aaa')
+
+    def test_custom_headers_multiple_values_to_one_key(self):
+        """ test case for headers with multiple values for one key """
+        httpretty.register_uri(
+            httpretty.PUT,
+            'http://petstore.swagger.wordnik.com/api/pet',
+            status=200
+        )
+
+        resp = client.request(
+            app.op['updatePet'](body=pet_QQQ),
+            headers=[('X-TEST-HEADER', 'aaa'), ('X-TEST-HEADER', 'bbb')]
+        )
+        self.assertEqual(httpretty.last_request().headers['X-TEST-HEADER'], 'bbb')
 

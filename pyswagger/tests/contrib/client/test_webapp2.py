@@ -14,6 +14,7 @@ import os
 pet_db = create_pet_db()
 received_file = None
 received_meta = None
+received_headers = None
 
 #
 # a minimum webapp2 application for pet-store example
@@ -25,6 +26,7 @@ class PetStoreHandler(webapp2.RequestHandler):
 
     def pet(self):
         global pet_db
+        global received_headers
 
         params = json.loads(self.request.body)
         if self.request.method == 'POST':
@@ -34,6 +36,7 @@ class PetStoreHandler(webapp2.RequestHandler):
                 pet_db.create_(**params)
                 self.response.status_int = 200
         elif self.request.method == 'PUT':
+            received_headers = self.request.headers
             if not isinstance(params['id'], int):
                 self.response.status_int = 400
 
@@ -208,4 +211,33 @@ class Webapp2TestCase(unittest.TestCase):
         self.assertEqual(resp.status, 200)
 
         self.assertEqual(cookie_cache, 'test 123')
+
+    def test_custom_headers(self):
+        """ test customized headers """
+        global received_headers
+
+        resp = Webapp2TestClient(wapp).request(
+            self.app.op['updatePet'](body=dict(id=1, name='Tom1')),
+            headers={'X-TEST-HEADER': 'aaa'}
+        )
+
+        self.assertEqual(received_headers['X-TEST-HEADER'], 'aaa')
+
+    def test_custom_headers_multiple_values_to_one_key(self):
+        """ test customized headers with multiple values to one key """
+        global received_headers
+
+        resp = Webapp2TestClient(wapp).request(
+            self.app.op['updatePet'](body=dict(id=1, name='Tom1')),
+            headers=[('X-TEST-HEADER', 'aaa'), ('X-TEST-HEADER', 'bbb')]
+        )
+        self.assertEqual(received_headers['X-TEST-HEADER'], 'bbb')
+
+        # with 'join_headers'
+        resp = Webapp2TestClient(wapp).request(
+            self.app.op['updatePet'](body=dict(id=1, name='Tom1')),
+            headers=[('X-TEST-HEADER', 'aaa'), ('X-TEST-HEADER', 'bbb')],
+            opt={'join_headers': True}
+        )
+        self.assertEqual(received_headers['X-TEST-HEADER'], 'aaa,bbb')
 

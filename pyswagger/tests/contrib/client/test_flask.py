@@ -12,6 +12,7 @@ sapp = App._create_(get_test_data_folder(version='1.2', which='wordnik'))
 pet_db = create_pet_db()
 received_file = None
 received_meta = None
+received_headers = None
 
 #
 # a minimum flask application for pet-store example
@@ -27,6 +28,9 @@ def pet():
             pet_db.create_(**request.json)
             return "", 200
     elif request.method == 'PUT':
+        global received_headers
+
+        received_headers = request.headers
         if not isinstance(request.json['id'], int):
             return "", 400
         if not pet_db.update_(**request.json):
@@ -171,4 +175,37 @@ class FlaskTestCase(unittest.TestCase):
         self.assertEqual(received_files[0].name, 'images')
         self.assertEqual(received_files[1].name, 'images')
         self.assertEqual(received_files[2].name, 'images')
+
+    def test_custom_headers(self):
+        """ test customized headers """
+        global received_headers
+
+        headers = {'X-TEST-HEADER': 'aaa'}
+        resp = self.client.request(
+            sapp.op['updatePet'](body=dict(id=1, name='Tom1')),
+            headers=headers
+        )
+
+        self.assertEqual(received_headers.get('X-TEST-HEADER'), 'aaa')
+
+    def test_custom_headers_multiple_values_to_one_key(self):
+        """ test customized headers with multiple values to one key """
+
+        global received_headers
+
+        headers = [('X-TEST-HEADER', 'aaa'), ('X-TEST-HEADER', 'bbb')]
+        resp = self.client.request(
+            sapp.op['updatePet'](body=dict(id=1, name='Tom1')),
+            headers=headers
+        )
+        self.assertEqual(received_headers.get_all('X-TEST-HEADER'), ['bbb'])
+
+        # with 'join_headers'
+        resp = self.client.request(
+            sapp.op['updatePet'](body=dict(id=1, name='Tom1')),
+            headers=headers,
+            opt={'join_headers': True}
+        )
+        self.assertEqual(received_headers.get_all('X-TEST-HEADER'), ['aaa,bbb'])
+
 

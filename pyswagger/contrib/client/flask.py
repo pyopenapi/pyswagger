@@ -19,7 +19,7 @@ class FlaskTestClient(BaseClient):
         super(FlaskTestClient, self).__init__(auth)
         self.__client = client
 
-    def request(self, req_and_resp, opt={}):
+    def request(self, req_and_resp, opt=None, headers=None):
         """
         """
 
@@ -28,11 +28,14 @@ class FlaskTestClient(BaseClient):
         req.reset()
         resp.reset()
 
+        opt = opt or {}
         req, resp = super(FlaskTestClient, self).request((req, resp), opt)
 
         # apply request-related options before preparation.
         req.prepare(scheme=self.prepare_schemes(req), handle_files=False)
         req._patch(opt)
+
+        composed_headers = self.compose_headers(req, headers, opt)
 
         # prepare data, flask's data is composed of form and file
         if req.files:
@@ -63,7 +66,7 @@ class FlaskTestClient(BaseClient):
             path=req.url,
             query_string=req.query,
             method=req.method.upper(),
-            headers=req.header.items(),
+            headers=composed_headers,
             data=data
             )
 

@@ -1,5 +1,9 @@
 ## Changes
 
+### 0.8.33
+
+- Support customized headers when making requests
+
 ### 0.8.17
 
 - (not support anymore) implicit dereferencing, which is conflict with 'relative file reference'
