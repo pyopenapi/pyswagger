@@ -222,6 +222,13 @@ class SchemaTestCase(unittest.TestCase):
         # unsupported type - e.g. int
         self.assertRaises(ValueError, d._prim_, 123, self.app.prim_factory)
 
+    def test_password(self):
+        """ test string in password """
+        p = self.app.resolve('#/definitions/password')
+
+        pv = p._prim_('p@ssw0rd', self.app.prim_factory)
+        self.assertTrue(isinstance(pv, six.string_types))
+
     def test_read_only(self):
         """ make sure read-only for property works """
         op = self.app.s('/k').post

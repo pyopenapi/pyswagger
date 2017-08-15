@@ -55,6 +55,7 @@ class Primitive(object):
                 # TODO: add convertion of uuid from python's one
                 'email': (create_str, validate_email_),
                 'uuid': (functools.partial(create_obj, constructor=UUID), _2nd_pass_obj),
+                'password': (create_str, validate_str),
 
                 'byte': (functools.partial(create_obj, constructor=Byte), _2nd_pass_obj),
                 'date': (functools.partial(create_obj, constructor=Date), _2nd_pass_obj),

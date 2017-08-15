@@ -376,6 +376,10 @@
           "type":"string",
           "format":"uuid"
       },
+      "password":{
+          "type":"string",
+          "format":"password"
+      },
       "unique_array":{
           "type":"array",
           "uniqueItems":true,
