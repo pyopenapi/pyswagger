@@ -67,6 +67,19 @@ class RequestTestCase(unittest.TestCase):
         req.prepare()
         self.assertEqual(json.loads(req.data), {'f1': "say", 'f2': "hello"})
 
+    def test_patch(self):
+        """ verify Request._patch works
+        """
+        req, _ = self.app.s('/t').get()
+        req.prepare()
+        req._patch(opt={'url_netloc': 'xxx.com'})
+        self.assertEqual(req.url, 'http://xxx.com/v1/t')
+
+        req.reset()
+        req.prepare()
+        req._patch(opt={'url_scheme': 'https'})
+        self.assertEqual(req.url, 'https://test.com/v1/t')
+
 
 class ResponseTestCase(unittest.TestCase):
     """ test Response """
