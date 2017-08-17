@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = open('pyswagger/VERSION', 'r').readline().strip()
+version = open('pyswagger/__init__', 'r').readline().split()[2]
 
 setup(
     name = 'pyswagger',
