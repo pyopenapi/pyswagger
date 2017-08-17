@@ -380,6 +380,10 @@
           "type":"string",
           "format":"password"
       },
+      "binary":{
+          "type":"string",
+          "format":"binary"
+      },
       "unique_array":{
           "type":"array",
           "uniqueItems":true,

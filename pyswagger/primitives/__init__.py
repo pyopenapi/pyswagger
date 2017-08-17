@@ -58,6 +58,7 @@ class Primitive(object):
                 'password': (create_str, validate_str),
 
                 'byte': (functools.partial(create_obj, constructor=Byte), _2nd_pass_obj),
+                'binary': (functools.partial(create_obj, constructor=Byte), _2nd_pass_obj),
                 'date': (functools.partial(create_obj, constructor=Date), _2nd_pass_obj),
                 'date-time': (functools.partial(create_obj, constructor=Datetime), _2nd_pass_obj),
             },

@@ -163,6 +163,14 @@ class SchemaTestCase(unittest.TestCase):
         self.assertEqual(str(bv), "BBBBB", self.app.prim_factory)
         self.assertEqual(bv.to_json(), "QkJCQkI=")
 
+    def test_binary(self):
+        """ test binary """
+        b = self.app.resolve("#/definitions/binary")
+
+        bv = b._prim_("BBBBB", self.app.prim_factory)
+        self.assertEqual(str(bv), "BBBBB", self.app.prim_factory)
+        self.assertEqual(bv.to_json(), "QkJCQkI=")
+
     def test_date(self):
         """ test date """
         d = self.app.resolve("#/definitions/date")
