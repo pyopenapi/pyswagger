@@ -163,6 +163,14 @@ class SchemaTestCase(unittest.TestCase):
         self.assertEqual(str(bv), "BBBBB", self.app.prim_factory)
         self.assertEqual(bv.to_json(), "QkJCQkI=")
 
+    def test_binary(self):
+        """ test binary """
+        b = self.app.resolve("#/definitions/binary")
+
+        bv = b._prim_("BBBBB", self.app.prim_factory)
+        self.assertEqual(str(bv), "BBBBB", self.app.prim_factory)
+        self.assertEqual(bv.to_json(), "QkJCQkI=")
+
     def test_date(self):
         """ test date """
         d = self.app.resolve("#/definitions/date")
@@ -221,6 +229,13 @@ class SchemaTestCase(unittest.TestCase):
 
         # unsupported type - e.g. int
         self.assertRaises(ValueError, d._prim_, 123, self.app.prim_factory)
+
+    def test_password(self):
+        """ test string in password """
+        p = self.app.resolve('#/definitions/password')
+
+        pv = p._prim_('p@ssw0rd', self.app.prim_factory)
+        self.assertTrue(isinstance(pv, six.string_types))
 
     def test_read_only(self):
         """ make sure read-only for property works """

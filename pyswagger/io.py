@@ -20,6 +20,7 @@ class Request(object):
     # option: url_netloc, replace netloc part in url, useful
     # when testing a set of Swagger APIs locally.
     opt_url_netloc = 'url_netloc'
+    opt_url_scheme = 'url_scheme'
 
     def __init__(self, op, params):
         """ constrcutor
@@ -156,11 +157,17 @@ class Request(object):
         :param dict opt: options, used options would be popped. Refer to Request.opt_* for details.
         """
         opt_netloc = opt.pop(Request.opt_url_netloc, None)
-        if opt_netloc:
+        opt_scheme = opt.pop(Request.opt_url_scheme, None)
+        if opt_netloc or opt_scheme:
             scheme, netloc, path, params, query, fragment = six.moves.urllib.parse.urlparse(self.__url)
-            self.__url = six.moves.urllib.parse.urlunparse(
-                (scheme, opt_netloc, path, params, query, fragment)
-                )
+            self.__url = six.moves.urllib.parse.urlunparse((
+                opt_scheme or scheme,
+                opt_netloc or netloc,
+                path,
+                params,
+                query,
+                fragment
+            ))
 
             logger.info('patching url: [{0}]'.format(self.__url))
 
