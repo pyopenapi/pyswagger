@@ -1,4 +1,4 @@
-__version__ = '0.8.34'
+__version__ = '0.8.35'
 
 from .getter import Getter
 from .core import App, Security
