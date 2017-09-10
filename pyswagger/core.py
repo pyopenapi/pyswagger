@@ -287,7 +287,7 @@ class App(object):
         if app.__version not in ['1.2', '2.0']:
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
 
-        # update schem if any
+        # update scheme if any
         p = six.moves.urllib.parse.urlparse(url)
         if p.scheme:
             app.schemes.append(p.scheme)
