@@ -6,6 +6,7 @@ import yaml
 import six
 import os
 import logging
+import re
 
 
 logger = logging.getLogger(__name__)
@@ -64,6 +65,12 @@ class LocalGetter(Getter):
     def __init__(self, path):
         super(LocalGetter, self).__init__(path)
 
+        if path.startswith('file://'):
+            parsed = six.moves.urllib.parse.urlparse(path)
+            path = parsed.path
+        if re.match('^/[A-Z]+:', path) is not None:
+            path = os.path.abspath(path[1:])
+
         for n in private.SWAGGER_FILE_NAMES:
             if self.base_path.endswith(n):
                 self.base_path = os.path.dirname(self.base_path)
@@ -82,13 +89,14 @@ class LocalGetter(Getter):
             # - when 'path' points to a specific file, and its
             #   extension is either 'json' or 'yaml'.
             _, ext = os.path.splitext(path)
-            for e in [private.FILE_EXT_JSON, private.FILE_EXT_YAML]:
+            for e in [private.FILE_EXT_JSON, private.FILE_EXT_YAML, private.FILE_EXT_YML]:
                 if ext.endswith(e):
                     self.base_path = os.path.dirname(path)
                     self.urls = [path]
                     break
             else:
-                for e in [private.FILE_EXT_JSON, private.FILE_EXT_YAML]:
+                for e in [private.FILE_EXT_JSON, private.FILE_EXT_YAML, private.FILE_EXT_YML]:
+                    #print(path + '.' + e)
                     if os.path.isfile(path + '.' + e):
                         self.urls = [path + '.' + e]
                         break
