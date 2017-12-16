@@ -163,4 +163,3 @@ class DictGetter(Getter):
         logger.info('to load: [{0}]'.format(path))
 
         return self._path2dict.get(path, {})
-

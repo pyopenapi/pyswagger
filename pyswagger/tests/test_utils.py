@@ -47,6 +47,12 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.jp_split(None), [])
         self.assertEqual(utils.jp_split('/~1~0test/qq/~0test/~1test/'), ['', '/~test', 'qq', '~test', '/test', ''])
 
+
+    def test_derelativize_url(self):
+        self.assertEquals(utils.derelativise_url('https://localhost/hurf/durf.json'), 'https://localhost/hurf/durf.json')
+        self.assertEquals(utils.derelativise_url('https://localhost/hurf/./durf.json'), 'https://localhost/hurf/durf.json')
+        self.assertEquals(utils.derelativise_url('https://localhost/hurf/../durf.json'), 'https://localhost/durf.json')
+        self.assertEquals(utils.derelativise_url('https://localhost/hurf/.../durf.json'), 'https://localhost/durf.json')
     def test_scope_dict(self):
         """ ScopeDict """
         obj = {
@@ -386,4 +392,3 @@ class WalkTestCase(unittest.TestCase):
             [2, 3, 5, 4, 2],
             [2, 3 ,4, 2]
             ]))
-
