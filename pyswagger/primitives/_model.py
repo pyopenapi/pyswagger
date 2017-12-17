@@ -46,7 +46,7 @@ class Model(dict):
 
         not_found = set(obj.required) - set(six.iterkeys(self))
         if len(not_found):
-            raise ValueError('requirement not met: {0}'.format(not_found))
+            raise ValueError('Model missing required key(s): {0}'.format(', '.join(not_found)))
 
         # remove assigned properties to avoid duplicated
         # primitive creation
