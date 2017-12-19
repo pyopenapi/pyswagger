@@ -298,7 +298,7 @@ def path2url(p):
     """ Return file:// URL from a filename.
     """
     # Python 3 is a bit different and does a better job.
-    if sys.version_info[0] >= 3:
+    if sys.version_info.major >= 3 and sys.version_info.minor >= 4:
         import pathlib
         return pathlib.Path(p).as_uri()
     else:
