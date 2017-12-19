@@ -339,10 +339,18 @@ def url_join(url, path):
     """ url version of os.path.join
     """
     p = six.moves.urllib.parse.urlparse(url)
-    t = ('/'.join([p.path, path]),)
+
+    t = None
+    if p.path and p.path[-1] == '/':
+        if path and path[0] == '/':
+            path = path[1:]
+        t = ''.join([p.path, path])
+    else:
+        t = ('' if path and path[0] == '/' else '/').join([p.path, path])
+
     return six.moves.urllib.parse.urlunparse(
         p[:2]+
-        t+ # os.sep is different on windows, don't use it here.
+        (t,)+ # os.sep is different on windows, don't use it here.
         p[3:]
     )
 
@@ -382,6 +390,11 @@ def normalize_jr(jr, url=None):
     else:
         return '#' + jp
 
+def _fullmatch(regex, chunk):
+    m = re.match(regex, chunk)
+    if m and m.span()[1] == len(chunk):
+        return m
+
 def derelativise_url(url):
     '''
     Normalizes URLs, gets rid of .. and .
@@ -396,7 +409,7 @@ def derelativise_url(url):
             newpath=newpath[:-1]
             continue
         # TODO: Verify this behaviour.
-        elif re.fullmatch(r'\.{3,}', chunk) is not None:
+        elif _fullmatch(r'\.{3,}', chunk) is not None:
             # parent dir.
             newpath=newpath[:-1]
             continue
