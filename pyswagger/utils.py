@@ -297,9 +297,14 @@ def nv_tuple_list_replace(l, v):
 def path2url(p):
     """ Return file:// URL from a filename.
     """
-    return six.moves.urllib.parse.urljoin(
-        'file:', six.moves.urllib.request.pathname2url(p)
-    )
+    # Python 3 is a bit different and does a better job.
+    if sys.version_info[0] >= 3:
+        import pathlib
+        return pathlib.Path(p).as_uri()
+    else:
+        return six.moves.urllib.parse.urljoin(
+            'file:', six.moves.urllib.request.pathname2url(p)
+        )
 
 def normalize_url(url):
     """ Normalize url
@@ -334,9 +339,10 @@ def url_join(url, path):
     """ url version of os.path.join
     """
     p = six.moves.urllib.parse.urlparse(url)
+    t = ('/'.join([p.path, path]),)
     return six.moves.urllib.parse.urlunparse(
         p[:2]+
-        (os.path.join(p.path, path),)+
+        t+ # os.sep is different on windows, don't use it here.
         p[3:]
     )
 
@@ -366,7 +372,8 @@ def normalize_jr(jr, url=None):
         if p.scheme == '' and url:
             p = six.moves.urllib.parse.urlparse(url)
             # it's the path of relative file
-            path = six.moves.urllib.parse.urlunparse(p[:2]+(os.path.join(os.path.dirname(p.path), path),)+p[3:])
+            path = six.moves.urllib.parse.urlunparse(p[:2]+('/'.join([os.path.dirname(p.path), path]),)+p[3:])
+            path = derelativise_url(path)
     else:
         path = url
 
@@ -375,6 +382,26 @@ def normalize_jr(jr, url=None):
     else:
         return '#' + jp
 
+def derelativise_url(url):
+    '''
+    Normalizes URLs, gets rid of .. and .
+    '''
+    parsed = six.moves.urllib.parse.urlparse(url)
+    newpath=[]
+    for chunk in parsed.path[1:].split('/'):
+        if chunk == '.':
+            continue
+        elif chunk == '..':
+            # parent dir.
+            newpath=newpath[:-1]
+            continue
+        # TODO: Verify this behaviour.
+        elif re.fullmatch(r'\.{3,}', chunk) is not None:
+            # parent dir.
+            newpath=newpath[:-1]
+            continue
+        newpath += [chunk]
+    return six.moves.urllib.parse.urlunparse(parsed[:2]+('/'+('/'.join(newpath)),)+parsed[3:])
 def is_file_url(url):
     return url.startswith('file://')
 
@@ -549,4 +576,3 @@ def patch_path(base_path, path):
         path = path[1:]
 
     return path
-
