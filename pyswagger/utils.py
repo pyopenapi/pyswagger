@@ -306,11 +306,17 @@ def path2url(p):
             'file:', six.moves.urllib.request.pathname2url(p)
         )
 
+_windows_path_prefix = re.compile(r'(^[A-Za-z]:\\)')
+
 def normalize_url(url):
     """ Normalize url
     """
     if not url:
         return url
+
+    matched = _windows_path_prefix.match(url)
+    if matched:
+        return path2url(url)
 
     p = six.moves.urllib.parse.urlparse(url)
     if p.scheme == '':
@@ -415,8 +421,6 @@ def derelativise_url(url):
             continue
         newpath += [chunk]
     return six.moves.urllib.parse.urlunparse(parsed[:2]+('/'+('/'.join(newpath)),)+parsed[3:])
-def is_file_url(url):
-    return url.startswith('file://')
 
 def get_swagger_version(obj):
     """ get swagger version from loaded json """
