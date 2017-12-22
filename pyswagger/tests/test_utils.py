@@ -1,8 +1,10 @@
 from pyswagger import utils, errs
+from .utils import is_windows, is_py2
 from datetime import datetime
 import unittest
 import functools
 import six
+import os
 
 
 class SwaggerUtilsTestCase(unittest.TestCase):
@@ -118,9 +120,15 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.import_string('qoo_%^&%&'), None)
         self.assertNotEqual(utils.import_string('pyswagger'), None)
 
-    def test_path2url(self):
+    @unittest.skipUnless(not is_windows(), 'make no sense on windows')
+    def test_path2url_on_unix(self):
         """ test path2url """
         self.assertEqual(utils.path2url('/opt/local/a.json'), 'file:///opt/local/a.json')
+
+    @unittest.skipUnless(is_windows(), 'make no sense on unix')
+    def test_path2url_on_windows(self):
+        """ test path2url on windows """
+        self.assertEqual(utils.path2url(r'C:\opt\local\a.json'), 'file:///C:/opt/local/a.json')
 
     def test_jr_split(self):
         """ test jr_split """
@@ -133,12 +141,6 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.jr_split(
             '#/definitions/s1'), (
             '', '#/definitions/s1'))
-        self.assertEqual(utils.jr_split(
-            '/user/tmp/local/ttt'), (
-            'file:///user/tmp/local/ttt', '#'))
-        self.assertEqual(utils.jr_split(
-            '/user/tmp/local/ttt/'), (
-            'file:///user/tmp/local/ttt', '#'))
         # relative path should be converted to absolute one
         self.assertEqual(utils.jr_split(
             'user'), (
@@ -150,11 +152,34 @@ class SwaggerUtilsTestCase(unittest.TestCase):
             '//'), (
             '', '#'))
 
+    @unittest.skipUnless(not is_windows(), 'make no sense on windows')
+    def test_jr_split_on_unix(self):
+        """ test jr_split on unix-like os """
+        self.assertEqual(utils.jr_split(
+            '/user/tmp/local/ttt'), (
+            'file:///user/tmp/local/ttt', '#'))
+        self.assertEqual(utils.jr_split(
+            '/user/tmp/local/ttt/'), (
+            'file:///user/tmp/local/ttt', '#'))
+
+    @unittest.skipUnless(is_windows(), 'make no sense on unix')
+    def test_jr_split_on_windows(self):
+        """ test jr_split on windows """
+        target = 'file:///C:/user/tmp/local/ttt' if is_py2() else 'file:///c:/user/tmp/local/ttt'
+
+        self.assertEqual(utils.jr_split(r'C:\user\tmp\local\ttt'), (target, '#'))
+        self.assertEqual(utils.jr_split(
+            # check here for adding backslach at the end of raw string
+            #   https://pythonconquerstheuniverse.wordpress.com/2008/06/04/gotcha-%E2%80%94-backslashes-in-windows-filenames/
+            os.path.normpath('C:/user/tmp/local/ttt/')
+            ), (target, '#'))
+
     def test_cycle_guard(self):
         c = utils.CycleGuard()
         c.update(1)
         self.assertRaises(errs.CycleDetectionError, c.update, 1)
 
+    @unittest.skipUnless(not is_windows(), 'make no sense on windows')
     def test_normalize_url(self):
         self.assertEqual(utils.normalize_url(None), None)
         self.assertEqual(utils.normalize_url(''), '')
@@ -162,6 +187,10 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.normalize_url('/tmp/local/test/'), 'file:///tmp/local/test')
         self.assertEqual(utils.normalize_url('/tmp/local/test'), 'file:///tmp/local/test')
         self.assertEqual(utils.normalize_url('/tmp/local/test in space.txt'), 'file:///tmp/local/test%20in%20space.txt')
+
+    @unittest.skipUnless(is_windows(), 'make no sense on unix')
+    def test_normalize_url_on_windows(self):
+        self.assertEqual(utils.normalize_url(r'C:\path\to\something'), 'file:///C:/path/to/something')
 
     def test_normalize_jr(self):
         self.assertEqual(utils.normalize_jr(None), None)
@@ -248,6 +277,7 @@ class SwaggerUtilsTestCase(unittest.TestCase):
         self.assertEqual(utils.url_join('https://localhost/test', 'swagger.json'), 'https://localhost/test/swagger.json')
         self.assertEqual(utils.url_join('https://localhost/test/', 'swagger.json'), 'https://localhost/test/swagger.json')
 
+    @unittest.skipUnless(not is_windows(), 'make no sense on windows')
     def test_patch_path(self):
         """ make sure patch_path works
         """
@@ -255,6 +285,13 @@ class SwaggerUtilsTestCase(unittest.TestCase):
             '/Users/sudeep.agarwal/src/squiddy/api/v0.1',
             '/Users/sudeep.agarwal/src/squiddy/api/v0.1/swagger.yaml',
         ), '/Users/sudeep.agarwal/src/squiddy/api/v0.1/swagger.yaml')
+
+    @unittest.skipUnless(is_windows(), 'make no sense on unix-like os')
+    def test_patch_path_on_windows(self):
+        self.assertEqual(utils.patch_path(
+            'Users/sudeep.agarwal/src/squiddy/api/v0.1',
+            'Users/sudeep.agarwal/src/squiddy/api/v0.1/swagger.yaml',
+        ), 'Users/sudeep.agarwal/src/squiddy/api/v0.1/swagger.yaml')
 
 
 class WalkTestCase(unittest.TestCase):
