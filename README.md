@@ -91,13 +91,18 @@ client.request(app.op['addPet'](body=pet_Tom))
 
 # - access an Operation object via App.op when operationId is defined
 # - a request to get the pet back
-pet = client.request(app.op['getPetById'](petId=1)).data
+req, resp = app.op['getPetById'](petId=1)
+# prefer json as response
+req.produce('application/json')
+pet = client.request((req, resp)).data
 assert pet.id == 1
 assert pet.name == 'Tom'
 
 # new ways to get Operation object corresponding to 'getPetById'.
 # 'jp_compose' stands for JSON-Pointer composition
-pet = client.request(app.resolve(jp_compose('/pet/{petId}', base='#/paths')).get(petId=1)).data
+req, resp = app.resolve(jp_compose('/pet/{petId}', base='#/paths')).get(petId=1)
+req.produce('application/json')
+pet = client.request((req, resp)).data
 assert pet.id == 1
 ```
 
@@ -170,7 +175,6 @@ logger.setLevel(logging.DEBUG)
 - describe expected behavior, or more specific, the input/output
 
 #### submit a PR
-```
 - test included
 - only PR to `develop` would be accepted
 
