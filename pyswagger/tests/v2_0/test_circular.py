@@ -1,6 +1,6 @@
 from pyswagger import App, utils, primitives, errs
 from ..utils import get_test_data_folder
-from ...scanner import CycleDetector 
+from ...scanner import CycleDetector
 from ...scan import Scanner
 import unittest
 import os
@@ -20,19 +20,13 @@ class CircularRefTestCase(unittest.TestCase):
         app.prepare()
 
     def test_path_item(self):
-        folder = get_test_data_folder(
+        folder = utils.normalize_url(get_test_data_folder(
             version='2.0',
             which=os.path.join('circular', 'path_item')
-        )
+        ))
 
         def _pf(s):
-            return six.moves.urllib.parse.urlunparse((
-                'file',
-                '',
-                folder,
-                '',
-                '',
-                s))
+            return folder + '#' + s
 
         app = App.create(folder)
         s = Scanner(app)
@@ -47,19 +41,13 @@ class CircularRefTestCase(unittest.TestCase):
         ]]))
 
     def test_schema(self):
-        folder = get_test_data_folder(
+        folder = utils.normalize_url(get_test_data_folder(
             version='2.0',
             which=os.path.join('circular', 'schema')
-        )
+        ))
 
         def _pf(s):
-            return six.moves.urllib.parse.urlunparse((
-                'file',
-                '',
-                folder,
-                '',
-                '',
-                s))
+            return folder + '#' + s
 
 
         app = App.load(folder)
@@ -99,4 +87,4 @@ class CircularRefTestCase(unittest.TestCase):
 
         s = app.resolve('#/definitions/s1')
         self.assertRaises(errs.CycleDetectionError, app.prim_factory.produce, s, {})
- 
+

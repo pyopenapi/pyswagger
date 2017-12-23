@@ -298,7 +298,7 @@ def path2url(p):
     """ Return file:// URL from a filename.
     """
     # Python 3 is a bit different and does a better job.
-    if sys.version_info[0] >= 3:
+    if sys.version_info.major >= 3 and sys.version_info.minor >= 4:
         import pathlib
         return pathlib.Path(p).as_uri()
     else:
@@ -306,11 +306,17 @@ def path2url(p):
             'file:', six.moves.urllib.request.pathname2url(p)
         )
 
+_windows_path_prefix = re.compile(r'(^[A-Za-z]:\\)')
+
 def normalize_url(url):
     """ Normalize url
     """
     if not url:
         return url
+
+    matched = _windows_path_prefix.match(url)
+    if matched:
+        return path2url(url)
 
     p = six.moves.urllib.parse.urlparse(url)
     if p.scheme == '':
@@ -339,10 +345,18 @@ def url_join(url, path):
     """ url version of os.path.join
     """
     p = six.moves.urllib.parse.urlparse(url)
-    t = ('/'.join([p.path, path]),)
+
+    t = None
+    if p.path and p.path[-1] == '/':
+        if path and path[0] == '/':
+            path = path[1:]
+        t = ''.join([p.path, path])
+    else:
+        t = ('' if path and path[0] == '/' else '/').join([p.path, path])
+
     return six.moves.urllib.parse.urlunparse(
         p[:2]+
-        t+ # os.sep is different on windows, don't use it here.
+        (t,)+ # os.sep is different on windows, don't use it here.
         p[3:]
     )
 
@@ -382,6 +396,11 @@ def normalize_jr(jr, url=None):
     else:
         return '#' + jp
 
+def _fullmatch(regex, chunk):
+    m = re.match(regex, chunk)
+    if m and m.span()[1] == len(chunk):
+        return m
+
 def derelativise_url(url):
     '''
     Normalizes URLs, gets rid of .. and .
@@ -396,14 +415,12 @@ def derelativise_url(url):
             newpath=newpath[:-1]
             continue
         # TODO: Verify this behaviour.
-        elif re.fullmatch(r'\.{3,}', chunk) is not None:
+        elif _fullmatch(r'\.{3,}', chunk) is not None:
             # parent dir.
             newpath=newpath[:-1]
             continue
         newpath += [chunk]
     return six.moves.urllib.parse.urlunparse(parsed[:2]+('/'+('/'.join(newpath)),)+parsed[3:])
-def is_file_url(url):
-    return url.startswith('file://')
 
 def get_swagger_version(obj):
     """ get swagger version from loaded json """
