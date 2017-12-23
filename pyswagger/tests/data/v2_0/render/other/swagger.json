@@ -24,12 +24,18 @@
             }
          ]
       },
+      "float.2":{
+         "type":"number"
+      },
       "integer.1":{
          "type":"integer",
          "format":"int32",
          "maximum":50,
          "minimum":10,
          "multipleOf":5
+      },
+      "integer.2":{
+         "type":"integer"
       },
       "enum.string":{
          "type":"string",

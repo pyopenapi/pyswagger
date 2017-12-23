@@ -210,12 +210,11 @@ class App(object):
 
             s.scan(root=obj, route=[AssignParent()])
 
+        # fix for yaml that treat response code as number
+        s.scan(root=obj, route=[YamlFixer()], leaves=[Operation])
         # normalize $ref
         url, jp = utils.jr_split(jref)
         s.scan(root=obj, route=[NormalizeRef(url)])
-        # fix for yaml that treat response code as number
-        s.scan(root=obj, route=[YamlFixer()], leaves=[Operation])
-
         # cache this object
         if url not in self.__objs:
             if jp == '#':
@@ -287,7 +286,7 @@ class App(object):
         if app.__version not in ['1.2', '2.0']:
             raise NotImplementedError('Unsupported Version: {0}'.format(self.__version))
 
-        # update schem if any
+        # update scheme if any
         p = six.moves.urllib.parse.urlparse(url)
         if p.scheme:
             app.schemes.append(p.scheme)
@@ -316,8 +315,8 @@ class App(object):
         :param bool strict: when in strict mode, exception would be raised if not valid.
         """
 
-        self.validate(strict=strict)
         self.__root = self.prepare_obj(self.raw, self.__url)
+        self.validate(strict=strict)
 
         if hasattr(self.__root, 'schemes') and self.__root.schemes:
             if len(self.__root.schemes) > 0:

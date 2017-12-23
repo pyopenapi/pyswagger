@@ -135,10 +135,14 @@ class Renderer(object):
         # init map of generators
         self._map = {
             'integer': {
+                '': _int_,
+                None: _int_,
                 'int32': _int_,
                 'int64': _int_,
             },
             'number': {
+                '': _float_,
+                None: _float_,
                 'float': _float_,
                 'double': _float_,
             },

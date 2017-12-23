@@ -46,7 +46,7 @@ class Model(dict):
 
         not_found = set(obj.required) - set(six.iterkeys(self))
         if len(not_found):
-            raise ValueError('requirement not meet: {0}'.format(not_found))
+            raise ValueError('Model missing required key(s): {0}'.format(', '.join(not_found)))
 
         # remove assigned properties to avoid duplicated
         # primitive creation
@@ -75,7 +75,7 @@ class Model(dict):
         return {}
 
     def __eq__(self, other):
-        """ equality operater, 
+        """ equality operater,
         will skip checking when both value are None or no attribute.
 
         :param other: another model
@@ -97,4 +97,3 @@ class Model(dict):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-

@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import os
+import sys
 
 def get_test_data_folder(version='1.2', which=''):
     """
@@ -55,3 +56,10 @@ def create_pet_db():
     pet.create_(**pet_Sue)
 
     return pet
+
+def is_windows():
+    return os.name == 'nt'
+
+def is_py2():
+    return sys.version_info.major < 3
+

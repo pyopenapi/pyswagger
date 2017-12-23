@@ -1,24 +1,19 @@
 from pyswagger import App, errs
-from ..utils import get_test_data_folder
+from pyswagger.utils import normalize_url
+from ..utils import get_test_data_folder, is_windows
 from ...spec.v2_0 import objects
 import unittest
 import os
 import six
 
 
-folder = get_test_data_folder(
+folder = normalize_url(get_test_data_folder(
     version='1.2',
     which='wordnik'
-)
+))
 
 def _pf(s):
-    return six.moves.urllib.parse.urlunparse((
-        'file',
-        '',
-        folder,
-        '',
-        '',
-        s))
+    return folder + '#' + s
 
 
 class Swagger_Upgrade_TestCase(unittest.TestCase):
@@ -128,7 +123,7 @@ class Swagger_Upgrade_TestCase(unittest.TestCase):
         p = [p for p in o.parameters if getattr(p, 'in') == 'formData' and p.type == 'string'][0]
         self.assertEqual(p.name, 'additionalMetadata')
         self.assertEqual(p.required, False)
- 
+
         # file
         o = self.app.root.paths['/api/pet/uploadImage'].post
         p = [p for p in o.parameters if getattr(p, 'in') == 'formData' and p.type == 'file'][0]

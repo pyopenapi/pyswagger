@@ -25,3 +25,9 @@ class YAMLTestCase(unittest.TestCase):
 
         self.assertEqual((True, ''), app_json.raw.compare(app_yaml.raw))
 
+    def test_create(self):
+        """ make sure we could load a yml with status-code in int """
+        app = App.create(get_test_data_folder(
+            version='2.0',
+            which='yaml'
+        ))

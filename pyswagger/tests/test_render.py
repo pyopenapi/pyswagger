@@ -123,6 +123,14 @@ class OtherTestCase(unittest.TestCase):
             self.assertTrue(i >= 10, 'should be greater than 10, not {0}'.format(i))
             self.assertTrue((i % 5) == 0, 'should be moduleable by 5, not {0}'.format(i))
 
+    def test_integer_without_format(self):
+        for _ in six.moves.xrange(50):
+            i = self.rnd.render(
+                self.app.resolve('#/definitions/integer.2'),
+                opt=self.rnd.default()
+            )
+            self.assertTrue(isinstance(i, six.integer_types), 'should be integer, not {0}'.format(i))
+
     def test_float(self):
         for _ in six.moves.xrange(50):
             f = self.rnd.render(
@@ -133,6 +141,14 @@ class OtherTestCase(unittest.TestCase):
             self.assertTrue(f <= 100, 'should be less than 100, not {0}'.format(f))
             self.assertTrue(f >= 50, 'should be greater than 50, not {0}'.format(f))
             self.assertTrue((f % 5) == 0, 'should be moduleable by 5, not {0}'.format(f))
+
+    def test_float_without_format(self):
+        for _ in six.moves.xrange(50):
+            f = self.rnd.render(
+                self.app.resolve('#/definitions/float.2'),
+                opt=self.rnd.default()
+            )
+            self.assertTrue(isinstance(f, float), 'should be float, not {0}'.format(f))
 
     def test_bool(self):
         b = self.rnd.render(

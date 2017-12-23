@@ -297,15 +297,26 @@ def nv_tuple_list_replace(l, v):
 def path2url(p):
     """ Return file:// URL from a filename.
     """
-    return six.moves.urllib.parse.urljoin(
-        'file:', six.moves.urllib.request.pathname2url(p)
-    )
+    # Python 3 is a bit different and does a better job.
+    if sys.version_info.major >= 3 and sys.version_info.minor >= 4:
+        import pathlib
+        return pathlib.Path(p).as_uri()
+    else:
+        return six.moves.urllib.parse.urljoin(
+            'file:', six.moves.urllib.request.pathname2url(p)
+        )
+
+_windows_path_prefix = re.compile(r'(^[A-Za-z]:\\)')
 
 def normalize_url(url):
     """ Normalize url
     """
     if not url:
         return url
+
+    matched = _windows_path_prefix.match(url)
+    if matched:
+        return path2url(url)
 
     p = six.moves.urllib.parse.urlparse(url)
     if p.scheme == '':
@@ -334,9 +345,18 @@ def url_join(url, path):
     """ url version of os.path.join
     """
     p = six.moves.urllib.parse.urlparse(url)
+
+    t = None
+    if p.path and p.path[-1] == '/':
+        if path and path[0] == '/':
+            path = path[1:]
+        t = ''.join([p.path, path])
+    else:
+        t = ('' if path and path[0] == '/' else '/').join([p.path, path])
+
     return six.moves.urllib.parse.urlunparse(
         p[:2]+
-        (os.path.join(p.path, path),)+
+        (t,)+ # os.sep is different on windows, don't use it here.
         p[3:]
     )
 
@@ -366,7 +386,8 @@ def normalize_jr(jr, url=None):
         if p.scheme == '' and url:
             p = six.moves.urllib.parse.urlparse(url)
             # it's the path of relative file
-            path = six.moves.urllib.parse.urlunparse(p[:2]+(os.path.join(os.path.dirname(p.path), path),)+p[3:])
+            path = six.moves.urllib.parse.urlunparse(p[:2]+('/'.join([os.path.dirname(p.path), path]),)+p[3:])
+            path = derelativise_url(path)
     else:
         path = url
 
@@ -375,8 +396,31 @@ def normalize_jr(jr, url=None):
     else:
         return '#' + jp
 
-def is_file_url(url):
-    return url.startswith('file://')
+def _fullmatch(regex, chunk):
+    m = re.match(regex, chunk)
+    if m and m.span()[1] == len(chunk):
+        return m
+
+def derelativise_url(url):
+    '''
+    Normalizes URLs, gets rid of .. and .
+    '''
+    parsed = six.moves.urllib.parse.urlparse(url)
+    newpath=[]
+    for chunk in parsed.path[1:].split('/'):
+        if chunk == '.':
+            continue
+        elif chunk == '..':
+            # parent dir.
+            newpath=newpath[:-1]
+            continue
+        # TODO: Verify this behaviour.
+        elif _fullmatch(r'\.{3,}', chunk) is not None:
+            # parent dir.
+            newpath=newpath[:-1]
+            continue
+        newpath += [chunk]
+    return six.moves.urllib.parse.urlunparse(parsed[:2]+('/'+('/'.join(newpath)),)+parsed[3:])
 
 def get_swagger_version(obj):
     """ get swagger version from loaded json """
@@ -549,4 +593,3 @@ def patch_path(base_path, path):
         path = path[1:]
 
     return path
-

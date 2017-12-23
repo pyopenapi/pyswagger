@@ -8,14 +8,11 @@ A python client for [Swagger](https://helloreverb.com/developers/swagger) enable
 try Swagger REST API by [Swagger-UI](https://github.com/wordnik/swagger-ui). However, when it's time to **unittest**
 your API, the first option you find would be [Swagger-codegen](https://github.com/wordnik/swagger-codegen), but the better option is us.
 
-This project is developed after [swagger-py](https://github.com/digium/swagger-py), which is a nicely implemented one, and inspired many aspects of this project. Another project is [flex](https://github.com/pipermerriam/flex), which focuses on parameter validation, try it if you can handle other parts by yourselves.
-
-For other projects related to Swagger tools in python, check [here](https://github.com/swagger-api/swagger-spec#python).
+This project is developed after [swagger-py](https://github.com/digium/swagger-py), which is a nicely implemented one, and inspired many aspects of this project. Another project is [flex](https://github.com/pipermerriam/flex), which focuses on parameter validation, try it if you can handle other parts by yourselves. For other projects related to Swagger tools in python, check [here](https://github.com/swagger-api/swagger-spec#python).
 
 **pyswagger** is much easier to use (compared to swagger-codegen, you don't need to prepare a scala environment) and tries hard to **fully supports** [Swagger Spec](https://helloreverb.com/developers/swagger) in all aspects.
 
-Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go through this README.
-
+- [NEWs: upcoming support for OpenAPI 3.0](docs/md/news.md)
 - [Features](README.md#features)
 - [Tutorial](README.md#tutorial)
 - [Quick Start](README.md#quick-start)
@@ -23,13 +20,13 @@ Read the [Document](http://pyswagger.readthedocs.org/en/latest/), or just go thr
 - [Reference](README.md#reference)
 - [Contributors](README.md#contributors)
 - [Contribution Guideline](README.md#contribution-guildeline)
-- [FAQ](README.md#faq)
+- [FAQ](docs/md/faq.md)
 - [Changes](CHANGES.md)
 
 ---------
 
 ## Features
-- **NEW** convert Swagger Document from older version to newer one. (ex. convert from 1.2 to 2.0)
+- convert Swagger Document from older version to newer one. (ex. convert from 1.2 to 2.0)
 - support Swagger **1.2**, **2.0** on python ~~2.6~~, **2.7**, **3.3**, **3.5**, **3.6**
 - support YAML via [Pretty-YAML](https://github.com/mk-fg/pretty-yaml)
 - support $ref to **External Document**, multiple swagger.json will be organized into a group of App. And external document with self-describing resource is also supported (refer to [issue](https://github.com/swagger-api/swagger-spec/issues/219)).
@@ -94,13 +91,18 @@ client.request(app.op['addPet'](body=pet_Tom))
 
 # - access an Operation object via App.op when operationId is defined
 # - a request to get the pet back
-pet = client.request(app.op['getPetById'](petId=1)).data
+req, resp = app.op['getPetById'](petId=1)
+# prefer json as response
+req.produce('application/json')
+pet = client.request((req, resp)).data
 assert pet.id == 1
 assert pet.name == 'Tom'
 
 # new ways to get Operation object corresponding to 'getPetById'.
 # 'jp_compose' stands for JSON-Pointer composition
-pet = client.request(app.resolve(jp_compose('/pet/{petId}', base='#/paths')).get(petId=1)).data
+req, resp = app.resolve(jp_compose('/pet/{petId}', base='#/paths')).get(petId=1)
+req.produce('application/json')
+pet = client.request((req, resp)).data
 assert pet.id == 1
 ```
 
@@ -148,7 +150,8 @@ All exported API are described in following sections. ![A diagram about relation
 ---------
 
 ## Contribution Guildeline
-report an issue:
+
+#### report an issue:
 - issues can be reported [here](https://github.com/mission-liao/pyswagger/issues)
 - include swagger.json if possible
 - turn on logging and report with messages on console
@@ -171,9 +174,9 @@ logger.setLevel(logging.DEBUG)
 
 - describe expected behavior, or more specific, the input/output
 
-request a merge
-- try not to decrease the coverage rate
+#### submit a PR
 - test included
+- only PR to `develop` would be accepted
 
 env preparation
 ```bash
@@ -185,17 +188,3 @@ unit testing
 python -m pytest -s -v --cov=pyswagger --cov-config=.coveragerc pyswagger/tests
 ```
 
----------
-
-## FAQ
-- Format of byte?
-  - The way to encode/decode byte is [base64](https://github.com/wordnik/swagger-spec/issues/50).
-- Format of datetime on the wire?
-  - should be an ISO8601 string, according to this [issue](https://github.com/wordnik/swagger-spec/issues/95).
-- How **allowMultiple** is handled?
-  - Take type integer as example, you can pass ~~an integer or~~ an array/tuple of integer for this parameter. (a single value is no longer supported)
-- What do we need to take care of when upgrading from Swagger 1.2 to 2.0?
-  - **allowMultiple** is no longer supported, always passing an array even with a single value.
-  - 'different host for different resource' is no longer supported in Swagger 2.0, only one host and one basePath is allowed in one swagger.json.
-  - refer to [Migration Guide](https://github.com/swagger-api/swagger-spec/wiki/Swagger-1.2-to-2.0-Migration-Guide) from Swagger team.
-  - The name of body parameters is no longer included in requests, refer to this [issue](https://github.com/mission-liao/pyswagger/issues/13) for details.
