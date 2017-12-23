@@ -1,5 +1,11 @@
 ## Changes
 
+### 0.8.37
+
+- Fix loading error on 'yaml' document
+- Fix parameter renderer failed on int/number without 'format'
+- Windows Support
+
 ### 0.8.33
 
 - Support customized headers when making requests
