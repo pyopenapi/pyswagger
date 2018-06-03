@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from .primitives.comm import PrimJSONEncoder
-from .utils import final, deref
+from .utils import final, deref, CaseInsensitiveDict
 from pyswagger import errs
 from uuid import uuid4
 import six
@@ -33,7 +33,7 @@ class Request(object):
         self.__p = params
         self.__url = self.__op.url
         self.__path = self.__op.path
-        self.__header = {}
+        self.__header = CaseInsensitiveDict()
 
         self.__consume = None
         self.__produce = None
@@ -42,7 +42,7 @@ class Request(object):
     def reset(self):
         self.__url = self.__op.url
         self.__path = self.__op.path
-        self.__header = {}
+        self.__header = CaseInsensitiveDict()
         self.__data = None
 
     def consume(self, consume):
@@ -350,7 +350,7 @@ class Response(object):
 
         # init properties
         self.__status = None
-        self.__header = {}
+        self.__header = CaseInsensitiveDict()
 
         # options
         self.__raw_body_only = False
