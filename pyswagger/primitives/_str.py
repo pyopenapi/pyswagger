@@ -10,7 +10,7 @@ def validate_str(obj, ret, val, ctx):
     if obj.maxLength and len(ret) > obj.maxLength:
         raise ValidationError('[{0}] is longer than {1} characters'.format(ret, str(obj.maxLength)))
     if obj.minLength and len(ret) < obj.minLength:
-        raise ValidationError('[{0}] is shoter than {1} characters'.format(ret, str(obj.minLength)))
+        raise ValidationError('[{0}] is shorter than {1} characters'.format(ret, str(obj.minLength)))
 
     # TODO: handle pattern
     return val

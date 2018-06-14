@@ -15,7 +15,7 @@ class Model(dict):
         super(Model, self).__init__()
 
     def apply_with(self, obj, val, ctx):
-        """ recursivly apply Schema object
+        """ recursively apply Schema object
 
         :param obj.Model obj: model object to instruct how to create this model
         :param dict val: things used to construct this model

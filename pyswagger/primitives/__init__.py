@@ -90,7 +90,11 @@ class Primitive(object):
 
     def get(self, _type, _format=None):
         r = self._map.get(_type, None)
-        return (None, None) if r == None else r.get(_format, (None, None))
+        if r is None:
+            return (None, None)
+        if _format in r:
+            return r.get(_format)
+        return r.get(None)
 
     def register(self, _type, _format, creater, _2nd_pass=None):
         """ register a type/format handler when producing primitives
