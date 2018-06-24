@@ -1,5 +1,10 @@
 ## Changes
 
+### 0.8.38
+
+- Allow to access headers with case insensitive keys
+- Drop support to py3.3 because of Tornado
+
 ### 0.8.37
 
 - Fix loading error on 'yaml' document

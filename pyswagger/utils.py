@@ -9,6 +9,7 @@ import re
 import os
 import operator
 import functools
+import collections
 
 #TODO: accept varg
 def scope_compose(scope, name, sep=private.SCOPE_SEPARATOR):
@@ -593,3 +594,45 @@ def patch_path(base_path, path):
         path = path[1:]
 
     return path
+
+
+class CaseInsensitiveDict(collections.MutableMapping):
+    """ a case insensitive dict:
+        - allow to query with case insensitive keys (get, in)
+        - iteration would return original key
+
+    A reference implementation could be found in
+
+        https://github.com/requests/
+    """
+
+    def __init__(self):
+        self._store = dict()
+
+    def __setitem__(self, key, value):
+        self._store[key.lower()] = (key, value)
+
+    def __getitem__(self, key):
+        return self._store[key.lower()][1]
+
+    def __delitem__(self, key):
+        del self._store[key.lower()]
+
+    def __iter__(self):
+        return (original_key for original_key, _ in six.itervalues(self._store))
+
+    def iteritems(self):
+        return six.itervalues(self._store)
+
+    def itervalues(self):
+        return (value for _, value in six.itervalues(self._store))
+
+    def __in__(self, key):
+        return key.lower() in self._store
+
+    def __len__(self):
+        return len(self._store)
+
+    def __repr__(self):
+        return str(dict(self.items()))
+

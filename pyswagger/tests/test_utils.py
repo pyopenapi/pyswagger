@@ -429,3 +429,28 @@ class WalkTestCase(unittest.TestCase):
             [2, 3, 5, 4, 2],
             [2, 3 ,4, 2]
             ]))
+
+    def test_case_insensitive_dict(self):
+        """ test utils.CaseInsensitiveDict
+        """
+        normal = utils.CaseInsensitiveDict()
+        normal['Content-Type'] = 'application/json'
+        self.assertTrue('Content-Type' in normal)
+        self.assertTrue('content-type' in normal)
+        self.assertEqual(normal['content-type'], 'application/json')
+
+        # test iteration
+        for k, v in normal.iteritems():
+            self.assertEqual(k, 'Content-Type')
+            self.assertEqual(v, 'application/json')
+            break
+        else:
+            # should not reach here
+            self.assertTrue(False)
+
+        for v in normal.itervalues():
+            self.assertEqual(v, 'application/json')
+            break
+        else:
+            # should not reach here
+            self.assertTrue(False)
