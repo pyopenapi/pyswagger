@@ -1,5 +1,9 @@
 ## Changes
 
+### 0.8.39
+
+- Fix the issue that case insensitive keys in headers not working
+
 ### 0.8.38
 
 - Allow to access headers with case insensitive keys
