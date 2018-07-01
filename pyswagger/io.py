@@ -292,7 +292,7 @@ class Request(object):
     def header(self):
         """ header of this request, only valid after 'prepare'
 
-        :type: dict
+        :type: pyswagger.util.CaseInsensitiveDict
         """
         return self.__header
 
@@ -357,7 +357,7 @@ class Response(object):
 
     def reset(self):
         self.__status = None
-        self.__header = {}
+        self.__header = CaseInsensitiveDict()
         self.__raw = self.__data = None
         self.__path = self.__op.path
         self.__url = self.__op.url
