@@ -1,4 +1,4 @@
-## Initialzation
+## Initialization
 
 The first step to use pyswagger is creating a pyswagger.App object. You need to provide the path of the resource file. For example, a App for petstore can be initialized in this way:
 ```python
@@ -8,7 +8,7 @@ from pyswagger import App
 app = App.create('http://petstore.swagger.io/v2/swagger.json')
 ```
 
-## Initailize with A Local file
+## Initialize with a local file
 
 The path could be an URI or a absolute path. For example, a path /home/workspace/local/swagger.json could be passed like:
 ```python
