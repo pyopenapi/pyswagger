@@ -55,3 +55,6 @@ docs/_build/
 
 # vim
 *.swp
+
+# Jetbrains metadata
+.idea/
