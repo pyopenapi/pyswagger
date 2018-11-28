@@ -10,18 +10,28 @@ class Client(BaseClient):
 
     __schemes__ = set(['http', 'https'])
 
-    def __init__(self, auth=None, send_opt=None):
+    def set_session(self, session):
+        """ set the requests.Session used by the client
+
+        :param session requests.Session: instance of Session client should use
+        """
+        if not isinstance(session, Session):
+            raise TypeError("session is not an instance of requests.Session")
+        self.__s = session
+
+    def __init__(self, auth=None, send_opt=None, session=None):
         """ constructor
 
         :param auth pyswagger.SwaggerAuth: auth info used when requesting
         :param send_opt dict: options used in requests.send, ex verify=False
+        :param session requests.Session: optional, set the client Session
         """
         super(Client, self).__init__(auth)
         if send_opt is None:
             send_opt = {}
-
-        self.__s = Session()
         self.__send_opt = send_opt
+
+        self.set_session(session or Session())
 
     def request(self, req_and_resp, opt=None, headers=None):
         """
@@ -75,4 +85,3 @@ class Client(BaseClient):
         )
 
         return resp
-

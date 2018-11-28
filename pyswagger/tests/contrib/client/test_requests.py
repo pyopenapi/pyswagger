@@ -8,6 +8,7 @@ import httpretty
 import json
 import six
 import os
+import requests
 
 
 app = App._create_(get_test_data_folder(version='1.2', which='wordnik'))
@@ -264,3 +265,40 @@ class HeaderTestCase(unittest.TestCase):
         )
         self.assertEqual(httpretty.last_request().headers['X-TEST-HEADER'], 'bbb')
 
+
+@httpretty.activate
+class SessionTestCase(unittest.TestCase):
+    """ test case for custom session """
+
+    def test_init_with_session(self):
+        session = requests.Session()
+        session.headers = {'X-TEST-HEADER': 'aaa'}
+        session_client = Client(session=session)
+
+        httpretty.register_uri(
+            httpretty.PUT,
+            'http://petstore.swagger.wordnik.com/api/pet',
+            status=200
+        )
+
+        session_client.request(app.op['updatePet'](body=pet_QQQ))
+
+        self.assertEqual(httpretty.last_request().headers['X-TEST-HEADER'], 'aaa')
+
+    def test_set_session(self):
+        session = requests.Session()
+        session.headers = {'X-TEST-HEADER': 'aaa'}
+        default_client = Client()
+        session_client = Client(session=session)
+
+        httpretty.register_uri(
+            httpretty.PUT,
+            'http://petstore.swagger.wordnik.com/api/pet',
+            status=200
+        )
+
+        session_client.request(app.op['updatePet'](body=pet_QQQ))
+        self.assertEqual(httpretty.last_request().headers['X-TEST-HEADER'], 'aaa')
+
+        default_client.request(app.op['updatePet'](body=pet_QQQ))
+        self.assertFalse('X-TEST-HEADER' in httpretty.last_request().headers)
