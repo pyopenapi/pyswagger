@@ -45,7 +45,7 @@ class Getter(six.Iterator):
                 if obj.startswith('{'):
                     obj = json.loads(obj)
                 else:
-                    obj = yaml.load(obj)
+                    obj = yaml.load(obj, Loader=yaml.FullLoader)
             except ValueError:
                 raise Exception('Unknown format startswith {0} ...'.format(obj[:10]))
 
