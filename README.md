@@ -1,7 +1,7 @@
 pyswagger
 =========
 
-[![Build Status](https://travis-ci.org/mission-liao/pyswagger.svg?branch=master)](https://travis-ci.org/mission-liao/pyswagger)
+[![Build Status](https://travis-ci.org/pyopenapi/pyswagger.svg?branch=master)](https://travis-ci.org/pyopenapi/pyswagger)
 [![Coverage Status](https://coveralls.io/repos/mission-liao/pyswagger/badge.svg?branch=master&style=flat)](https://coveralls.io/r/mission-liao/pyswagger?branch=master)
 
 A python client for [Swagger](https://helloreverb.com/developers/swagger) enabled REST API. It wouldn't be easier to
