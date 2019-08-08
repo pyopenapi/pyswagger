@@ -31,7 +31,7 @@ Security is a placeholder of authorizations,
     auth = Security(app)
 
     # insert autorization information
-    app.update_with('simple_basicAuth', ('user', 'password'))
+    app.update_with('basicAuth', ('user', 'password'))
     app.update_with('simple_apiKey', 'token123')
     app.update_with('simple_oath2', 'token123456')
 
