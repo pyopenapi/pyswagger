@@ -38,7 +38,7 @@ Getting Started
 
         # init Security for authorization
         auth = Security(app)
-        auth.update_with('simple_basic_auth', ('user', 'password')) # basic auth
+        auth.update_with('basicAuth', ('user', 'password')) # basic auth
         auth.update_with('simple_api_key', '12312312312312312313q') # api key
         auth.update_with('simple_oauth2', '12334546556521123fsfss') # oauth2
 
