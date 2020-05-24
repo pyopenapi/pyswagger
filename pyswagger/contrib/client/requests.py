@@ -67,6 +67,7 @@ class Client(BaseClient):
         )
         rq = self.__s.prepare_request(rq)
         rs = self.__s.send(rq, stream=True, **self.__send_opt)
+        self.__s.close()
 
         resp.apply_with(
             status=rs.status_code,
