@@ -40,7 +40,7 @@ This project is developed after [swagger-py](https://github.com/digium/swagger-p
 - not implemented parts, fire me a bug if you need it
   - [ ] Swagger 2.0
     - [ ] Schema.pattern
-    - [ ] Scheme.patternProperties
+    - [ ] Schema.patternProperties
     - [ ] Schema.readonly
     - [ ] Schema.allowEmptyValue
     - [ ] A scanner to validate schema
