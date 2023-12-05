@@ -388,7 +388,7 @@ class Response(object):
              final(self.__op.responses.get('default', None)))
 
         if header != None:
-            if isinstance(header, (collections.Mapping, collections.MutableMapping)):
+            if isinstance(header, (collections.abc.Mapping, collections.abc.MutableMapping)):
                 for k, v in six.iteritems(header):
                     self._convert_header(r, k, v)
             else:
